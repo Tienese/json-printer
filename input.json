@@ -1,0 +1,223 @@
+{
+  "title": "JLPT N5 Practice Quiz",
+  "description": "Comprehensive quiz covering all question types",
+  "questions": [
+    {
+      "type": "MC",
+      "title": "Mondai 1 - Kanji Reading (Multiple Choice)",
+      "prompt": "«先週»デパートにかいものにいきました。",
+      "points": 1.0,
+      "generalFeedback": "\"先週\" (Tuần trước) đọc là \"せんしゅう\". Chữ \"週\" có trường âm.",
+      "correctFeedback": "Chính xác! Bạn đã chọn đúng cách đọc.",
+      "incorrectFeedback": "Chưa đúng. Hãy chú ý đến trường âm và âm đầu.",
+      "answers": [
+        {
+          "text": "せんしゅ",
+          "correct": false,
+          "feedback": "Sai. Thiếu trường âm \"う\"."
+        },
+        {
+          "text": "せんしゅう",
+          "correct": true,
+          "feedback": "Đúng. Cách đọc chính xác."
+        },
+        {
+          "text": "ぜんしゅ",
+          "correct": false,
+          "feedback": "Sai. \"先\" đọc là \"せん\", không phải \"ぜん\"."
+        },
+        {
+          "text": "ぜんしゅう",
+          "correct": false,
+          "feedback": "Sai. Âm đầu bị sai."
+        }
+      ]
+    },
+    {
+      "type": "MA",
+      "title": "Mondai 2 - Grammar (Multiple Answers)",
+      "prompt": "日本語の勉強に必要なものを選んでください。(Chọn những thứ cần thiết cho việc học tiếng Nhật)",
+      "points": 2.0,
+      "generalFeedback": "Từ điển và sách giáo khoa là những công cụ thiết yếu khi học ngoại ngữ.",
+      "correctFeedback": "Tuyệt vời! Bạn đã chọn tất cả các đáp án đúng.",
+      "incorrectFeedback": "Bạn đã bỏ sót một số đáp án đúng hoặc chọn nhầm.",
+      "answers": [
+        {
+          "text": "じしょ (Từ điển)",
+          "correct": true,
+          "feedback": "Đúng. Từ điển rất quan trọng để tra nghĩa."
+        },
+        {
+          "text": "きょうかしょ (Sách giáo khoa)",
+          "correct": true,
+          "feedback": "Đúng. Sách giáo khoa là tài liệu học tập chính."
+        },
+        {
+          "text": "テレビ (TV)",
+          "correct": false,
+          "feedback": "Sai. TV có thể hỗ trợ nhưng không thiết yếu."
+        },
+        {
+          "text": "ゲーム (Game)",
+          "correct": false,
+          "feedback": "Sai. Game không phải công cụ học tập chính."
+        }
+      ]
+    },
+    {
+      "type": "TF",
+      "title": "Mondai 3 - Comprehension (True/False)",
+      "prompt": "日本の首都は東京です。(Thủ đô của Nhật Bản là Tokyo)",
+      "points": 1.0,
+      "generalFeedback": "Tokyo (東京) chính thức trở thành thủ đô của Nhật Bản từ năm 1868.",
+      "correctFeedback": "Chính xác!",
+      "incorrectFeedback": "Sai rồi. Tokyo là thủ đô của Nhật Bản.",
+      "answers": [
+        {
+          "text": "True (本当)",
+          "correct": true,
+          "feedback": "Đúng. Tokyo là thủ đô của Nhật Bản."
+        },
+        {
+          "text": "False (嘘)",
+          "correct": false,
+          "feedback": "Sai. Tokyo thực sự là thủ đô."
+        }
+      ]
+    },
+    {
+      "type": "MT",
+      "title": "Mondai 4 - Vocabulary (Matching)",
+      "prompt": "Ghép từ tiếng Nhật với nghĩa tiếng Việt tương ứng:",
+      "points": 3.0,
+      "generalFeedback": "Đây là những từ vựng cơ bản về thời gian trong tiếng Nhật.",
+      "correctFeedback": "Hoàn hảo! Bạn đã ghép đúng tất cả các cặp.",
+      "incorrectFeedback": "Một số cặp ghép chưa chính xác. Hãy xem lại.",
+      "matchingPairs": [
+        {
+          "left": "きのう",
+          "right": "Hôm qua"
+        },
+        {
+          "left": "きょう",
+          "right": "Hôm nay"
+        },
+        {
+          "left": "あした",
+          "right": "Ngày mai"
+        },
+        {
+          "left": "まいにち",
+          "right": "Mỗi ngày"
+        }
+      ],
+      "matchingDistractors": [
+        "Tuần trước",
+        "Tháng sau",
+        "Năm ngoái"
+      ]
+    },
+    {
+      "type": "DD",
+      "title": "Mondai 5 - Grammar (Multiple Dropdown)",
+      "prompt": "私は [time] に [place] へ 行きます。(Tôi sẽ đi đến [place] vào [time])",
+      "points": 2.0,
+      "generalFeedback": "Câu này sử dụng cấu trúc \"[Thời gian] に [Địa điểm] へ 行きます\" để diễn tả hành động đi đến một nơi vào một thời điểm cụ thể.",
+      "correctFeedback": "Chính xác! Bạn đã chọn đúng tất cả các từ.",
+      "incorrectFeedback": "Một số lựa chọn chưa phù hợp với ngữ cảnh.",
+      "answers": [
+        {
+          "text": "あした",
+          "correct": true,
+          "feedback": "Đúng. あした (ngày mai) dùng với に.",
+          "dropdownVariable": "time"
+        },
+        {
+          "text": "せんしゅう",
+          "correct": false,
+          "feedback": "Sai. せんしゅう (tuần trước) là quá khứ, không dùng với 行きます (tương lai).",
+          "dropdownVariable": "time"
+        },
+        {
+          "text": "いま",
+          "correct": false,
+          "feedback": "Sai. いま (bây giờ) không phù hợp với cấu trúc này.",
+          "dropdownVariable": "time"
+        },
+        {
+          "text": "がっこう",
+          "correct": true,
+          "feedback": "Đúng. がっこう (trường học) là địa điểm phù hợp.",
+          "dropdownVariable": "place"
+        },
+        {
+          "text": "べんきょう",
+          "correct": false,
+          "feedback": "Sai. べんきょう (học tập) là hành động, không phải địa điểm.",
+          "dropdownVariable": "place"
+        },
+        {
+          "text": "としょかん",
+          "correct": true,
+          "feedback": "Đúng. としょかん (thư viện) là địa điểm hợp lệ.",
+          "dropdownVariable": "place"
+        }
+      ]
+    },
+    {
+      "type": "MC",
+      "title": "Mondai 6 - Star Grammar (Multiple Choice)",
+      "prompt": "机の上に ( ) ( ) (★) ( ) あります。",
+      "points": 1.5,
+      "generalFeedback": "Trật tự đúng: ほん -> が -> さん -> さつ. Câu đầy đủ: 机の上に ほん が さん さつ あります。(Trên bàn có 3 quyển sách).",
+      "correctFeedback": "Xuất sắc! Bạn đã sắp xếp đúng từ vào vị trí ★.",
+      "incorrectFeedback": "Chưa đúng. Hãy thử sắp xếp lại các từ theo nghĩa câu.",
+      "answers": [
+        {
+          "text": "が",
+          "correct": false,
+          "feedback": "Sai. が ở vị trí thứ 2, không phải ★."
+        },
+        {
+          "text": "ほん",
+          "correct": false,
+          "feedback": "Sai. ほん ở vị trí đầu tiên."
+        },
+        {
+          "text": "さん",
+          "correct": true,
+          "feedback": "Đúng. さん (3) rơi vào vị trí ★."
+        },
+        {
+          "text": "さつ",
+          "correct": false,
+          "feedback": "Sai. さつ (bộ đếm sách) ở vị trí cuối."
+        }
+      ]
+    },
+    {
+      "type": "MC",
+      "title": "Mondai 7 - No Feedback Example",
+      "prompt": "«来週»の会議は何曜日ですか。",
+      "points": 1.0,
+      "answers": [
+        {
+          "text": "らいしゅう",
+          "correct": true
+        },
+        {
+          "text": "らいしゅ",
+          "correct": false
+        },
+        {
+          "text": "きしゅう",
+          "correct": false
+        },
+        {
+          "text": "きしゅ",
+          "correct": false
+        }
+      ]
+    }
+  ]
+}

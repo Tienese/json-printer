@@ -4,9 +4,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
-import com.qtihelper.demo.config.CanvasProperties;
 import com.qtihelper.demo.model.Quiz;
 import com.qtihelper.demo.parser.QuizParser;
 import com.qtihelper.demo.service.CanvasUploader;
@@ -40,12 +38,15 @@ public class DemoApplication implements CommandLineRunner {
 
 	@Override
 	public void run(String... args) {
-		log.info(">>> QTI Helper Started");
-
-		if (args.length < 1) {
-			printHelp();
+		// If no arguments provided, run in web mode (do nothing here, web server will start)
+		if (args.length == 0) {
+			log.info(">>> QTI Helper Web Interface Started");
+			log.info(">>> Open your browser at: http://localhost:8080");
 			return;
 		}
+
+		// CLI mode - process arguments
+		log.info(">>> QTI Helper CLI Mode Started");
 
 		String inputFilename = args[0];
 		String courseId = args.length > 1 ? args[1] : null;
@@ -103,6 +104,8 @@ public class DemoApplication implements CommandLineRunner {
 	}
 
 	private void printHelp() {
-		log.info("Usage: java -jar qti-helper.jar <input.json> [course_id]");
+		log.info("Usage:");
+		log.info("  Web Mode:  java -jar qti-helper.jar");
+		log.info("  CLI Mode:  java -jar qti-helper.jar <input.json> [course_id]");
 	}
 }

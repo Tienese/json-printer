@@ -13,7 +13,7 @@
 	<artifactId>demo</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>demo</name>
-	<description>Demo project for Spring Boot</description>
+	<description>QTI Helper - Quiz to Canvas Converter</description>
 	<url />
 	<licenses>
 		<license />
@@ -31,27 +31,24 @@
 		<java.version>21</java.version>
 	</properties>
 	<dependencies>
-		<!-- Core Spring Boot CLI capabilities -->
+		<!-- Core Spring Boot capabilities -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter</artifactId>
 		</dependency>
 
-		<!-- Modern HTTP Client (RestClient) & JSON (Jackson) -->
+		<!-- Web MVC + Thymeleaf for Web UI -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
-			<exclusions>
-				<!-- Exclude Tomcat as this is a CLI tool, not a server -->
-				<exclusion>
-					<groupId>org.springframework.boot</groupId>
-					<artifactId>spring-boot-starter-tomcat</artifactId>
-				</exclusion>
-			</exclusions>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-thymeleaf</artifactId>
 		</dependency>
 
-		<!-- FIX: Required for RestClient to avoid NoClassDefFoundError:
-		org/reactivestreams/Publisher -->
+		<!-- FIX: Required for RestClient to avoid NoClassDefFoundError -->
 		<dependency>
 			<groupId>io.projectreactor</groupId>
 			<artifactId>reactor-core</artifactId>
@@ -61,6 +58,14 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-configuration-processor</artifactId>
+			<optional>true</optional>
+		</dependency>
+
+		<!-- Developer Tools for auto-reload during development -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-devtools</artifactId>
+			<scope>runtime</scope>
 			<optional>true</optional>
 		</dependency>
 	</dependencies>

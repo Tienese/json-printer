@@ -59,6 +59,7 @@ public class QuizParser {
         q.setCorrectFeedback(dto.correctFeedback());
         q.setIncorrectFeedback(dto.incorrectFeedback());
 
+        // 1. Basic Answer Mapping
         if (dto.answers() != null) {
             for (AnswerDto ansDto : dto.answers()) {
                 AnswerOption ans = new AnswerOption(ansDto.text(), ansDto.correct());
@@ -68,6 +69,7 @@ public class QuizParser {
             }
         }
 
+        // 2. Explicit Matching Mapping (if provided in JSON)
         if (dto.matchingPairs() != null) {
             for (MatchingPairDto pair : dto.matchingPairs()) {
                 q.addMatchingPair(pair.left(), pair.right());
@@ -79,6 +81,50 @@ public class QuizParser {
                 q.addMatchingDistractor(dist);
             }
         }
+
+        // --- FIX STARTS HERE ---
+
+        // 3. Post-Processing: Handle "Flat" data for Matching
+        // If we have answers but no pairs, assume user typed "Key : Value" in answer
+        // text
+        if (q.getType() == QuestionType.MATCHING && q.getMatchingPairs().isEmpty() && !q.getAnswers().isEmpty()) {
+            for (AnswerOption ans : q.getAnswers()) {
+                String text = ans.getText();
+                if (text != null && text.contains(":")) {
+                    String[] parts = text.split(":", 2);
+                    String left = parts[0].trim();
+                    String right = parts[1].trim();
+                    q.addMatchingPair(left, right);
+                } else if (text != null) {
+                    // Fallback: Use text as both key and value, or treat as distractor
+                    q.addMatchingDistractor(text);
+                }
+            }
+        }
+
+        // 4. Post-Processing: Handle "Flat" data for Dropdowns
+        // If variable is missing, check if user typed "varname : answer text"
+        if (q.getType() == QuestionType.MULTIPLE_DROPDOWN && !q.getAnswers().isEmpty()) {
+            boolean anyVarSet = q.getAnswers().stream().anyMatch(a -> a.getDropdownVariable() != null);
+
+            if (!anyVarSet) {
+                for (AnswerOption ans : q.getAnswers()) {
+                    String text = ans.getText();
+                    if (text != null && text.contains(":")) {
+                        String[] parts = text.split(":", 2);
+                        String variable = parts[0].trim(); // e.g., "time"
+                        String displayValue = parts[1].trim(); // e.g., "tomorrow"
+
+                        ans.setDropdownVariable(variable);
+                        ans.setText(displayValue); // Clean up the text for display
+                    } else {
+                        // If no variable specified, default to "unknown" or specific fallback
+                        ans.setDropdownVariable("unknown");
+                    }
+                }
+            }
+        }
+        // --- FIX ENDS HERE ---
 
         return q;
     }
