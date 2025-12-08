@@ -50,18 +50,18 @@ public class CsvSubmissionParser {
             log.info("Found {} question response columns in CSV", questionColumns);
 
             int recordCount = 0;
-            for (CSVRecord record : parser) {
+            for (CSVRecord submissionRecord : parser) {
                 recordCount++;
-                log.debug("Processing record #{} (line {})", recordCount, record.getRecordNumber());
+                log.debug("Processing record #{} (line {})", recordCount, submissionRecord.getRecordNumber());
 
                 StudentSubmission submission = new StudentSubmission();
 
                 // Parse student info
-                submission.setQuizName(getValueOrEmpty(record, "Quiz Name"));
-                submission.setFirstName(getValueOrEmpty(record, "Student First Name"));
-                submission.setLastName(getValueOrEmpty(record, "Student Last Name"));
-                submission.setStudentId(getValueOrEmpty(record, "Student ID"));
-                submission.setExportTimestamp(getValueOrEmpty(record, "Export Timestamp"));
+                submission.setQuizName(getValueOrEmpty(submissionRecord, "Quiz Name"));
+                submission.setFirstName(getValueOrEmpty(submissionRecord, "Student First Name"));
+                submission.setLastName(getValueOrEmpty(submissionRecord, "Student Last Name"));
+                submission.setStudentId(getValueOrEmpty(submissionRecord, "Student ID"));
+                submission.setExportTimestamp(getValueOrEmpty(submissionRecord, "Export Timestamp"));
 
                 log.debug("Student info - Name: {} {}, ID: {}",
                         submission.getFirstName(), submission.getLastName(), submission.getStudentId());
@@ -72,7 +72,7 @@ public class CsvSubmissionParser {
                     Matcher matcher = QUESTION_PATTERN.matcher(header);
                     if (matcher.matches()) {
                         int questionNumber = Integer.parseInt(matcher.group(1));
-                        String response = getValueOrEmpty(record, header);
+                        String response = getValueOrEmpty(submissionRecord, header);
                         if (!response.isEmpty()) {
                             submission.getResponses().put(questionNumber, response);
                             responseCount++;
