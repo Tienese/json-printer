@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generate Print Report</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<header class="app-header">
+    <div class="container">
+        <h1 class="h3 m-0">QTI Helper - Print Report Generator</h1>
+        <small class="text-muted">Generate printable student reports from Canvas</small>
+    </div>
+</header>
+
+<div class="container mt-4">
+    
+    <!-- Navigation -->
+    <div class="mb-4">
+        <a href="/" class="btn btn-outline-dark">&larr; Back to Editor</a>
+    </div>
+    
+    <!-- Error Message -->
+    <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
+    
+    <!-- Upload Form -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Generate Print Report</h5>
+        </div>
+        <div class="card-body">
+            <form method="post" action="/print-report/generate" enctype="multipart/form-data">
+                
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="courseId" class="form-label fw-bold">Canvas Course ID</label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="courseId" 
+                               name="courseId" 
+                               placeholder="e.g., 12345"
+                               required>
+                        <small class="form-text text-muted">
+                            Find this in your Canvas course URL
+                        </small>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label for="quizId" class="form-label fw-bold">Canvas Quiz ID</label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="quizId" 
+                               name="quizId" 
+                               placeholder="e.g., 67890"
+                               required>
+                        <small class="form-text text-muted">
+                            Find this in your Canvas quiz URL
+                        </small>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <label for="csvFile" class="form-label fw-bold">Student Responses CSV</label>
+                    <input type="file" 
+                           class="form-control" 
+                           id="csvFile" 
+                           name="csvFile" 
+                           accept=".csv"
+                           required>
+                    <small class="form-text text-muted">
+                        Export this from Canvas: Quiz → Student Analysis → Download All Student Responses
+                    </small>
+                </div>
+                
+                <div class="mt-4 p-3 bg-light border">
+                    <h6 class="fw-bold">Instructions:</h6>
+                    <ol class="mb-0">
+                        <li>Go to your Canvas quiz</li>
+                        <li>Click "Student Analysis"</li>
+                        <li>Click "Download All Student Responses" to get the CSV</li>
+                        <li>Enter the Course ID and Quiz ID from your Canvas URL</li>
+                        <li>Upload the CSV file and click Generate</li>
+                    </ol>
+                </div>
+                
+                <div class="mt-4 text-center">
+                    <button type="submit" class="btn btn-dark btn-lg">
+                        Generate Print Report
+                    </button>
+                </div>
+                
+            </form>
+        </div>
+    </div>
+    
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
