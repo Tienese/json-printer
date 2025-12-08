@@ -12,19 +12,6 @@
 
 ## 📦 Installation Checklist
 
-### Files Copied
-- [ ] `CanvasQuizDto.java` → `dto/canvas/`
-- [ ] `CanvasQuestionDto.java` → `dto/canvas/`
-- [ ] `CanvasAnswerDto.java` → `dto/canvas/`
-- [ ] `CanvasMatchDto.java` → `dto/canvas/`
-- [ ] `StudentSubmission.java` → `model/`
-- [ ] `PrintReport.java` → `model/`
-- [ ] `CsvSubmissionParser.java` → `service/`
-- [ ] `CanvasQuizFetcher.java` → `service/`
-- [ ] `PrintReportGenerator.java` → `service/`
-- [ ] `PrintReportController.java` → `controller/`
-- [ ] `print-report-upload.html` → `templates/`
-- [ ] `print-report-view.html` → `templates/`
 
 ### Configuration
 - [ ] Added `commons-csv` dependency to `pom.xml`

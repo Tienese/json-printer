@@ -18,6 +18,11 @@ public class CanvasQuizFetcher {
     private final RestClient restClient;
     
     public CanvasQuizFetcher(CanvasProperties props, RestClient.Builder builder) {
+        log.info("Initializing Canvas API client");
+        log.debug("Canvas URL: {}", props.url());
+        log.debug("Canvas token: {}****", props.token() != null && props.token().length() > 4
+                ? props.token().substring(0, 4) : "****");
+
         this.restClient = builder
                 .baseUrl(props.url())
                 .defaultHeader("Authorization", "Bearer " + props.token())
