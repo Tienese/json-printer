@@ -3,10 +3,12 @@ package com.qtihelper.demo.controller;
 import com.qtihelper.demo.dto.canvas.CanvasQuestionDto;
 import com.qtihelper.demo.dto.canvas.CanvasQuizDto;
 import com.qtihelper.demo.model.PrintReport;
+import com.qtihelper.demo.model.QuizPrintViewModel;
 import com.qtihelper.demo.model.StudentSubmission;
 import com.qtihelper.demo.service.CanvasQuizFetcher;
 import com.qtihelper.demo.service.CsvSubmissionParser;
 import com.qtihelper.demo.service.PrintReportGenerator;
+import com.qtihelper.demo.service.QuizPrintViewModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -30,13 +32,16 @@ public class PrintReportController {
     private final CanvasQuizFetcher canvasFetcher;
     private final CsvSubmissionParser csvParser;
     private final PrintReportGenerator reportGenerator;
-    
+    private final QuizPrintViewModelMapper viewModelMapper;
+
     public PrintReportController(CanvasQuizFetcher canvasFetcher,
                                 CsvSubmissionParser csvParser,
-                                PrintReportGenerator reportGenerator) {
+                                PrintReportGenerator reportGenerator,
+                                QuizPrintViewModelMapper viewModelMapper) {
         this.canvasFetcher = canvasFetcher;
         this.csvParser = csvParser;
         this.reportGenerator = reportGenerator;
+        this.viewModelMapper = viewModelMapper;
     }
 
     @GetMapping("/")
@@ -134,19 +139,27 @@ public class PrintReportController {
                     submissions.size(), step3Duration);
 
             // Step 4: Generate report
-            log.info("Step 4/4: Generating print report...");
+            log.info("Step 4/5: Generating print report...");
             long step4Start = System.currentTimeMillis();
             PrintReport report = reportGenerator.generateReport(quiz, questions, submissions);
             long step4Duration = System.currentTimeMillis() - step4Start;
-            log.info("Step 4/4: Successfully generated report in {}ms", step4Duration);
+            log.info("Step 4/5: Successfully generated report in {}ms", step4Duration);
 
-            // Step 5: Add to model and render
+            // Step 5: Map to ViewModel for optimized rendering
+            log.info("Step 5/5: Mapping to ViewModel for template rendering...");
+            long step5Start = System.currentTimeMillis();
+            QuizPrintViewModel viewModel = viewModelMapper.mapToViewModel(quiz, questions, submissions, report);
+            long step5Duration = System.currentTimeMillis() - step5Start;
+            log.info("Step 5/5: Successfully mapped to ViewModel in {}ms", step5Duration);
+
+            // Step 6: Add to model and render
             long totalDuration = System.currentTimeMillis() - startTime;
             log.info("Rendering report view");
-            model.addAttribute("report", report);
+            model.addAttribute("quizzes", List.of(viewModel));
+            model.addAttribute("studentCount", viewModel.getStudentCount());
             log.info("=== Print report generation completed successfully in {}ms ===", totalDuration);
-            log.info("Performance breakdown: Quiz={}ms, Questions={}ms, CSV={}ms, Report={}ms",
-                    step1Duration, step2Duration, step3Duration, step4Duration);
+            log.info("Performance breakdown: Quiz={}ms, Questions={}ms, CSV={}ms, Report={}ms, Mapping={}ms",
+                    step1Duration, step2Duration, step3Duration, step4Duration, step5Duration);
             return "print-report-view";
 
         } catch (org.springframework.web.client.HttpClientErrorException e) {
