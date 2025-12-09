@@ -84,7 +84,8 @@ public class UserQuestion {
     }
 
     public Double getPoints() {
-        return points;
+        // Default to 1.0 if not specified
+        return points != null ? points : 1.0;
     }
 
     public void setPoints(Double points) {

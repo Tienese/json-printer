@@ -1,6 +1,9 @@
 package com.qtihelper.demo.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.qtihelper.demo.dto.quiz.QuizValidationResult;
+import com.qtihelper.demo.dto.quiz.UserAnswer;
+import com.qtihelper.demo.dto.quiz.UserQuestion;
 import com.qtihelper.demo.dto.quiz.UserQuizJson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,49 +93,119 @@ public class JsonQuizParserService {
     }
 
     /**
+     * Perform detailed validation of quiz structure and content.
+     * Collects all errors and warnings instead of failing on first error.
+     *
+     * @param quiz UserQuizJson object to validate
+     * @return QuizValidationResult containing errors and warnings
+     */
+    public QuizValidationResult validateQuizDetailed(UserQuizJson quiz) {
+        QuizValidationResult result = QuizValidationResult.success();
+
+        if (quiz == null) {
+            result.addError("Quiz cannot be null");
+            return result;
+        }
+
+        // 1. ERRORS - Title validation
+        if (quiz.getTitle() == null || quiz.getTitle().isBlank()) {
+            result.addError("Quiz title is required");
+        }
+
+        // WARNINGS - Description validation
+        if (quiz.getDescription() == null || quiz.getDescription().isBlank()) {
+            result.addWarning("Quiz description is missing");
+        }
+
+        // 2. ERRORS - Questions list validation
+        if (quiz.getQuestions() == null || quiz.getQuestions().isEmpty()) {
+            result.addError("Quiz must have at least one question");
+            return result; // Can't validate questions if list is null/empty
+        }
+
+        // 3. Validate each question
+        for (int i = 0; i < quiz.getQuestions().size(); i++) {
+            UserQuestion question = quiz.getQuestions().get(i);
+            int questionNumber = i + 1;
+
+            // ERRORS - Prompt validation
+            if (question.getPrompt() == null || question.getPrompt().isBlank()) {
+                result.addError(String.format("Question %d: Prompt is required", questionNumber));
+            }
+
+            // ERRORS - Answers list validation
+            if (question.getAnswers() == null || question.getAnswers().isEmpty()) {
+                result.addError(String.format("Question %d: Must have answer options", questionNumber));
+                continue; // Can't validate answers if list is null/empty
+            }
+
+            // ERRORS - Correct answer count validation
+            long correctCount = question.getAnswers().stream()
+                    .filter(a -> a.getCorrect() != null && a.getCorrect())
+                    .count();
+
+            if (correctCount == 0) {
+                result.addError(String.format("Question %d: No correct answer marked", questionNumber));
+            } else if (correctCount > 1) {
+                // Only error for MC/TF types, MA expects multiple
+                String type = question.getType() != null ? question.getType().toUpperCase() : "";
+                if ("MC".equals(type) || "TF".equals(type)) {
+                    result.addError(String.format("Question %d: Multiple correct answers (expected exactly 1 for %s type)",
+                                                   questionNumber, type));
+                }
+            }
+
+            // WARNINGS - General feedback validation
+            if (question.getGeneralFeedback() == null || question.getGeneralFeedback().isBlank()) {
+                result.addWarning(String.format("Question %d: General feedback is missing", questionNumber));
+            }
+
+            // Validate each answer
+            for (int j = 0; j < question.getAnswers().size(); j++) {
+                UserAnswer answer = question.getAnswers().get(j);
+                int answerNumber = j + 1;
+
+                // ERRORS - Answer text validation
+                if (answer.getText() == null || answer.getText().isBlank()) {
+                    result.addError(String.format("Question %d, Answer %d: Text is required",
+                                                   questionNumber, answerNumber));
+                }
+
+                // WARNINGS - Answer feedback validation
+                if (answer.getFeedback() == null || answer.getFeedback().isBlank()) {
+                    result.addWarning(String.format("Question %d, Answer %d: Feedback is empty",
+                                                     questionNumber, answerNumber));
+                } else if (answer.getFeedback().length() < 10) {
+                    result.addWarning(String.format("Question %d, Answer %d: Feedback is very short",
+                                                     questionNumber, answerNumber));
+                }
+            }
+        }
+
+        log.debug("Detailed validation result: {}", result);
+        return result;
+    }
+
+    /**
      * Validate quiz structure and content.
+     * Throws exception on first validation failure.
      *
      * @param quiz UserQuizJson object to validate
      * @throws IllegalArgumentException if validation fails
      */
     private void validateQuiz(UserQuizJson quiz) {
-        if (quiz == null) {
-            throw new IllegalArgumentException("Quiz cannot be null");
+        QuizValidationResult result = validateQuizDetailed(quiz);
+
+        if (!result.isValid()) {
+            // Build error message with all errors
+            String errorMessage = "Quiz validation failed: " + String.join(", ", result.getErrors());
+            log.error("Validation errors: {}", errorMessage);
+            throw new IllegalArgumentException(errorMessage);
         }
 
-        if (!quiz.isValid()) {
-            throw new IllegalArgumentException("Quiz validation failed: Check title and questions");
-        }
-
-        // Additional validation
-        if (quiz.getTitle() == null || quiz.getTitle().isBlank()) {
-            throw new IllegalArgumentException("Quiz title is required");
-        }
-
-        if (quiz.getQuestions() == null || quiz.getQuestions().isEmpty()) {
-            throw new IllegalArgumentException("Quiz must have at least one question");
-        }
-
-        // Validate each question
-        for (int i = 0; i < quiz.getQuestions().size(); i++) {
-            var question = quiz.getQuestions().get(i);
-            if (!question.isValid()) {
-                throw new IllegalArgumentException(
-                    String.format("Question #%d validation failed: %s", i + 1, question));
-            }
-
-            // Check points
-            if (question.getPoints() == null || question.getPoints() <= 0) {
-                throw new IllegalArgumentException(
-                    String.format("Question #%d must have points > 0", i + 1));
-            }
-
-            // Check type
-            String type = question.getType().toUpperCase();
-            if (!java.util.List.of("MC", "MA", "MD", "MT", "TF", "DD").contains(type)) {
-                throw new IllegalArgumentException(
-                    String.format("Question #%d has unsupported type: %s", i + 1, type));
-            }
+        // Log warnings if present
+        if (!result.getWarnings().isEmpty()) {
+            log.warn("Validation warnings: {}", String.join(", ", result.getWarnings()));
         }
 
         log.debug("Quiz validation successful");
