@@ -64,17 +64,44 @@
                 
                 <div class="mt-4">
                     <label for="csvFile" class="form-label fw-bold">Student Responses CSV</label>
-                    <input type="file" 
-                           class="form-control" 
-                           id="csvFile" 
-                           name="csvFile" 
+                    <input type="file"
+                           class="form-control"
+                           id="csvFile"
+                           name="csvFile"
                            accept=".csv"
                            required>
                     <small class="form-text text-muted">
                         Export this from Canvas: Quiz → Student Analysis → Download All Student Responses
                     </small>
                 </div>
-                
+
+                <div class="mt-4">
+                    <label class="form-label fw-bold">Report Style</label>
+                    <div class="form-check">
+                        <input class="form-check-input"
+                               type="radio"
+                               name="reportType"
+                               id="reportTypeSlip"
+                               value="slip"
+                               checked>
+                        <label class="form-check-label" for="reportTypeSlip">
+                            <strong>🎫 Feedback Slip (Eco-Mode)</strong>
+                            <small class="d-block text-muted">Prints only incorrect answers. Compact format (~1 page/student).</small>
+                        </label>
+                    </div>
+                    <div class="form-check mt-2">
+                        <input class="form-check-input"
+                               type="radio"
+                               name="reportType"
+                               id="reportTypeFull"
+                               value="full">
+                        <label class="form-check-label" for="reportTypeFull">
+                            <strong>📄 Full Audit Report</strong>
+                            <small class="d-block text-muted">Prints complete exam with all questions and answers (~10 pages/student).</small>
+                        </label>
+                    </div>
+                </div>
+
                 <div class="mt-4 p-3 bg-light border">
                     <h6 class="fw-bold">Instructions:</h6>
                     <ol class="mb-0">

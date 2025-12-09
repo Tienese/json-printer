@@ -58,13 +58,14 @@ public class PrintReportController {
     public String generateReport(@RequestParam("courseId") String courseId,
                                 @RequestParam("quizId") String quizId,
                                 @RequestParam("csvFile") MultipartFile csvFile,
+                                @RequestParam(value = "reportType", defaultValue = "slip") String reportType,
                                 Model model,
                                 RedirectAttributes redirectAttributes) {
 
         long startTime = System.currentTimeMillis();
         log.info("=== Starting print report generation ===");
-        log.info("Course ID: {}, Quiz ID: {}, CSV File: {} ({} bytes)",
-                courseId, quizId, csvFile.getOriginalFilename(), csvFile.getSize());
+        log.info("Course ID: {}, Quiz ID: {}, Report Type: {}, CSV File: {} ({} bytes)",
+                courseId, quizId, reportType, csvFile.getOriginalFilename(), csvFile.getSize());
 
         try {
             // Validate inputs
@@ -154,13 +155,16 @@ public class PrintReportController {
 
             // Step 6: Add to model and render
             long totalDuration = System.currentTimeMillis() - startTime;
-            log.info("Rendering report view");
             model.addAttribute("quizzes", List.of(viewModel));
             model.addAttribute("studentCount", viewModel.getStudentCount());
+
+            // Route to appropriate template based on report type
+            String viewName = "full".equals(reportType) ? "print-report-view" : "print-report-slip";
+            log.info("Rendering {} view", viewName);
             log.info("=== Print report generation completed successfully in {}ms ===", totalDuration);
             log.info("Performance breakdown: Quiz={}ms, Questions={}ms, CSV={}ms, Report={}ms, Mapping={}ms",
                     step1Duration, step2Duration, step3Duration, step4Duration, step5Duration);
-            return "print-report-view";
+            return viewName;
 
         } catch (org.springframework.web.client.HttpClientErrorException e) {
             log.error("=== Canvas API error (HTTP {}) ===", e.getStatusCode(), e);

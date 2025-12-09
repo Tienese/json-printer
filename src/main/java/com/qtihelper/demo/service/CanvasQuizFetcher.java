@@ -13,22 +13,23 @@ import java.util.List;
 
 @Service
 public class CanvasQuizFetcher {
-    
+
     private static final Logger log = LoggerFactory.getLogger(CanvasQuizFetcher.class);
     private final RestClient restClient;
-    
+
     public CanvasQuizFetcher(CanvasProperties props, RestClient.Builder builder) {
         log.info("Initializing Canvas API client");
         log.debug("Canvas URL: {}", props.url());
         log.debug("Canvas token: {}****", props.token() != null && props.token().length() > 4
-                ? props.token().substring(0, 4) : "****");
+                ? props.token().substring(0, 4)
+                : "****");
 
         this.restClient = builder
                 .baseUrl(props.url())
                 .defaultHeader("Authorization", "Bearer " + props.token())
                 .build();
     }
-    
+
     public CanvasQuizDto getQuiz(String courseId, String quizId) {
         log.info("Fetching quiz {}/{} from Canvas", courseId, quizId);
         log.debug("Canvas API URL: /api/v1/courses/{}/quizzes/{}", courseId, quizId);
@@ -40,14 +41,15 @@ public class CanvasQuizFetcher {
                     .body(CanvasQuizDto.class);
 
             log.info("Successfully fetched quiz: {}", quiz != null ? quiz.title() : "null");
-            log.debug("Quiz details - ID: {}, Title: {}", quiz != null ? quiz.id() : "null", quiz != null ? quiz.title() : "null");
+            log.debug("Quiz details - ID: {}, Title: {}", quiz != null ? quiz.id() : "null",
+                    quiz != null ? quiz.title() : "null");
             return quiz;
         } catch (Exception e) {
             log.error("Failed to fetch quiz {}/{} from Canvas: {}", courseId, quizId, e.getMessage(), e);
             throw new RuntimeException("Failed to fetch quiz from Canvas API", e);
         }
     }
-    
+
     public List<CanvasQuestionDto> getQuizQuestions(String courseId, String quizId) {
         log.info("Fetching questions for quiz {}/{}", courseId, quizId);
         log.debug("Canvas API URL: /api/v1/courses/{}/quizzes/{}/questions?per_page=100", courseId, quizId);
@@ -57,7 +59,8 @@ public class CanvasQuizFetcher {
                     .uri("/api/v1/courses/{courseId}/quizzes/{quizId}/questions?per_page=100",
                             courseId, quizId)
                     .retrieve()
-                    .body(new ParameterizedTypeReference<List<CanvasQuestionDto>>() {});
+                    .body(new ParameterizedTypeReference<List<CanvasQuestionDto>>() {
+                    });
 
             int questionCount = questions != null ? questions.size() : 0;
             log.info("Successfully fetched {} questions", questionCount);

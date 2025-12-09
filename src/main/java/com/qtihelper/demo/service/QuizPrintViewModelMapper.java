@@ -160,6 +160,9 @@ public class QuizPrintViewModelMapper {
             String marker = computeVisualMarker(optionView.isCorrect(), isStudentAnswer, result.isCorrect());
             optionView.setVisualMarker(marker);
 
+            // Set comment text (strip HTML if present)
+            optionView.setCommentText(answer.comments() != null ? stripHtml(answer.comments()) : null);
+
             options.add(optionView);
             index++;
         }

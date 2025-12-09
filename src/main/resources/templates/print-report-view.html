@@ -1,16 +1,20 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <title th:text="${quizzes[0].quizTitle} + ' - Print Report'">Quiz Print Report</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Sans:wght@400;500;700&display=swap"
+        rel="stylesheet">
 
     <style>
         /* ===== BASE SETTINGS ===== */
         @page {
             size: A4;
-            margin: 1.27cm; 
+            margin: 1.27cm;
         }
+
         body {
             font-family: 'Noto Sans JP', 'Noto Sans', sans-serif;
             font-size: 10pt;
@@ -21,9 +25,14 @@
         }
 
         /* ===== UTILITIES ===== */
-        .page-break { page-break-before: always; }
-        .no-break { page-break-inside: avoid; }
-        
+        .page-break {
+            page-break-before: always;
+        }
+
+        .no-break {
+            page-break-inside: avoid;
+        }
+
         /* ===== STUDENT HEADER ===== */
         .student-header {
             border-bottom: 2px solid #000;
@@ -42,7 +51,7 @@
             margin-bottom: 12px;
             page-break-inside: avoid;
         }
-        
+
         td.q-content {
             vertical-align: top;
             padding: 0;
@@ -54,21 +63,31 @@
             margin-right: 5px;
             white-space: nowrap;
         }
-        
-        .status-correct { color: #000; }
-        .status-incorrect { color: #000; } 
-        .status-unanswered { font-size: 11pt; } /* Triangle */
+
+        .status-correct {
+            color: #000;
+        }
+
+        .status-incorrect {
+            color: #000;
+        }
+
+        .status-unanswered {
+            font-size: 11pt;
+        }
+
+        /* Triangle */
 
         /* ===== OPTIONS GRID ===== */
         .options-container {
             margin-top: 4px;
-            margin-left: 15px; 
+            margin-left: 15px;
             display: block;
         }
-        
+
         .option-item {
             display: inline-block;
-            width: 48%; 
+            width: 48%;
             vertical-align: top;
             margin-bottom: 2px;
         }
@@ -83,11 +102,16 @@
             vertical-align: middle;
             position: relative;
         }
-        .box.picked { background-color: #000; } 
+
+        .box.picked {
+            background-color: #000;
+        }
 
         /* TEXT DECORATION LOGIC */
-        .opt-text { vertical-align: middle; }
-        
+        .opt-text {
+            vertical-align: middle;
+        }
+
         /* Strikethrough if WRONG */
         .picked-wrong .opt-text {
             text-decoration: line-through;
@@ -98,6 +122,16 @@
             content: ' ✓';
             font-weight: bold;
             margin-left: 4px;
+        }
+
+        /* OPTION COMMENT */
+        .opt-comment {
+            display: block;
+            font-size: 8pt;
+            font-style: italic;
+            color: #444;
+            margin-left: 20px;
+            margin-top: 1px;
         }
 
         /* ===== FEEDBACK ===== */
@@ -120,20 +154,27 @@
             margin-bottom: 15px;
             margin-top: 20px;
         }
-        
-        .review-mode .box { background-color: transparent !important; }
-        .review-mode .opt-text { text-decoration: none !important; }
-        .review-mode .opt-text::after { content: '' !important; }
 
+        .review-mode .box {
+            background-color: transparent !important;
+        }
+
+        .review-mode .opt-text {
+            text-decoration: none !important;
+        }
+
+        .review-mode .opt-text::after {
+            content: '' !important;
+        }
     </style>
 </head>
+
 <body>
 
     <div th:each="quiz : ${quizzes}">
-        
-        <div th:each="student, iter : ${quiz.students}" 
-             th:class="${!iter.first} ? 'page-break' : ''">
-            
+
+        <div th:each="student, iter : ${quiz.students}" th:class="${!iter.first} ? 'page-break' : ''">
+
             <div class="student-header">
                 <span th:text="${student.studentName}">Name</span>
                 <span th:text="${student.studentId}">ID</span>
@@ -146,22 +187,27 @@
                         <td class="q-content">
                             <div style="margin-bottom: 4px;">
                                 <span class="q-meta">
-                                    <span th:if="${question.answerStatus.name() == 'CORRECT'}" class="status-correct">✓</span>
-                                    <span th:if="${question.answerStatus.name() == 'INCORRECT'}" class="status-incorrect">✗</span>
-                                    <span th:if="${question.answerStatus.name() == 'UNANSWERED'}" class="status-unanswered">▲</span>
+                                    <span th:if="${question.answerStatus.name() == 'CORRECT'}"
+                                        class="status-correct">✓</span>
+                                    <span th:if="${question.answerStatus.name() == 'INCORRECT'}"
+                                        class="status-incorrect">✗</span>
+                                    <span th:if="${question.answerStatus.name() == 'UNANSWERED'}"
+                                        class="status-unanswered">▲</span>
                                     <span th:text="${question.questionNumber} + '.'">1.</span>
                                 </span>
                                 <span th:utext="${question.questionText}">Question Text...</span>
                             </div>
 
                             <div th:if="${question.hasOptions}" class="options-container">
-                                <div th:each="option : ${question.options}" 
-                                     class="option-item"
-                                     th:classappend="${(option.studentAnswer and !option.correct ? 'picked-wrong ' : '') + (option.correct ? 'is-correct-option' : '')}">
-                                    
+                                <div th:each="option : ${question.options}" class="option-item"
+                                    th:classappend="${(option.studentAnswer and !option.correct ? 'picked-wrong ' : '') + (option.correct ? 'is-correct-option' : '')}">
+
                                     <span class="box" th:classappend="${option.studentAnswer} ? 'picked' : ''"></span>
                                     <span class="opt-letter" th:text="${option.optionLetter} + '.'">A.</span>
                                     <span class="opt-text" th:text="${option.optionText}">Option</span>
+                                    <span
+                                        th:if="${option.commentText != null and !#strings.isEmpty(option.commentText)}"
+                                        class="opt-comment" th:text="${option.commentText}">Comment</span>
                                 </div>
                             </div>
 
@@ -169,7 +215,8 @@
                                 Your Answer: <span th:text="${question.studentAnswerText}">Text</span>
                             </div>
 
-                            <div th:if="${question.feedbackText != null and !#strings.isEmpty(question.feedbackText)}" class="feedback-box">
+                            <div th:if="${question.feedbackText != null and !#strings.isEmpty(question.feedbackText)}"
+                                class="feedback-box">
                                 Feedback: <span th:utext="${question.feedbackText}"></span>
                             </div>
                         </td>
@@ -179,15 +226,15 @@
 
             <div th:if="${!student.incorrectQuestionNumbers.isEmpty()}">
                 <div class="page-break"></div>
-                
+
                 <div class="review-header">
-                    Review Required (<span th:each="num, iter : ${student.incorrectQuestionNumbers}" th:text="${num} + (${iter.last} ? '' : ', ')"></span>)
+                    Review Required (<span th:each="num, iter : ${student.incorrectQuestionNumbers}"
+                        th:text="${num} + (${iter.last} ? '' : ', ')"></span>)
                 </div>
 
-                <div th:each="question : ${student.questions}" 
-                     th:if="${question.answerStatus.name() != 'CORRECT'}"
-                     class="review-mode">
-                    
+                <div th:each="question : ${student.questions}" th:if="${question.answerStatus.name() != 'CORRECT'}"
+                    class="review-mode">
+
                     <table class="question-row no-break">
                         <tr>
                             <td class="q-content">
@@ -198,20 +245,22 @@
 
                                 <div th:if="${question.hasOptions}" class="options-container">
                                     <div th:each="option : ${question.options}" class="option-item">
-                                        <span class="box"></span> 
+                                        <span class="box"></span>
                                         <span class="opt-letter" th:text="${option.optionLetter} + '.'">A.</span>
                                         <span class="opt-text" th:text="${option.optionText}">Option</span>
                                     </div>
                                 </div>
 
-                                <div th:unless="${question.hasOptions}" style="height: 30px; border-bottom: 1px dashed #ccc; margin: 10px 15px;"></div>
+                                <div th:unless="${question.hasOptions}"
+                                    style="height: 30px; border-bottom: 1px dashed #ccc; margin: 10px 15px;"></div>
                             </td>
                         </tr>
                     </table>
                 </div>
             </div>
-            </div>
+        </div>
     </div>
 
 </body>
+
 </html>

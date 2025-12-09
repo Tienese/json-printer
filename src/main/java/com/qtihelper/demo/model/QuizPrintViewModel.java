@@ -197,6 +197,7 @@ public class QuizPrintViewModel {
         private boolean isCorrect;
         private boolean isStudentAnswer;
         private String visualMarker;
+        private String commentText;
 
         public String getOptionLetter() {
             return optionLetter;
@@ -236,6 +237,14 @@ public class QuizPrintViewModel {
 
         public void setVisualMarker(String visualMarker) {
             this.visualMarker = visualMarker;
+        }
+
+        public String getCommentText() {
+            return commentText;
+        }
+
+        public void setCommentText(String commentText) {
+            this.commentText = commentText;
         }
     }
 }
