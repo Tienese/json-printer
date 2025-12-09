@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Quiz - QTI Converter</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .main-container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border: none;
+        }
+        .question-card {
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+        .page-header {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .page-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        .answer-item {
+            background: #f8f9fa;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+        }
+        .correct-answer {
+            background: #d4edda;
+            border-left: 3px solid #28a745;
+        }
+        .incorrect-answer {
+            background: #f8d7da;
+            border-left: 3px solid #dc3545;
+        }
+        .btn-primary {
+            background: #667eea;
+            border: none;
+        }
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+        .sticky-footer {
+            position: sticky;
+            bottom: 0;
+            background: white;
+            padding: 20px;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+
+<div class="main-container">
+    <div class="page-header">
+        <h1>✏️ Edit Quiz</h1>
+        <p>Review and modify questions before converting to QTI 1.2</p>
+    </div>
+
+    <!-- Navigation -->
+    <div class="mb-3">
+        <a href="/quiz/import" class="btn btn-light">&larr; Back to Import</a>
+    </div>
+
+    <!-- Quiz Summary -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title" th:text="${quiz.title}">Quiz Title</h5>
+            <p class="card-text text-muted" th:text="${quiz.description}">Quiz Description</p>
+            <div class="badge bg-primary">
+                <span th:text="${questionCount}">0</span> Questions
+            </div>
+        </div>
+    </div>
+
+    <!-- Questions List -->
+    <div th:each="question, iterStat : ${quiz.questions}" class="card question-card">
+        <div class="card-header">
+            <h6 class="mb-0">
+                Question <span th:text="${iterStat.index + 1}">1</span>
+                <span class="badge bg-secondary ms-2" th:text="${question.type}">MC</span>
+                <span class="badge bg-info ms-2" th:text="${question.points} + ' pts'">1.0 pts</span>
+            </h6>
+        </div>
+        <div class="card-body">
+            <!-- Question Title -->
+            <div class="mb-3" th:if="${question.title != null}">
+                <strong>Title:</strong>
+                <span th:text="${question.title}">Question Title</span>
+            </div>
+
+            <!-- Question Prompt -->
+            <div class="mb-3">
+                <strong>Prompt:</strong>
+                <p th:text="${question.prompt}">Question prompt text</p>
+            </div>
+
+            <!-- Answers -->
+            <div class="mb-3" th:if="${question.answers != null && !question.answers.isEmpty()}">
+                <strong>Answers:</strong>
+                <div th:each="answer, answerStat : ${question.answers}"
+                     th:class="${answer.correct ? 'answer-item correct-answer' : 'answer-item incorrect-answer'}">
+                    <div class="d-flex align-items-center">
+                        <span th:if="${answer.correct}" class="badge bg-success me-2">✓ Correct</span>
+                        <span th:unless="${answer.correct}" class="badge bg-danger me-2">✗ Incorrect</span>
+                        <span th:text="${answer.text}">Answer text</span>
+                    </div>
+                    <div th:if="${answer.feedback != null}" class="mt-2 small text-muted">
+                        <em>Feedback: <span th:text="${answer.feedback}"></span></em>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feedback -->
+            <div class="row">
+                <div class="col-md-4" th:if="${question.generalFeedback != null}">
+                    <small class="text-muted">
+                        <strong>General:</strong> <span th:text="${question.generalFeedback}"></span>
+                    </small>
+                </div>
+                <div class="col-md-4" th:if="${question.correctFeedback != null}">
+                    <small class="text-success">
+                        <strong>Correct:</strong> <span th:text="${question.correctFeedback}"></span>
+                    </small>
+                </div>
+                <div class="col-md-4" th:if="${question.incorrectFeedback != null}">
+                    <small class="text-danger">
+                        <strong>Incorrect:</strong> <span th:text="${question.incorrectFeedback}"></span>
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Process Form (Sticky Footer) -->
+    <div class="card sticky-footer">
+        <div class="card-body">
+            <form method="post" action="/quiz/process">
+                <!-- Hidden field with serialized quiz JSON -->
+                <input type="hidden" name="quizJson" th:value="${quizJson}">
+
+                <div class="row align-items-end">
+                    <div class="col-md-8">
+                        <label for="courseId" class="form-label fw-bold">Canvas Course ID</label>
+                        <input type="text"
+                               class="form-control"
+                               id="courseId"
+                               name="courseId"
+                               placeholder="e.g., 12345"
+                               required>
+                        <small class="form-text text-muted">
+                            Enter the Canvas course ID where you want to import this question bank
+                        </small>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <button type="submit" class="btn btn-primary btn-lg w-100">
+                            🎯 Generate QTI & Import
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="text-center mt-4 mb-4">
+        <small class="text-white opacity-75">
+            QTI Helper v2.0 | Step 2: Review & Process
+        </small>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
