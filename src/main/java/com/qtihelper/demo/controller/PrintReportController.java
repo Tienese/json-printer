@@ -21,6 +21,14 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
+/**
+ * Controller for handling print report generation from Canvas quiz data.
+ *
+ * Endpoints:
+ * - GET /              : Landing page with feature links
+ * - GET /print-report  : Upload form for print report generation
+ * - POST /print-report/generate : Process form and generate report
+ */
 @Controller
 public class PrintReportController {
 
@@ -44,16 +52,51 @@ public class PrintReportController {
         this.viewModelMapper = viewModelMapper;
     }
 
+    /**
+     * Landing page - displays available features.
+     */
     @GetMapping("/")
     public String home() {
-        return REDIRECT_PRINT_REPORT;
+        log.info("Landing page accessed");
+        return "index";
     }
 
+    /**
+     * Print report upload form.
+     * Accepts optional type parameter to pre-select report type.
+     *
+     * @param reportType "full" for full report, "slip" for retake slip (default)
+     */
     @GetMapping("/print-report")
-    public String showUploadForm() {
+    public String showUploadForm(@RequestParam(value = "type", required = false) String reportType,
+                                 Model model) {
+        log.info("Print report upload form accessed with type: {}", reportType);
+
+        // Set default report type to slip if not specified
+        if (reportType == null || reportType.isBlank()) {
+            reportType = "slip";
+        }
+
+        // Validate report type
+        if (!"full".equals(reportType) && !"slip".equals(reportType)) {
+            log.warn("Invalid report type: {}, defaulting to slip", reportType);
+            reportType = "slip";
+        }
+
+        model.addAttribute("reportType", reportType);
+        model.addAttribute("reportTitle", "full".equals(reportType) ? "Full Print Report" : "Retake Slip Report");
+
         return "print-report-upload";
     }
-    
+
+    /**
+     * Generate print report from Canvas quiz data and CSV submissions.
+     *
+     * @param courseId Canvas course ID
+     * @param quizId Canvas quiz ID
+     * @param csvFile CSV file with student submissions
+     * @param reportType "full" or "slip" report type
+     */
     @PostMapping("/print-report/generate")
     public String generateReport(@RequestParam("courseId") String courseId,
                                 @RequestParam("quizId") String quizId,
@@ -103,7 +146,7 @@ public class PrintReportController {
             log.info("Input validation passed");
 
             // Step 1: Fetch quiz from Canvas
-            log.info("Step 1/4: Fetching quiz from Canvas...");
+            log.info("Step 1/5: Fetching quiz from Canvas...");
             long step1Start = System.currentTimeMillis();
             CanvasQuizDto quiz = canvasFetcher.getQuiz(courseId, quizId);
             long step1Duration = System.currentTimeMillis() - step1Start;
@@ -112,10 +155,10 @@ public class PrintReportController {
                 redirectAttributes.addFlashAttribute(ERROR_ATTRIBUTE, "Failed to fetch quiz from Canvas");
                 return REDIRECT_PRINT_REPORT;
             }
-            log.info("Step 1/4: Successfully fetched quiz '{}' in {}ms", quiz.title(), step1Duration);
+            log.info("Step 1/5: Successfully fetched quiz '{}' in {}ms", quiz.title(), step1Duration);
 
             // Step 2: Fetch questions
-            log.info("Step 2/4: Fetching quiz questions...");
+            log.info("Step 2/5: Fetching quiz questions...");
             long step2Start = System.currentTimeMillis();
             List<CanvasQuestionDto> questions = canvasFetcher.getQuizQuestions(courseId, quizId);
             long step2Duration = System.currentTimeMillis() - step2Start;
@@ -124,10 +167,10 @@ public class PrintReportController {
                 redirectAttributes.addFlashAttribute(ERROR_ATTRIBUTE, "No questions found for this quiz");
                 return REDIRECT_PRINT_REPORT;
             }
-            log.info("Step 2/4: Successfully fetched {} questions in {}ms", questions.size(), step2Duration);
+            log.info("Step 2/5: Successfully fetched {} questions in {}ms", questions.size(), step2Duration);
 
             // Step 3: Parse CSV submissions
-            log.info("Step 3/4: Parsing CSV submissions...");
+            log.info("Step 3/5: Parsing CSV submissions...");
             long step3Start = System.currentTimeMillis();
             List<StudentSubmission> submissions = csvParser.parseSubmissions(csvFile);
             long step3Duration = System.currentTimeMillis() - step3Start;
@@ -136,7 +179,7 @@ public class PrintReportController {
                 redirectAttributes.addFlashAttribute(ERROR_ATTRIBUTE, "No student submissions found in CSV");
                 return REDIRECT_PRINT_REPORT;
             }
-            log.info("Step 3/4: Successfully parsed {} student submissions in {}ms",
+            log.info("Step 3/5: Successfully parsed {} student submissions in {}ms",
                     submissions.size(), step3Duration);
 
             // Step 4: Generate report
@@ -153,7 +196,7 @@ public class PrintReportController {
             long step5Duration = System.currentTimeMillis() - step5Start;
             log.info("Step 5/5: Successfully mapped to ViewModel in {}ms", step5Duration);
 
-            // Step 6: Add to model and render
+            // Add to model and render
             long totalDuration = System.currentTimeMillis() - startTime;
             model.addAttribute("quizzes", List.of(viewModel));
             model.addAttribute("studentCount", viewModel.getStudentCount());
