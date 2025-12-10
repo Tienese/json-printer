@@ -17,6 +17,8 @@ import java.util.List;
 public class QuizPrintViewModel {
 
     private String quizTitle;
+    private Long quizId;
+
     private int studentCount;
     private List<StudentQuizView> students = new ArrayList<>();
 
@@ -35,6 +37,14 @@ public class QuizPrintViewModel {
 
     public void setStudentCount(int studentCount) {
         this.studentCount = studentCount;
+    }
+
+    public long getQuizId() {
+        return quizId;
+    }
+
+    public void setQuizId(long quizId) {
+        this.quizId = quizId;
     }
 
     public List<StudentQuizView> getStudents() {
@@ -189,7 +199,8 @@ public class QuizPrintViewModel {
      * - ✓ : Correct answer selected by student
      * - ✗ : Incorrect answer selected by student
      * - ▲ : Correct answer not selected (shown only when question is wrong)
-     * - "" : No marker (correct answer not selected on correct questions, or incorrect answer not selected)
+     * - "" : No marker (correct answer not selected on correct questions, or
+     * incorrect answer not selected)
      */
     public static class OptionView {
         private String optionLetter;

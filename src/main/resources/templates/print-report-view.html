@@ -24,6 +24,90 @@
             -webkit-print-color-adjust: exact;
         }
 
+        /* ===== EDIT MODE STYLES ===== */
+        .edit-controls {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .edit-controls button {
+            margin-left: 5px;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        #editToggle {
+            background: #007bff;
+            color: white;
+        }
+
+        #editToggle:hover {
+            background: #0056b3;
+        }
+
+        #saveEdits {
+            background: #28a745;
+            color: white;
+        }
+
+        #saveEdits:hover {
+            background: #218838;
+        }
+
+        .edit-mode .editable-field {
+            border: 1px dashed #007bff !important;
+            padding: 2px 4px;
+            background-color: #f0f8ff;
+            cursor: text;
+            min-height: 1.2em;
+            display: inline-block;
+            min-width: 50px;
+        }
+
+        .edit-mode .editable-field:hover {
+            background-color: #e0f0ff;
+        }
+
+        .edit-mode .editable-field:focus {
+            outline: 2px solid #007bff;
+            background-color: #fff;
+        }
+
+        .edit-mode .option-checkbox {
+            display: inline-block !important;
+            margin-right: 4px;
+            cursor: pointer;
+        }
+
+        .option-checkbox {
+            display: none;
+        }
+
+        /* Hide edit controls during print */
+        @media print {
+            .edit-controls {
+                display: none !important;
+            }
+            .edit-mode .editable-field {
+                border: none !important;
+                background: transparent !important;
+                padding: 0;
+            }
+            .option-checkbox {
+                display: none !important;
+            }
+        }
+
         /* ===== UTILITIES ===== */
         .page-break {
             page-break-before: always;
@@ -171,17 +255,32 @@
 
 <body>
 
-    <div th:each="quiz : ${quizzes}">
+    <!-- Edit Mode Controls (Hidden during print) -->
+    <div class="edit-controls">
+        <button id="editToggle" onclick="toggleEditMode()">📝 Edit Report</button>
+        <button id="saveEdits" onclick="saveEdits()" style="display: none;">💾 Save Changes</button>
+    </div>
 
-        <div th:each="student, iter : ${quiz.students}" th:class="${!iter.first} ? 'page-break' : ''">
+    <div th:each="quiz, quizStat : ${quizzes}">
+
+        <div th:each="student, iter : ${quiz.students}" class="student-wrapper"
+             th:classappend="${!iter.first} ? 'page-break' : ''"
+             th:attr="data-student-index=${iter.index}">
 
             <div class="student-header">
-                <span th:text="${student.studentName}">Name</span>
-                <span th:text="${student.studentId}">ID</span>
-                <span th:text="${quiz.quizTitle}">Quiz</span>
+                <span class="editable-field"
+                      data-field="studentName"
+                      th:attr="data-student-index=${iter.index}"
+                      th:text="${student.studentName}">Name</span>
+                <span class="editable-field"
+                      data-field="studentId"
+                      th:attr="data-student-index=${iter.index}"
+                      th:text="${student.studentId}">ID</span>
+                <span th:text="${quiz.quizId}">Quiz</span>
             </div>
 
-            <div th:each="question : ${student.questions}">
+            <div th:each="question, qStat : ${student.questions}" class="question-wrapper"
+                 th:attr="data-question-index=${qStat.index}">
                 <table class="question-row no-break">
                     <tr>
                         <td class="q-content">
@@ -195,29 +294,50 @@
                                         class="status-unanswered">▲</span>
                                     <span th:text="${question.questionNumber} + '.'">1.</span>
                                 </span>
-                                <span th:utext="${question.questionText}">Question Text...</span>
+                                <span class="editable-field"
+                                      data-field="questionText"
+                                      th:attr="data-question-index=${qStat.index}"
+                                      th:utext="${question.questionText}">Question Text...</span>
                             </div>
 
                             <div th:if="${question.hasOptions}" class="options-container">
-                                <div th:each="option : ${question.options}" class="option-item"
+                                <div th:each="option, optStat : ${question.options}" class="option-item"
                                     th:classappend="${(option.studentAnswer and !option.correct ? 'picked-wrong ' : '') + (option.correct ? 'is-correct-option' : '')}">
+
+                                    <!-- Hidden checkbox for edit mode -->
+                                    <input type="checkbox"
+                                           class="option-checkbox"
+                                           th:attr="data-question-index=${qStat.index},data-option-index=${optStat.index}"
+                                           th:checked="${option.studentAnswer}">
 
                                     <span class="box" th:classappend="${option.studentAnswer} ? 'picked' : ''"></span>
                                     <span class="opt-letter" th:text="${option.optionLetter} + '.'">A.</span>
-                                    <span class="opt-text" th:text="${option.optionText}">Option</span>
+                                    <span class="opt-text editable-field"
+                                          data-field="optionText"
+                                          th:attr="data-option-index=${optStat.index}"
+                                          th:text="${option.optionText}">Option</span>
                                     <span
                                         th:if="${option.commentText != null and !#strings.isEmpty(option.commentText)}"
-                                        class="opt-comment" th:text="${option.commentText}">Comment</span>
+                                        class="opt-comment editable-field"
+                                        data-field="optionComment"
+                                        th:attr="data-option-index=${optStat.index}"
+                                        th:text="${option.commentText}">Comment</span>
                                 </div>
                             </div>
 
                             <div th:unless="${question.hasOptions}" style="margin: 4px 15px; font-weight: bold;">
-                                Your Answer: <span th:text="${question.studentAnswerText}">Text</span>
+                                Your Answer: <span class="editable-field"
+                                                   data-field="studentAnswerText"
+                                                   th:attr="data-question-index=${qStat.index}"
+                                                   th:text="${question.studentAnswerText}">Text</span>
                             </div>
 
                             <div th:if="${question.feedbackText != null and !#strings.isEmpty(question.feedbackText)}"
                                 class="feedback-box">
-                                Feedback: <span th:utext="${question.feedbackText}"></span>
+                                Feedback: <span class="editable-field"
+                                               data-field="feedbackText"
+                                               th:attr="data-question-index=${qStat.index}"
+                                               th:utext="${question.feedbackText}"></span>
                             </div>
                         </td>
                     </tr>
@@ -261,6 +381,7 @@
         </div>
     </div>
 
+<script th:src="@{/js/print-report-editor.js}"></script>
 </body>
 
 </html>

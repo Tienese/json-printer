@@ -1,5 +1,6 @@
 package com.qtihelper.demo.controller;
 
+import com.qtihelper.demo.dto.quiz.QuizValidationResult;
 import com.qtihelper.demo.dto.quiz.UserQuizJson;
 import com.qtihelper.demo.service.JsonQuizParserService;
 import com.qtihelper.demo.service.QuizImportManager;
@@ -162,6 +163,38 @@ public class QuizImportController {
             redirectAttributes.addFlashAttribute("error",
                     "An unexpected error occurred: " + e.getMessage());
             return REDIRECT_QUIZ_IMPORT;
+        }
+    }
+
+    /**
+     * Validate quiz JSON without importing.
+     * Returns validation result with errors and warnings.
+     */
+    @PostMapping("/validate")
+    @ResponseBody
+    public QuizValidationResult validateQuiz(@RequestBody String jsonString) {
+        log.info("Validating quiz JSON ({} characters)", jsonString != null ? jsonString.length() : 0);
+
+        try {
+            UserQuizJson quiz = jsonParserService.parseJsonString(jsonString);
+            QuizValidationResult result = jsonParserService.validateQuizDetailed(quiz);
+
+            log.info("Validation result: valid={}, errors={}, warnings={}",
+                     result.isValid(), result.getErrors().size(), result.getWarnings().size());
+
+            return result;
+
+        } catch (IllegalArgumentException e) {
+            log.warn("Validation failed: {}", e.getMessage());
+            // The exception message already contains validation details
+            QuizValidationResult result = QuizValidationResult.success();
+            result.addError(e.getMessage());
+            return result;
+        } catch (Exception e) {
+            log.error("Unexpected error during validation", e);
+            QuizValidationResult result = QuizValidationResult.success();
+            result.addError("Unexpected error: " + e.getMessage());
+            return result;
         }
     }
 }

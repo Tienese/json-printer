@@ -51,7 +51,12 @@
 
     <!-- Navigation -->
     <div class="mb-3">
-        <a href="/" class="btn btn-light">&larr; Back to Home</a>
+        <a href="/dashboard" class="btn btn-light">&larr; Back to Dashboard</a>
+    </div>
+
+    <!-- Quiz Title Display -->
+    <div th:if="${quizTitle}" class="alert alert-info mb-3">
+        <strong>Selected Quiz:</strong> <span th:text="${quizTitle}"></span>
     </div>
     
     <!-- Error Message -->
@@ -68,27 +73,31 @@
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label for="courseId" class="form-label fw-bold">Canvas Course ID</label>
-                        <input type="text" 
-                               class="form-control" 
-                               id="courseId" 
-                               name="courseId" 
+                        <input type="text"
+                               class="form-control"
+                               id="courseId"
+                               name="courseId"
+                               th:value="${prefilledCourseId}"
                                placeholder="e.g., 12345"
                                required>
                         <small class="form-text text-muted">
                             Find this in your Canvas course URL
+                            <span th:if="${prefilledCourseId}" class="text-success">✓ Pre-filled from dashboard</span>
                         </small>
                     </div>
-                    
+
                     <div class="col-md-6">
                         <label for="quizId" class="form-label fw-bold">Canvas Quiz ID</label>
-                        <input type="text" 
-                               class="form-control" 
-                               id="quizId" 
-                               name="quizId" 
+                        <input type="text"
+                               class="form-control"
+                               id="quizId"
+                               name="quizId"
+                               th:value="${prefilledQuizId}"
                                placeholder="e.g., 67890"
                                required>
                         <small class="form-text text-muted">
                             Find this in your Canvas quiz URL
+                            <span th:if="${prefilledQuizId}" class="text-success">✓ Pre-filled from dashboard</span>
                         </small>
                     </div>
                 </div>

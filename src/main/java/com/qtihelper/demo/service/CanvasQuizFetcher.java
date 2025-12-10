@@ -1,8 +1,10 @@
 package com.qtihelper.demo.service;
 
 import com.qtihelper.demo.config.CanvasProperties;
+import com.qtihelper.demo.dto.canvas.CanvasCourseDto;
 import com.qtihelper.demo.dto.canvas.CanvasQuestionDto;
 import com.qtihelper.demo.dto.canvas.CanvasQuizDto;
+import com.qtihelper.demo.dto.canvas.CanvasQuizSummaryDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
@@ -76,6 +78,55 @@ public class CanvasQuizFetcher {
         } catch (Exception e) {
             log.error("Failed to fetch questions for quiz {}/{}: {}", courseId, quizId, e.getMessage(), e);
             throw new RuntimeException("Failed to fetch quiz questions from Canvas API", e);
+        }
+    }
+
+    /**
+     * Fetch all active courses for the authenticated user.
+     *
+     * @return List of courses where user is enrolled
+     */
+    public List<CanvasCourseDto> getCourses() {
+        log.info("Fetching courses from Canvas");
+
+        try {
+            List<CanvasCourseDto> courses = restClient.get()
+                .uri("/api/v1/courses?enrollment_state=active&per_page=100")
+                .retrieve()
+                .body(new ParameterizedTypeReference<List<CanvasCourseDto>>() {});
+
+            int courseCount = courses != null ? courses.size() : 0;
+            log.info("Successfully fetched {} courses", courseCount);
+
+            return courses != null ? courses : List.of();
+        } catch (Exception e) {
+            log.error("Failed to fetch courses: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to fetch courses from Canvas API", e);
+        }
+    }
+
+    /**
+     * Fetch all quizzes for a specific course.
+     *
+     * @param courseId Canvas course ID
+     * @return List of quizzes in the course
+     */
+    public List<CanvasQuizSummaryDto> getQuizzes(String courseId) {
+        log.info("Fetching quizzes for course {}", courseId);
+
+        try {
+            List<CanvasQuizSummaryDto> quizzes = restClient.get()
+                .uri("/api/v1/courses/{courseId}/quizzes?per_page=100", courseId)
+                .retrieve()
+                .body(new ParameterizedTypeReference<List<CanvasQuizSummaryDto>>() {});
+
+            int quizCount = quizzes != null ? quizzes.size() : 0;
+            log.info("Successfully fetched {} quizzes for course {}", quizCount, courseId);
+
+            return quizzes != null ? quizzes : List.of();
+        } catch (Exception e) {
+            log.error("Failed to fetch quizzes for course {}: {}", courseId, e.getMessage(), e);
+            throw new RuntimeException("Failed to fetch quizzes from Canvas API", e);
         }
     }
 }

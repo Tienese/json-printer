@@ -4,84 +4,19 @@ let quizData = {
     questions: []
 };
 
-// --- Initialization ---
-window.addEventListener('DOMContentLoaded', () => {
-    loadQuiz();
-    
-    // Toggle Logic (Compact Mode)
-    const toggle = document.getElementById('viewToggle');
-    if(toggle) {
-        toggle.addEventListener('change', (e) => {
-            if(e.target.checked) {
-                document.body.classList.add('compact-mode');
-            } else {
-                document.body.classList.remove('compact-mode');
-            }
-        });
-    }
-});
-
 // --- Notifications ---
 function showNotification(message, type = 'success') {
     const notif = document.getElementById('notification');
+    if (!notif) {
+        console.warn('Notification element not found');
+        return;
+    }
     notif.textContent = message;
     notif.className = `alert alert-${type === 'success' ? 'success' : 'danger'} d-block`;
     setTimeout(() => {
         notif.classList.remove('d-block');
         notif.classList.add('d-none');
     }, 4000);
-}
-
-// --- API Calls ---
-async function loadQuiz() {
-    try {
-        const response = await fetch('/api/quiz');
-        const result = await response.json();
-        if (result.success) {
-            quizData = result.data;
-            renderQuiz();
-            showNotification('Loaded successfully', 'success');
-        } else {
-            showNotification(result.message || 'Failed to load', 'error');
-        }
-    } catch (error) {
-        showNotification('Error: ' + error.message, 'error');
-    }
-}
-
-async function saveQuiz() {
-    collectQuizData();
-    try {
-        const response = await fetch('/api/quiz/save', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(quizData)
-        });
-        const result = await response.json();
-        showNotification(result.message, result.success ? 'success' : 'error');
-    } catch (error) {
-        showNotification('Error saving: ' + error.message, 'error');
-    }
-}
-
-async function sendToCanvas() {
-    const courseId = document.getElementById('courseId').value.trim();
-    if (!courseId) {
-        showNotification('Course ID required', 'error');
-        return;
-    }
-    collectQuizData();
-    try {
-        const response = await fetch('/api/quiz/canvas', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ courseId, quizData })
-        });
-        const result = await response.json();
-        showNotification(result.message, result.success ? 'success' : 'error');
-    } catch (error) {
-        showNotification('Canvas Error: ' + error.message, 'error');
-    }
 }
 
 // --- Data Collection ---

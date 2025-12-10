@@ -15,13 +15,17 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 /**
- * Service to map PrintReport data to QuizPrintViewModel for optimized template rendering.
+ * Service to map PrintReport data to QuizPrintViewModel for optimized template
+ * rendering.
  *
- * This mapper transforms Canvas API data and student submissions into a view-optimized structure
- * with pre-computed values like option letters, visual markers, and formatted feedback.
+ * This mapper transforms Canvas API data and student submissions into a
+ * view-optimized structure
+ * with pre-computed values like option letters, visual markers, and formatted
+ * feedback.
  */
 @Service
 public class QuizPrintViewModelMapper {
@@ -38,15 +42,16 @@ public class QuizPrintViewModelMapper {
      * @return View-optimized model for template rendering
      */
     public QuizPrintViewModel mapToViewModel(CanvasQuizDto quiz,
-                                              List<CanvasQuestionDto> questions,
-                                              List<StudentSubmission> submissions,
-                                              PrintReport report) {
+            List<CanvasQuestionDto> questions,
+            List<StudentSubmission> submissions,
+            PrintReport report) {
 
         log.info("Starting ViewModel mapping for quiz: {}", quiz.title());
         log.debug("Mapping {} students with {} questions", submissions.size(), questions.size());
 
         QuizPrintViewModel viewModel = new QuizPrintViewModel();
         viewModel.setQuizTitle(quiz.title());
+        viewModel.setQuizId(quiz.id());
         viewModel.setStudentCount(submissions.size());
 
         // Map each student report
@@ -180,9 +185,9 @@ public class QuizPrintViewModelMapper {
      * @return true if student selected this option
      */
     private boolean isStudentAnswerMatch(CanvasAnswerDto answer,
-                                          String studentAnswer,
-                                          int index,
-                                          CanvasQuestionDto question) {
+            String studentAnswer,
+            int index,
+            CanvasQuestionDto question) {
 
         if (studentAnswer == null || studentAnswer.isEmpty() || "No answer".equals(studentAnswer)) {
             return false;
@@ -242,8 +247,10 @@ public class QuizPrintViewModelMapper {
      * Logic:
      * - ✓ : Correct answer AND student selected it
      * - ✗ : Incorrect answer AND student selected it
-     * - ▲ : Correct answer NOT selected by student (only shown if question is wrong)
-     * - "" : No marker (correct answer not selected when question is correct, or incorrect answer not selected)
+     * - ▲ : Correct answer NOT selected by student (only shown if question is
+     * wrong)
+     * - "" : No marker (correct answer not selected when question is correct, or
+     * incorrect answer not selected)
      *
      * @param isCorrect         Is this option correct?
      * @param isStudentAnswer   Did student select this option?
@@ -252,13 +259,13 @@ public class QuizPrintViewModelMapper {
      */
     private String computeVisualMarker(boolean isCorrect, boolean isStudentAnswer, boolean isQuestionCorrect) {
         if (isCorrect && isStudentAnswer) {
-            return "✓";  // Correct and selected
+            return "✓"; // Correct and selected
         } else if (!isCorrect && isStudentAnswer) {
-            return "✗";  // Incorrect and selected
+            return "✗"; // Incorrect and selected
         } else if (isCorrect && !isStudentAnswer && !isQuestionCorrect) {
-            return "▲";  // Correct but not selected (show only when question is wrong)
+            return "▲"; // Correct but not selected (show only when question is wrong)
         } else {
-            return "";   // No marker
+            return ""; // No marker
         }
     }
 
@@ -290,5 +297,102 @@ public class QuizPrintViewModelMapper {
             return "";
         }
         return text.replaceAll("<[^>]*>", "").trim();
+    }
+
+    /**
+     * Maps Canvas quiz data to a blank quiz view model (no student answers).
+     * Creates a single "student" with empty name/ID for worksheet header.
+     *
+     * @param quiz      Quiz metadata from Canvas
+     * @param questions List of questions from Canvas
+     * @return QuizPrintViewModel configured for blank quiz rendering
+     */
+    public QuizPrintViewModel mapToBlankQuizViewModel(CanvasQuizDto quiz,
+            List<CanvasQuestionDto> questions) {
+        log.info("Mapping to blank quiz view model for quiz: {}", quiz.title());
+
+        // Sort questions by position
+        List<CanvasQuestionDto> sortedQuestions = questions.stream()
+                .sorted(Comparator.comparing(q -> q.position() != null ? q.position() : 0))
+                .toList();
+
+        // Map questions (no student answers, all unselected)
+        List<QuestionView> questionViews = new ArrayList<>();
+        int questionNumber = 1;
+        for (CanvasQuestionDto question : sortedQuestions) {
+            QuestionView questionView = mapQuestionToBlankView(question, questionNumber);
+            questionViews.add(questionView);
+            questionNumber++;
+        }
+
+        // Create single "student" with empty fields
+        StudentQuizView studentView = new StudentQuizView();
+        studentView.setStudentName(""); // Empty student name (will be filled in by hand)
+        studentView.setStudentId(""); // Empty student ID
+        studentView.setQuestions(questionViews);
+        studentView.setIncorrectQuestionNumbers(List.of()); // No incorrect questions
+
+        QuizPrintViewModel viewModel = new QuizPrintViewModel();
+        viewModel.setQuizTitle(quiz.title());
+        viewModel.setStudentCount(1); // Single worksheet
+        viewModel.setStudents(List.of(studentView));
+
+        log.info("Successfully mapped blank quiz with {} questions", questionViews.size());
+        return viewModel;
+    }
+
+    /**
+     * Maps a single question to blank view (no answers selected).
+     *
+     * @param question       Canvas question DTO
+     * @param questionNumber Question number (1-based)
+     * @return QuestionView with empty answers
+     */
+    private QuestionView mapQuestionToBlankView(CanvasQuestionDto question, int questionNumber) {
+        QuestionView questionView = new QuestionView();
+        questionView.setQuestionNumber(questionNumber);
+        questionView.setQuestionText(stripHtml(question.questionText()));
+        questionView.setPointsPossible(question.pointsPossible() != null ? question.pointsPossible() : 1.0);
+        questionView.setQuestionType(question.questionType());
+        questionView.setStudentAnswerText(""); // No student answer
+        questionView.setCorrect(false); // Not correct (no evaluation)
+        questionView.setAnswerStatus(AnswerStatus.UNANSWERED);
+        questionView.setFeedbackText(""); // No feedback
+
+        // Map options if they exist
+        if (question.answers() != null && !question.answers().isEmpty()) {
+            questionView.setHasOptions(true);
+            List<OptionView> options = new ArrayList<>();
+            int index = 0;
+            for (CanvasAnswerDto answer : question.answers()) {
+                OptionView optionView = mapAnswerToBlankOption(answer, index);
+                options.add(optionView);
+                index++;
+            }
+            questionView.setOptions(options);
+        } else {
+            questionView.setHasOptions(false);
+        }
+
+        return questionView;
+    }
+
+    /**
+     * Maps answer to blank option (unselected).
+     *
+     * @param answer Canvas answer DTO
+     * @param index  Option index for letter assignment
+     * @return OptionView with blank state
+     */
+    private OptionView mapAnswerToBlankOption(CanvasAnswerDto answer, int index) {
+        OptionView optionView = new OptionView();
+        optionView.setOptionLetter(String.valueOf((char) ('A' + index))); // A, B, C, D...
+        optionView.setOptionText(stripHtml(answer.text() != null ? answer.text() : ""));
+        optionView.setCorrect(false); // Not correct in blank mode
+        optionView.setStudentAnswer(false); // Not selected
+        optionView.setVisualMarker(""); // No visual marker
+        optionView.setCommentText(""); // No comment
+
+        return optionView;
     }
 }
