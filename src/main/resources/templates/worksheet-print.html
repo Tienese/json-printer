@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${worksheet.title()}">Japanese Writing Worksheet</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/worksheet-print.css}">
+</head>
+<body>
+
+<!-- Print Controls (Hidden during print) -->
+<div class="print-controls no-print">
+    <button onclick="window.print()" class="btn-print">Print Worksheet</button>
+    <button onclick="toggleGuideLines()" class="btn-toggle" id="toggleGuideLinesBtn">
+        <span th:if="${worksheet.showGuideLines()}">Hide Guide Lines</span>
+        <span th:unless="${worksheet.showGuideLines()}">Show Guide Lines</span>
+    </button>
+    <a href="/worksheet" class="btn-back">Back to Builder</a>
+</div>
+
+<!-- Worksheet Container -->
+<div class="worksheet-container"
+     th:classappend="${worksheet.showGuideLines()} ? 'global-guides-on' : 'global-guides-off'"
+     id="worksheetContainer">
+
+    <!-- Title -->
+    <h1 class="worksheet-title" th:text="${worksheet.title()}">Japanese Writing Practice</h1>
+
+    <!-- Dynamic Row Rendering -->
+    <th:block th:each="row : ${worksheet.rows()}">
+
+        <!-- HEADER Row -->
+        <div th:if="${row.type.name() == 'HEADER'}" class="header-row">
+            <div th:if="${row.showName()}" class="header-field">
+                <span class="field-label" th:text="${row.nameLabel()}">Name:</span>
+                <span class="field-line"></span>
+            </div>
+            <div th:if="${row.showDate()}" class="header-field">
+                <span class="field-label" th:text="${row.dateLabel()}">Date:</span>
+                <span class="field-line"></span>
+            </div>
+        </div>
+
+        <!-- TEXT Row -->
+        <div th:if="${row.type.name() == 'TEXT'}"
+             class="text-row"
+             th:style="${row.cssStyle}"
+             th:text="${row.text()}">
+            Practice writing:
+        </div>
+
+        <!-- GRID Row -->
+        <div th:if="${row.type.name() == 'GRID'}"
+             class="grid-row"
+             th:classappend="${row.showGuideLines()} ? 'show-guides' : 'hide-guides'"
+             th:style="${row.gridStyle}">
+            <div th:each="char : ${row.characters()}"
+                 class="grid-box"
+                 th:classappend="${row.cssClass()}">
+                <span class="box-character" th:text="${char}"></span>
+            </div>
+        </div>
+
+    </th:block>
+
+</div>
+
+<script>
+    // Toggle guide lines for all grid rows
+    function toggleGuideLines() {
+        const btn = document.getElementById('toggleGuideLinesBtn');
+        const gridRows = document.querySelectorAll('.grid-row');
+
+        // Toggle each grid row
+        gridRows.forEach(row => {
+            row.classList.toggle('show-guides');
+            row.classList.toggle('hide-guides');
+        });
+
+        // Update button text based on first grid row state
+        if (gridRows.length > 0) {
+            const hasGuides = gridRows[0].classList.contains('show-guides');
+            btn.querySelector('span').textContent = hasGuides ? 'Hide Guide Lines' : 'Show Guide Lines';
+        }
+    }
+</script>
+</body>
+</html>
