@@ -91,7 +91,7 @@ function renderCourses(courses) {
             </div>
             <div class="course-meta">
                 <div class="meta-item">
-                    <span class="meta-icon">📚</span>
+                    <span class="meta-icon">▸</span>
                     <span>View Quizzes</span>
                 </div>
             </div>
@@ -168,34 +168,34 @@ function renderQuizzes(quizzes) {
                 <p class="quiz-description">${escapeHtml(description)}</p>
                 <div class="quiz-metadata">
                     <div class="quiz-meta-item">
-                        <span>📝</span>
-                        <span><strong>${quiz.questionCount || 0}</strong> questions</span>
+                        <span>•</span>
+                        <span><strong>${quiz.questionCount ?? 'N/A'}</strong> questions</span>
                     </div>
                     <div class="quiz-meta-item">
-                        <span>⭐</span>
-                        <span><strong>${quiz.pointsPossible || 0}</strong> points</span>
+                        <span>◆</span>
+                        <span><strong>${quiz.pointsPossible ?? 'N/A'}</strong> points</span>
                     </div>
                     <div class="quiz-meta-item">
-                        <span>⏱️</span>
+                        <span>○</span>
                         <span>${quiz.timeLimit ? quiz.timeLimit + ' min' : 'No limit'}</span>
                     </div>
                     <div class="quiz-meta-item">
-                        <span>📋</span>
+                        <span>▪</span>
                         <span>${quiz.quizType || 'Quiz'}</span>
                     </div>
                 </div>
                 <div class="quiz-actions">
                     <a href="/print-report?type=slip&courseId=${currentCourseId}&quizId=${quiz.id}&quizTitle=${encodeURIComponent(quiz.title)}"
                        class="btn btn-primary">
-                        📋 Retake Slip
+                        □ Retake Slip
                     </a>
                     <a href="/print-report?type=full&courseId=${currentCourseId}&quizId=${quiz.id}&quizTitle=${encodeURIComponent(quiz.title)}"
                        class="btn btn-secondary">
-                        📄 Full Report
+                        ▪ Full Report
                     </a>
                     <a href="/print-report/blank-quiz?courseId=${currentCourseId}&quizId=${quiz.id}"
                        class="btn btn-secondary">
-                        📝 Blank Quiz
+                        • Blank Quiz
                     </a>
                 </div>
             </div>

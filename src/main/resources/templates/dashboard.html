@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QTI Helper - Course & Quiz Browser</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/bw-landing.css}">
 </head>
 <body>
     <div class="container">
@@ -15,7 +15,7 @@
             <p>Browse your Canvas courses and generate print reports</p>
             <div class="header-actions">
                 <button id="refreshBtn" class="btn btn-refresh" title="Refresh courses">
-                    <span class="icon">🔄</span> Refresh
+                    <span class="icon">↻</span> Refresh
                 </button>
                 <a href="/quiz/import" class="btn btn-secondary">QTI Converter</a>
             </div>
@@ -23,7 +23,7 @@
 
         <!-- Error Display -->
         <div id="errorAlert" class="alert alert-error" style="display: none;">
-            <span class="alert-icon">⚠️</span>
+            <span class="alert-icon">▲</span>
             <span id="errorMessage"></span>
         </div>
 
@@ -40,7 +40,7 @@
 
         <!-- Empty State -->
         <div id="emptyState" class="empty-state" style="display: none;">
-            <span class="empty-icon">📚</span>
+            <span class="empty-icon">▸</span>
             <h3>No courses found</h3>
             <p>Check your Canvas API configuration or try refreshing.</p>
         </div>
@@ -62,7 +62,7 @@
                     <!-- Quizzes will be loaded here -->
                 </div>
                 <div id="quizEmptyState" class="empty-state" style="display: none;">
-                    <span class="empty-icon">📝</span>
+                    <span class="empty-icon">•</span>
                     <p>No quizzes found in this course</p>
                 </div>
             </div>

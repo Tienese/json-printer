@@ -4,150 +4,100 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Import Quiz JSON - QTI Converter</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Noto Sans JP', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-        .main-container {
-            max-width: 900px;
-            margin: 0 auto;
-        }
-        .card {
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            border: none;
-        }
-        .btn-primary {
-            background: #667eea;
-            border: none;
-        }
-        .btn-primary:hover {
-            background: #5568d3;
-        }
-        .page-header {
-            color: white;
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .page-header h1 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-        }
-        .nav-tabs .nav-link {
-            color: #667eea;
-        }
-        .nav-tabs .nav-link.active {
-            background-color: #667eea;
-            color: white;
-        }
-        textarea {
-            font-family: 'Courier New', monospace;
-            font-size: 0.9rem;
-        }
-    </style>
+    <link rel="stylesheet" th:href="@{/css/bw-landing.css}">
 </head>
 <body>
 
 <div class="main-container">
     <div class="page-header">
-        <h1>🔄 QTI 1.2 Converter</h1>
+        <h1><span class="icon">↻</span> QTI 1.2 Converter</h1>
         <p>Convert Custom JSON Quiz to Canvas Question Bank</p>
     </div>
 
     <!-- Navigation -->
-    <div class="mb-3">
-        <a href="/" class="btn btn-light">&larr; Back to Home</a>
+    <div class="mb-20">
+        <a href="/" class="btn btn-secondary">&larr; Back to Home</a>
     </div>
 
     <!-- Error Message -->
-    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+    <div th:if="${error}" class="alert alert-error mb-20" role="alert">
         <strong>Error:</strong> <span th:text="${error}"></span>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 
     <!-- Main Card -->
     <div class="card">
-        <div class="card-header bg-primary text-white">
-            <h5 class="mb-0">Step 1: Import Quiz JSON</h5>
+        <div class="card-header">
+            <h3>Step 1: Import Quiz JSON</h3>
         </div>
         <div class="card-body">
             <!-- Tabs for Upload vs Paste -->
-            <ul class="nav nav-tabs mb-4" id="importTabs" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="upload-tab" data-bs-toggle="tab"
-                            data-bs-target="#upload-pane" type="button">
-                        📁 Upload JSON File
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="paste-tab" data-bs-toggle="tab"
-                            data-bs-target="#paste-pane" type="button">
-                        📋 Paste JSON Text
-                    </button>
-                </li>
-            </ul>
+            <div class="tabs">
+                <ul class="tab-list" role="tablist">
+                    <li role="presentation">
+                        <button class="tab-button active" id="upload-tab" onclick="switchTab('upload')">
+                            ▸ Upload JSON File
+                        </button>
+                    </li>
+                    <li role="presentation">
+                        <button class="tab-button" id="paste-tab" onclick="switchTab('paste')">
+                            □ Paste JSON Text
+                        </button>
+                    </li>
+                </ul>
+            </div>
 
-            <div class="tab-content">
-                <!-- Upload Tab -->
-                <div class="tab-pane fade show active" id="upload-pane">
-                    <form method="post" action="/quiz/parse" enctype="multipart/form-data">
-                        <div class="mb-3">
-                            <label for="jsonFile" class="form-label fw-bold">Select JSON File</label>
-                            <input type="file"
-                                   class="form-control"
-                                   id="jsonFile"
-                                   name="jsonFile"
-                                   accept=".json"
-                                   required>
-                            <small class="form-text text-muted">
-                                Upload a .json file containing your quiz structure
-                            </small>
-                        </div>
+            <!-- Upload Tab -->
+            <div class="tab-content active" id="upload-pane">
+                <form method="post" action="/quiz/parse" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label for="jsonFile">Select JSON File</label>
+                        <input type="file"
+                               id="jsonFile"
+                               name="jsonFile"
+                               accept=".json"
+                               required>
+                        <small class="text-muted">
+                            Upload a .json file containing your quiz structure
+                        </small>
+                    </div>
 
-                        <div class="text-center mt-4">
-                            <button type="submit" class="btn btn-primary btn-lg px-5">
-                                🚀 Parse & Edit
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                    <div class="text-center mt-20">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <span class="btn-icon">▶</span> Parse & Edit
+                        </button>
+                    </div>
+                </form>
+            </div>
 
-                <!-- Paste Tab -->
-                <div class="tab-pane fade" id="paste-pane">
-                    <form method="post" action="/quiz/parse">
-                        <div class="mb-3">
-                            <label for="jsonText" class="form-label fw-bold">Paste JSON Content</label>
-                            <textarea class="form-control"
-                                      id="jsonText"
-                                      name="jsonText"
-                                      rows="15"
-                                      placeholder='{"title": "My Quiz", "description": "...", "questions": [...]}'
-                                      required></textarea>
-                            <small class="form-text text-muted">
-                                Paste your JSON quiz structure here
-                            </small>
-                        </div>
+            <!-- Paste Tab -->
+            <div class="tab-content" id="paste-pane">
+                <form method="post" action="/quiz/parse">
+                    <div class="form-group">
+                        <label for="jsonText">Paste JSON Content</label>
+                        <textarea id="jsonText"
+                                  name="jsonText"
+                                  rows="15"
+                                  placeholder='{"title": "My Quiz", "description": "...", "questions": [...]}'
+                                  required></textarea>
+                        <small class="text-muted">
+                            Paste your JSON quiz structure here
+                        </small>
+                    </div>
 
-                        <div class="text-center mt-4">
-                            <button type="submit" class="btn btn-primary btn-lg px-5">
-                                🚀 Parse & Edit
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                    <div class="text-center mt-20">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <span class="btn-icon">▶</span> Parse & Edit
+                        </button>
+                    </div>
+                </form>
             </div>
 
             <!-- Format Guide -->
-            <div class="mt-5 p-3 bg-light border rounded">
-                <h6 class="fw-bold">JSON Format Guide:</h6>
+            <div class="alert alert-info mt-20">
+                <h6><strong>JSON Format Guide:</strong></h6>
                 <p>Your JSON should follow this structure:</p>
-                <pre class="mb-0" style="font-size: 0.85rem;"><code>{
+                <pre><code>{
   "title": "Quiz Title",
   "description": "Quiz description",
   "questions": [
@@ -163,21 +113,39 @@
     }
   ]
 }</code></pre>
-                <div class="mt-2">
-                    <small><strong>Supported Types:</strong> MC (Multiple Choice), MA (Multiple Answer),
-                    MD (Multiple Dropdown), MT (Matching), TF (True/False)</small>
-                </div>
+                <small><strong>Supported Types:</strong> MC (Multiple Choice), MA (Multiple Answer),
+                MD (Multiple Dropdown), MT (Matching), TF (True/False)</small>
             </div>
         </div>
     </div>
 
-    <div class="text-center mt-4">
-        <small class="text-white opacity-75">
-            QTI Helper v2.0 | QTI 1.2 Converter
-        </small>
+    <div class="footer">
+        <p>QTI Helper v2.0 | QTI 1.2 Converter</p>
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Simple tab switching for B&W design
+    function switchTab(tab) {
+        // Hide all tab content
+        document.querySelectorAll('.tab-content').forEach(pane => {
+            pane.classList.remove('active');
+        });
+
+        // Remove active class from all buttons
+        document.querySelectorAll('.tab-button').forEach(btn => {
+            btn.classList.remove('active');
+        });
+
+        // Show selected tab
+        if (tab === 'upload') {
+            document.getElementById('upload-pane').classList.add('active');
+            document.getElementById('upload-tab').classList.add('active');
+        } else {
+            document.getElementById('paste-pane').classList.add('active');
+            document.getElementById('paste-tab').classList.add('active');
+        }
+    }
+</script>
 </body>
 </html>
