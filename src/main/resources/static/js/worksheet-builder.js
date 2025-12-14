@@ -3,7 +3,12 @@
  * Version: Section-Based Grid Layout
  */
 
+let currentZoom = 1.0;
 let activeSelection = null; // { id: string, type: string }
+
+function formatDoc(command, value = null) {
+    document.execCommand(command, false, value);
+}
 
 function setSelection(element, event) {
     if (event) event.stopPropagation();
@@ -23,6 +28,13 @@ function setSelection(element, event) {
         const selectionClass = isSection ? 'selected-section' : 'selected-row';
         element.classList.add(selectionClass);
         console.log('Selected:', activeSelection);
+
+        // Context-aware tab switching
+        const toolsTab = document.querySelector('[data-tab="tools"]');
+        if (toolsTab && !toolsTab.classList.contains('active')) {
+            toolsTab.click();
+        }
+
     } else {
         activeSelection = null;
         console.log('Selection cleared');
@@ -57,6 +69,48 @@ function renderPropertiesPanel() {
         case 'GRID_SECTION':
             const gridSectionElement = document.getElementById(activeSelection.id);
             propertiesHtml = renderGridProperties(gridSectionElement);
+            break;
+        case 'TEXT_FIELD':
+            const textFieldElement = document.getElementById(activeSelection.id);
+            const contentContainer = textFieldElement.querySelector('.text-field-content');
+            const isTwoCol = contentContainer && contentContainer.children.length === 2;
+
+            propertiesHtml = `
+                <div class="prop-group">
+                    <h4>Text Properties</h4>
+                    <label class="prop-label">Layout</label>
+                    <button onclick="setTextFieldColumns(document.getElementById('${activeSelection.id}'), 1)">1 Col</button>
+                    <button onclick="setTextFieldColumns(document.getElementById('${activeSelection.id}'), 2)">2 Cols</button>
+                </div>
+                <div class="prop-group">
+                    <h4>Formatting</h4>
+                    <label class="prop-label">Style</label>
+                    <button onclick="formatDoc('formatBlock', 'h1')">H1</button>
+                    <button onclick="formatDoc('formatBlock', 'h2')">H2</button>
+                    <button onclick="formatDoc('formatBlock', 'h3')">H3</button>
+                    <button onclick="formatDoc('formatBlock', 'p')">Body</button>
+                    <br>
+                    <label class="prop-label">Emphasis</label>
+                    <button onclick="formatDoc('bold')"><b>B</b></button>
+                    <button onclick="formatDoc('italic')"><i>I</i></button>
+                    <button onclick="formatDoc('underline')"><u>U</u></button>
+                    <button onclick="formatDoc('strikeThrough')"><s>S</s></button>
+                    <br>
+                    <label class="prop-label">Lists</label>
+                    <button onclick="formatDoc('insertOrderedList')">1. List</button>
+                    <button onclick="formatDoc('insertUnorderedList')">&#8226; List</button>
+                    <br>
+                    <label class="prop-label">Alignment</label>
+                    <button onclick="formatDoc('justifyLeft')">Left</button>
+                    <button onclick="formatDoc('justifyCenter')">Center</button>
+                    <button onclick="formatDoc('justifyRight')">Right</button>
+                    <button onclick="formatDoc('justifyFull')">Justify</button>
+                     <br>
+                    <label class="prop-label">Indent</label>
+                    <button onclick="formatDoc('indent')">Indent</button>
+                    <button onclick="formatDoc('outdent')">Outdent</button>
+                </div>
+            `;
             break;
         case 'VOCABULARY':
             propertiesHtml = renderVocabProperties(element);
@@ -111,6 +165,48 @@ function renderLayersPanel() {
 
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Client-side migration of old block types
+    document.querySelectorAll('[data-type="HEADER"], [data-type="TEXT"]').forEach(oldBlock => {
+        const newTextField = document.createElement('div');
+        newTextField.className = 'text-field-content';
+        newTextField.contentEditable = true;
+
+        if (oldBlock.dataset.type === 'HEADER') {
+            const headerRow = oldBlock.querySelector('.header-row');
+            if(headerRow) newTextField.innerHTML = `<h1>${headerRow.innerText.replace(/\n/g, ' ')}</h1>`;
+        } else { // TEXT
+            const textRow = oldBlock.querySelector('.text-row');
+            if(textRow) newTextField.innerHTML = `<p>${textRow.innerText}</p>`;
+        }
+
+        oldBlock.dataset.type = 'TEXT_FIELD';
+        const oldContent = oldBlock.querySelector('.header-row, .text-row');
+        if(oldContent) oldContent.replaceWith(newTextField);
+    });
+
+    // Sidebar Toggle
+    const sidebar = document.querySelector('.editor-sidebar');
+    const toggle = document.querySelector('.sidebar-toggle');
+    toggle.addEventListener('click', () => {
+        sidebar.classList.toggle('collapsed');
+        document.querySelector('.editor-container').style.gridTemplateColumns = sidebar.classList.contains('collapsed') ? '1fr 40px' : '1fr 300px';
+    });
+
+    // Tab Switching
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const sidebarPanels = document.querySelectorAll('.sidebar-panel');
+    tabButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const tab = btn.dataset.tab;
+
+            tabButtons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            sidebarPanels.forEach(p => p.classList.remove('active'));
+            document.getElementById(`${tab}-panel`).classList.add('active');
+        });
+    });
+
     // Assign IDs to any initial rows that don't have one
     document.querySelectorAll('.row-wrapper').forEach(row => {
         if (!row.id) {
@@ -140,7 +236,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /**
- * Add a new block (Header, Text, or Grid Line)
+ * Add a new block
  */
 function addBlock(type) {
     const tplId = 'tpl-' + type.toLowerCase();
@@ -164,7 +260,7 @@ function addBlock(type) {
     canvas.appendChild(rowWrapper);
     
     // Focus editable content if Text
-    const editable = rowWrapper.querySelector('.text-row');
+    const editable = rowWrapper.querySelector('[contenteditable="true"]');
     if(editable) editable.focus();
     renderLayersPanel();
 }
@@ -202,14 +298,10 @@ function addSectionToLine(lineContainer, boxCount, sizeClass) {
     const initialBoxes = Array.from({ length: boxCount }, () => ({ furigana: '', text: '' }));
     section.dataset.boxes = JSON.stringify(initialBoxes);
 
-    // Create a container for the grid part (boxes) separate from the furigana input
-    // This allows the input to span the full width easily
-    // We will use absolute positioning or a flex column layout for the section itself
     section.style.display = 'flex';
     section.style.flexDirection = 'column';
     section.style.position = 'relative';
 
-    // Render Boxes and Input
     renderBoxes(section);
 
     lineContainer.appendChild(section);
@@ -227,11 +319,9 @@ function renderBoxes(section) {
     if(sizeClass === 'box-12mm') sizeMm = '12mm';
     if(sizeClass === 'box-8mm') sizeMm = '8mm';
 
-    // Clear section content (except toolbar which we will re-append)
     const toolbar = section.querySelector('.section-toolbar');
     section.innerHTML = '';
 
-    // Create the Main Grid Container
     const gridContainer = document.createElement('div');
     gridContainer.className = 'grid-container';
     gridContainer.style.display = 'grid';
@@ -267,27 +357,9 @@ function renderBoxes(section) {
     
     section.appendChild(gridContainer);
 
-    // Re-append toolbar
     if(toolbar) {
     
     }
-}
-
-/**
- * Adjust margin based on furigana content
- * (Deprecated in new single-input model, but kept if needed for other logic)
- */
-function adjustFuriganaMargin(el) {
-    // No-op for new design
-}
-
-/**
- * Interaction: Select a Section
- */
-function selectSection(event, section) {
-    event.stopPropagation(); // Stop bubbling so document click doesn't deselect immediately
-    deselectAllSections();
-    section.classList.add('selected');
 }
 
 function deselectAllSections() {
@@ -318,7 +390,6 @@ function addSectionToGridLine(currentSection, position) {
 function changeSectionSize(section, size) {
     if(!section) return;
     section.dataset.size = size;
-    const gridLine = section.closest('.grid-line');
     renderBoxes(section);
 }
 
@@ -341,48 +412,39 @@ function modifyBoxCount(section, change) {
     renderBoxes(section);
 }
 
-/**
- * Interaction: Delete Section
- */
-function deleteSection(btn) {
-    event.stopPropagation();
-    if (confirm('Remove this section?')) {
-        btn.closest('.grid-section').remove();
+function setTextFieldColumns(element, columns) {
+    const content = element.querySelector('.text-field-content');
+    if (!content) return;
+
+    const currentColCount = content.children.length;
+    if (columns === currentColCount) return;
+
+    if (columns === 2) {
+        // From 1 to 2
+        content.dataset.columns = '2';
+        const newCol = document.createElement('div');
+        newCol.className = 'text-col';
+        newCol.contentEditable = true;
+        newCol.innerHTML = '<p><br></p>'; // Add a blank paragraph
+        content.appendChild(newCol);
+    } else if (columns === 1) {
+        // From 2 to 1
+        if (confirm('Merging to one column will append the content of the second column to the first. Continue?')) {
+            content.dataset.columns = '1';
+            const firstCol = content.children[0];
+            const secondCol = content.children[1];
+            if (firstCol && secondCol) {
+                const secondColContent = secondCol.innerHTML;
+                // Don't merge if the second column is empty
+                if (secondColContent !== '<p><br></p>' && secondColContent !== '<p></p>' && secondColContent !== '') {
+                    firstCol.innerHTML += secondColContent;
+                }
+                secondCol.remove();
+            }
+        }
     }
 }
 
-/**
- * Insert or delete a box at a specific index
- */
-function insertBox(section, index) {
-    let boxes = JSON.parse(section.dataset.boxes);
-    boxes.splice(index, 0, { furigana: '', text: '' });
-    section.dataset.boxes = JSON.stringify(boxes);
-    renderBoxes(section);
-}
-
-function deleteBox(section, index) {
-    let boxes = JSON.parse(section.dataset.boxes);
-    if (boxes.length > 1) {
-        boxes.splice(index, 1);
-        section.dataset.boxes = JSON.stringify(boxes);
-        renderBoxes(section);
-    }
-}
-
-/**
- * Toggle Guidelines Globally
- */
-function toggleGuideLines() {
-    const sections = document.querySelectorAll('.grid-section');
-    sections.forEach(s => {
-        s.classList.toggle('show-guides');
-    });
-}
-
-/**
- * Grid Box Input Handling (Stateful)
- */
 function handleInputBlur(e, el, index, field) {
     const section = el.closest('.grid-section');
     if (!section) return;
@@ -409,52 +471,6 @@ function handleBoxFocus(e) {
     }
 }
 
-/**
- * Grid Box Keydown Handling (Nav & Enter)
- */
-function handleGridNavKeydown(e, el) {
-    const isBox = el.classList.contains('grid-box');
-    const isFurigana = el.classList.contains('grid-furigana');
-
-    if (!isBox && !isFurigana) return; // Should not happen
-
-    const wrapper = el.closest('.grid-box-wrapper');
-
-    if (e.key === 'Backspace' && el.innerText.length === 0) {
-        e.preventDefault();
-        const prevWrapper = wrapper.previousElementSibling;
-        if (prevWrapper) {
-            const targetClass = isBox ? '.grid-box' : '.grid-furigana';
-            const prevEl = prevWrapper.querySelector(targetClass);
-            if (prevEl) prevEl.focus();
-        }
-    } else if (e.key === 'Enter') {
-        e.preventDefault(); // Prevent new lines
-    } else if (e.key === 'ArrowLeft') {
-        e.preventDefault();
-        const prevWrapper = wrapper.previousElementSibling;
-        if (prevWrapper) {
-            const targetClass = isBox ? '.grid-box' : '.grid-furigana';
-            const prevEl = prevWrapper.querySelector(targetClass);
-            if (prevEl) prevEl.focus();
-        }
-    } else if (e.key === 'ArrowRight') {
-        const nextWrapper = wrapper.nextElementSibling;
-        if (nextWrapper) {
-            const targetClass = isBox ? '.grid-box' : '.grid-furigana';
-            const nextEl = nextWrapper.querySelector(targetClass);
-            if (nextEl) nextEl.focus();
-        }
-    } else if (e.key === 'ArrowDown' && isFurigana) {
-        e.preventDefault();
-        const box = wrapper.querySelector('.grid-box');
-        if(box) box.focus();
-    } else if (e.key === 'ArrowUp' && isBox) {
-        const furigana = wrapper.querySelector('.grid-furigana');
-        if(furigana) furigana.focus();
-    }
-}
-
 function setCaretToEnd(el) {
     const range = document.createRange();
     const sel = window.getSelection();
@@ -462,6 +478,18 @@ function setCaretToEnd(el) {
     range.collapse(false);
     sel.removeAllRanges();
     sel.addRange(range);
+}
+
+function adjustZoom(delta) {
+    currentZoom += delta;
+
+    if (currentZoom < 0.5) currentZoom = 0.5;
+    if (currentZoom > 2.0) currentZoom = 2.0;
+
+    const canvas = document.getElementById('editorCanvas');
+    canvas.style.transform = `scale(${currentZoom})`;
+
+    document.getElementById('zoomDisplay').innerText = Math.round(currentZoom * 100) + '%';
 }
 
 function addVocabTerm(vocabularyElement) {

@@ -5,24 +5,26 @@
 /* ===== PAGE & CANVAS SETUP ===== */
 body {
     background-color: #525659;
-    /* Grey background from print for preview */
     font-family: 'Noto Sans JP', sans-serif;
     margin: 0;
-    padding: 20px 0;
-    /* Add some padding for the floating canvas */
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
+    height: 100vh;
+    display: grid;
+    grid-template-rows: 1fr;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
 }
 
 .editor-container {
-    display: flex;
-    gap: 20px;
+    display: grid;
+    grid-template-columns: 1fr 300px;
     width: 100%;
-    justify-content: center;
+    height: 100vh;
+}
+
+.canvas-viewport {
+    overflow: auto;
+    padding: 40px;
+    background-color: #525659;
 }
 
 .editor-sidebar {
@@ -30,11 +32,85 @@ body {
     flex-shrink: 0;
     background: #f8f9fa;
     border-left: 1px solid #dee2e6;
-    height: 100vh;
-    position: sticky;
-    top: 0;
     display: flex;
     flex-direction: column;
+    height: 100%;
+    position: relative; /* Changed from static for toggle positioning */
+    transition: width 0.3s ease;
+}
+
+.editor-sidebar.collapsed {
+    width: 40px; /* Collapsed width */
+}
+
+.editor-sidebar.collapsed .sidebar-content {
+    display: none;
+}
+
+.sidebar-toggle {
+    position: absolute;
+    left: -20px;
+    top: 50%;
+    transform: translateY(-50%) rotate(180deg);
+    width: 20px;
+    height: 100px;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-right: none;
+    cursor: pointer;
+    border-radius: 10px 0 0 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    color: #333;
+    transition: all 0.2s;
+}
+
+.editor-sidebar.collapsed .sidebar-toggle {
+    transform: translateY(-50%) rotate(0deg);
+}
+
+.sidebar-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}
+
+.sidebar-header {
+    padding: 10px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.sidebar-tabs {
+    display: flex;
+    gap: 5px;
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 10px;
+    background: #e9ecef;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.tab-btn.active {
+    background: #fff;
+    border-bottom-color: #fff;
+}
+
+.sidebar-panel {
+    display: none;
+    padding: 10px;
+    overflow-y: auto;
+}
+
+.sidebar-panel.active {
+    display: block;
 }
 
 .floating-toolbar {
@@ -113,33 +189,95 @@ body {
 }
 
 
+.text-field-content {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-gap: 20px;
+    padding: 2px;
+    margin: 0;
+    outline: none;
+}
+
+.text-field-content[data-columns="2"] {
+    grid-template-columns: 1fr 1fr;
+}
+
+.text-col {
+    outline: none;
+    min-height: 1.4em;
+}
+
+
+
+.text-field-content p,
+.text-field-content h1,
+.text-field-content h2,
+.text-field-content h3,
+.text-field-content h4,
+.text-field-content h5,
+.text-field-content h6 {
+    margin-top: 0;
+    margin-bottom: 0.5em;
+}
+
+.column-break {
+    break-after: column;
+    border: none;
+    height: 0;
+    margin: 0;
+    padding: 0;
+}
+
+.rte-toolbar {
+    position: absolute;
+    background: #333;
+    padding: 5px;
+    border-radius: 5px;
+    z-index: 2001;
+    display: flex;
+    gap: 5px;
+}
+
+.rte-toolbar button {
+    background: #555;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+.rte-toolbar button:hover {
+    background: #666;
+}
+
+@media (max-width: 768px) {
+    .text-field-content {
+        column-count: 1 !important;
+    }
+}
+
 .worksheet-container {
     width: 210mm;
     min-height: 297mm;
     background: white;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-    /* Enhanced shadow */
     padding: 1.27cm;
     box-sizing: border-box;
-    position: relative;
-    margin-bottom: 80px;
-    /* Space for footer/toolbar */
+    margin: 0 auto; /* Center the paper */
+    transform-origin: top center;
+    transition: transform 0.2s ease;
 }
 
 /* ===== ROW INTERACTION (BUILDER ONLY) ===== */
 .row-wrapper {
     position: relative;
-    /* No border in builder by default, cleaner look */
     border: 1px solid transparent;
     transition: all 0.2s;
     border-radius: 4px;
-    margin-bottom: 0; /* Changed from 1mm to 0 */
-    padding-left: 45px;
-    /* Expand hover area for controls */
-    margin-left: -45px;
-    /* Offset padding to keep content aligned */
-    min-height: 10mm;
-    /* Ensure small rows are grabbable */
+    margin-bottom: 0;
+    padding: 2px;
+    min-height: 5mm;
     page-break-inside: avoid;
 }
 
@@ -148,19 +286,6 @@ body {
     border-color: #dcedff;
     background-color: rgba(74, 144, 217, 0.05);
 }
-
-.row-controls {
-    position: absolute;
-    left: -40px;
-    top: 50%;
-    transform: translateY(-50%);
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    opacity: 0;
-    transition: opacity 0.2s;
-    pointer-events: none;
-} 
 
 .sortable-ghost {
     opacity: 0.2; /* Make the original item semi-transparent */
@@ -171,41 +296,6 @@ body {
 }
 
 
-
-.row-wrapper:hover .row-controls {
-    opacity: 1;
-    pointer-events: auto;
-}
-
-.btn-icon {
-    width: 32px;
-    height: 32px;
-    border: 1px solid #ccc;
-    background: white;
-    color: #555;
-    border-radius: 50%;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.btn-icon:hover {
-    background: #f0f0f0;
-    color: #000;
-}
-
-.btn-delete:hover {
-    background: #fee;
-    color: #d33;
-    border-color: #fcc;
-}
-
-.handle {
-    cursor: move;
-}
 
 /* ===== GRID STYLES (UNIFIED) ===== */
 
@@ -622,9 +712,16 @@ body {
         width: 100%;
         min-height: auto;
         box-shadow: none;
-        margin: 0;
+        margin: 0 !important;      /* Resets centering margins */
         padding: 0;
         border: none;
+        transform: none !important; /* Forces 100% scale */
+    }
+
+    .canvas-viewport {
+        display: block;            /* Removes flex centering logic */
+        overflow: visible;         /* Ensures all pages print */
+        height: auto;
     }
 
     @page {

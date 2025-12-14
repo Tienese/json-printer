@@ -10,23 +10,25 @@
 <body>
 
 <div class="editor-container" onclick="if (event.target === this) setSelection(null, event);">
-    <!-- The Paper (Editor Canvas) -->
-    <div class="worksheet-container" id="editorCanvas" onclick="if (event.target === this) setSelection(null, event);">
-        <!-- Title -->
-        <h1 class="worksheet-title" contenteditable="true">Japanese Writing Practice</h1>
+    <div class="canvas-viewport">
+        <!-- The Paper (Editor Canvas) -->
+        <div class="worksheet-container" id="editorCanvas" onclick="if (event.target === this) setSelection(null, event);">
+            <!-- Title -->
+            <h1 class="worksheet-title" contenteditable="true">Japanese Writing Practice</h1>
 
-        <!-- Initial Header Example -->
-        <div class="row-wrapper" data-type="HEADER">
+            <!-- Initial Header Example -->
+            <div class="row-wrapper" data-type="HEADER">
 
 
-            <div class="header-row">
-                <div class="header-field">
-                    <span class="field-label" contenteditable="true">Name:</span>
-                    <span class="field-line"></span>
-                </div>
-                <div class="header-field">
-                    <span class="field-label" contenteditable="true">Date:</span>
-                    <span class="field-line"></span>
+                <div class="header-row">
+                    <div class="header-field">
+                        <span class="field-label" contenteditable="true">Name:</span>
+                        <span class="field-line"></span>
+                    </div>
+                    <div class="header-field">
+                        <span class="field-label" contenteditable="true">Date:</span>
+                        <span class="field-line"></span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -34,44 +36,53 @@
 
     <!-- Right Sidebar -->
     <aside class="editor-sidebar no-print">
-        <!-- Floating Toolbar -->
-        <div class="floating-toolbar">
-            <button class="toolbar-btn" onclick="addBlock('HEADER')">+ Header</button>
-            <button class="toolbar-btn" onclick="addBlock('TEXT')">+ Text</button>
-            <button class="toolbar-btn" onclick="addBlock('GRID')">+ Grid Line</button>
-            <button class="toolbar-btn" onclick="addBlock('VOCABULARY')">+ Vocab</button>
-            <div class="toolbar-divider"></div>
-            <button class="toolbar-btn" onclick="toggleGuideLines()">Guides On/Off</button>
-            <div class="toolbar-divider"></div>
-            <button class="toolbar-btn" onclick="window.print()">🖨️ Print</button>
-        </div>
+        <div class="sidebar-content">
+            <div class="sidebar-header">
+                <div class="sidebar-tabs">
+                    <button class="tab-btn active" data-tab="tools">Tools</button>
+                    <button class="tab-btn" data-tab="layers">Layers</button>
+                </div>
+                <div id="zoomDisplay" style="padding: 10px; text-align: center; font-weight: bold;">100%</div>
+            </div>
 
-        <div id="layers-panel">
-            <!-- Layer list will be rendered here -->
+            <div class="sidebar-panel active" id="tools-panel">
+                <div class="floating-toolbar">
+                    <button class="toolbar-btn" onclick="addBlock('TEXT_FIELD')">+ Text Field</button>
+                    <button class="toolbar-btn" onclick="addBlock('GRID')">+ Grid Line</button>
+                    <button class="toolbar-btn" onclick="addBlock('VOCABULARY')">+ Vocab</button>
+                    <div class="toolbar-divider"></div>
+                    <button class="toolbar-btn" onclick="toggleGuideLines()">Guides On/Off</button>
+                    <div class="toolbar-divider"></div>
+                    <button class="toolbar-btn" onclick="window.print()">🖨️ Print</button>
+                    <div class="toolbar-divider"></div><button class="toolbar-btn" onclick="adjustZoom(-0.1)" title="Zoom Out">🔍 -</button><button class="toolbar-btn" onclick="adjustZoom(0.1)" title="Zoom In">🔍 +</button>
+                </div>
+                <div id="properties-panel">
+                    <!-- Properties for selected element will be rendered here -->
+                </div>
+            </div>
+
+            <div class="sidebar-panel" id="layers-panel">
+                <!-- Layer list will be rendered here -->
+            </div>
         </div>
-        <div id="properties-panel">
-            <!-- Properties for selected element will be rendered here -->
-        </div>
+        <button class="sidebar-toggle" title="Toggle Sidebar">›</button>
     </aside>
 </div>
+
+
 
 <!-- Floating Toolbar -->
 
 <!-- Templates for New Rows -->
-<template id="tpl-header">
-    <div class="row-wrapper" data-type="HEADER">
 
-        <div class="header-row">
-            <div class="header-field"><span class="field-label" contenteditable="true">Name:</span><span class="field-line"></span></div>
-            <div class="header-field"><span class="field-label" contenteditable="true">Date:</span><span class="field-line"></span></div>
+
+<template id="tpl-text_field">
+    <div class="row-wrapper" data-type="TEXT_FIELD">
+        <div class="text-field-content" data-columns="1">
+            <div class="text-col" contenteditable="true">
+                <p>Type here...</p>
+            </div>
         </div>
-    </div>
-</template>
-
-<template id="tpl-text">
-    <div class="row-wrapper" data-type="TEXT">
-
-        <div class="text-row" contenteditable="true">Type instructions here...</div>
     </div>
 </template>
 
