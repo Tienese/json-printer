@@ -1,0 +1,40 @@
+@media print {
+    /* 1. Hide UI Chrome */
+    .static-toolbar,
+    .no-print,
+    .edit-controls,
+    .nav-bar,
+    .print-controls,
+    .floating-toolbar { /* Added for the new UI position */
+        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+        width: 0 !important;
+        overflow: hidden !important;
+    }
+
+    /* 2. Reset Body for Print */
+    body {
+        background: white;
+        margin: 0;
+        padding: 0;
+        display: block; /* Reset flex from screen.css */
+    }
+
+    /* 3. Remove Screen Shadow/Margins */
+    .paper-sheet, .worksheet-container {
+        box-shadow: none;
+        margin: 0;
+        width: auto;
+        min-height: auto;
+        padding: 0; /* Page margins handled by @page */
+        overflow: visible;
+        border: none;
+    }
+
+    /* 4. Enforce A4 Geometry */
+    @page {
+        size: A4;
+        margin: 1.27cm; /* 0.5 inch */
+    }
+}

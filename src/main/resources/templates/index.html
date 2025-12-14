@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QTI Helper - Home</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" th:href="@{/css/theme/variables.css}">
+    <link rel="stylesheet" th:href="@{/css/theme/reset.css}">
+    <link rel="stylesheet" th:href="@{/css/layout/screen.css}">
     <link rel="stylesheet" th:href="@{/css/bw-landing.css}">
 </head>
 <body>
@@ -15,7 +19,6 @@
         </div>
 
         <div class="features-grid">
-            <!-- Print Report Generator - Full -->
             <a href="/print-report?type=full" class="feature-card">
                 <span class="feature-icon">▪</span>
                 <h2 class="feature-title">Full Print Report</h2>
@@ -34,7 +37,6 @@
                 </div>
             </a>
 
-            <!-- Print Report Generator - Slip -->
             <a href="/print-report?type=slip" class="feature-card">
                 <span class="feature-icon">□</span>
                 <h2 class="feature-title">Retake Slip Report</h2>
@@ -53,7 +55,6 @@
                 </div>
             </a>
 
-            <!-- QTI 1.2 Converter -->
             <a href="/quiz/import" class="feature-card">
                 <span class="feature-icon">↻</span>
                 <h2 class="feature-title">QTI 1.2 Converter</h2>
@@ -72,7 +73,6 @@
                 </div>
             </a>
 
-            <!-- Japanese Writing Worksheet Generator -->
             <a href="/worksheet" class="feature-card">
                 <span class="feature-icon">口</span>
                 <h2 class="feature-title">Japanese Writing Worksheet</h2>

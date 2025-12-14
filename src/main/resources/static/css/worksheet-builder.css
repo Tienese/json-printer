@@ -1,261 +1,675 @@
 /**
- * Worksheet Builder CSS
- * Styles for the dynamic worksheet row composition UI.
+ * UNIFIED Worksheet Builder & Print Styles
  */
 
-/* ========================================
-   Toolbox
-   ======================================== */
-
-.toolbox {
+/* ===== PAGE & CANVAS SETUP ===== */
+body {
+    background-color: #525659;
+    /* Grey background from print for preview */
+    font-family: 'Noto Sans JP', sans-serif;
+    margin: 0;
+    padding: 20px 0;
+    /* Add some padding for the floating canvas */
+    min-height: 100vh;
     display: flex;
-    gap: 15px;
     justify-content: center;
-    flex-wrap: wrap;
+    align-items: flex-start;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
 }
 
-.btn-toolbox {
-    padding: 12px 20px;
-    font-size: 14px;
-    font-weight: 500;
-    border: 2px solid #333;
+.editor-container {
+    display: flex;
+    gap: 20px;
+    width: 100%;
+    justify-content: center;
+}
+
+.editor-sidebar {
+    width: 300px;
+    flex-shrink: 0;
+    background: #f8f9fa;
+    border-left: 1px solid #dee2e6;
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.floating-toolbar {
+    position: static; /* No longer floating */
+    bottom: auto;
+    left: auto;
+    transform: none;
+    background: #333;
+    padding: 10px;
+    border-radius: 0; /* No longer rounded */
+    box-shadow: none;
+    display: flex;
+    flex-wrap: wrap; /* Allow buttons to wrap */
+    gap: 8px;
+    z-index: 2000;
+}
+.toolbar-btn { background: transparent; border: none; color: white; cursor: pointer; font-size: 14px; font-weight: 600; padding: 4px 8px; border-radius: 4px; }
+.toolbar-divider { width: 1px; background: #666; }
+
+
+#layers-panel {
+    padding: 10px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.layer-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.layer-item {
+    padding: 8px 12px;
+    margin-bottom: 5px;
     background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
-.btn-toolbox:hover {
-    background: #f5f5f5;
-    transform: translateY(-2px);
+.layer-item:hover { background: #f0f8ff; }
+.layer-item.selected-layer { border-color: #4a90d9; background: #e8f1fb; }
+
+#properties-panel {
+    padding: 10px;
 }
 
-.btn-toolbox.btn-header {
+.prop-group {
+    margin-bottom: 15px;
+}
+
+.prop-group h4 {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    color: #333;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 5px;
+}
+
+.prop-label {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 12px;
+    color: #555;
+}
+
+.prop-input, .prop-select {
+    width: 100%;
+    padding: 6px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+
+.worksheet-container {
+    width: 210mm;
+    min-height: 297mm;
+    background: white;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    /* Enhanced shadow */
+    padding: 1.27cm;
+    box-sizing: border-box;
+    position: relative;
+    margin-bottom: 80px;
+    /* Space for footer/toolbar */
+}
+
+/* ===== ROW INTERACTION (BUILDER ONLY) ===== */
+.row-wrapper {
+    position: relative;
+    /* No border in builder by default, cleaner look */
+    border: 1px solid transparent;
+    transition: all 0.2s;
+    border-radius: 4px;
+    margin-bottom: 0; /* Changed from 1mm to 0 */
+    padding-left: 45px;
+    /* Expand hover area for controls */
+    margin-left: -45px;
+    /* Offset padding to keep content aligned */
+    min-height: 10mm;
+    /* Ensure small rows are grabbable */
+    page-break-inside: avoid;
+}
+
+/* Show a subtle guide on hover */
+.row-wrapper:hover {
+    border-color: #dcedff;
+    background-color: rgba(74, 144, 217, 0.05);
+}
+
+.row-controls {
+    position: absolute;
+    left: -40px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+} 
+
+.sortable-ghost {
+    opacity: 0.2; /* Make the original item semi-transparent */
+    background-color: #f0f8ff;
+    border: 2px dashed #4a90d9;
+    min-height: 40px; /* Ensure visibility for empty rows */
+    box-sizing: border-box;
+}
+
+
+
+.row-wrapper:hover .row-controls {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.btn-icon {
+    width: 32px;
+    height: 32px;
+    border: 1px solid #ccc;
+    background: white;
+    color: #555;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-icon:hover {
+    background: #f0f0f0;
+    color: #000;
+}
+
+.btn-delete:hover {
+    background: #fee;
+    color: #d33;
+    border-color: #fcc;
+}
+
+.handle {
+    cursor: move;
+}
+
+/* ===== GRID STYLES (UNIFIED) ===== */
+
+/* This is the line/row containing multiple sections */
+.grid-line {
+    display: flex;
+    align-items: flex-end;
+    /* Align boxes from the bottom */
+    flex-wrap: wrap;
+    /* Allow sections to wrap */
+    gap: 0; /* Changed from 1mm 0mm to 0 */
+    width: 100%;
+    page-break-inside: avoid;
+}
+
+/* A single configurable section of boxes */
+.grid-section {
+    position: relative;
+    cursor: pointer;
+    transition: box-shadow 0.2s;
+    border: 1px dashed transparent;
+    /* Placeholder for selection */
+    padding: 2px;
+}
+
+.grid-section.selected {
+    border-color: #4a90d9;
+    box-shadow: 0 0 10px rgba(74, 144, 217, 0.5);
+    z-index: 10;
+}
+
+/* The container for the actual grid of boxes */
+.grid-container {
+    display: grid;
+    /* This will be set by JS: grid-template-columns: repeat(var(--count), var(--size)); */
+    border-bottom: 1px solid #000;
+}
+
+.grid-box-wrapper {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.grid-furigana {
+    width: 100%;
+    text-align: center;
+    font-size: 13px;
+    min-height: 14px;
+    border: none;
+    outline: none;
+    line-height: 1;
+    color: #555;
+    background: transparent;
+    margin-bottom: 2px;
+    padding: 1px;
+}
+
+.grid-furigana:focus {
+    background-color: #f0f8ff;
+}
+
+.grid-box {
+    box-sizing: border-box;
+    border-top: 1px solid #000;
+    border-right: 1px solid #000;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Noto Sans JP', sans-serif;
+    color: #000;
+    /* Black for user input */
+    line-height: 1;
+    cursor: text;
+    outline: none;
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+/* New class for left border */
+.gb-left-border {
+    border-left: 1px solid #000;
+}
+
+.grid-box-wrapper:focus-within {
+    z-index: 10;
+}
+
+.box-editor-toolbar {
+    position: absolute;
+    top: -28px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #444;
+    border-radius: 5px;
+    display: none;
+    gap: 4px;
+    padding: 4px;
+    z-index: 11;
+}
+
+.grid-box-wrapper:focus-within .box-editor-toolbar {
+    display: flex;
+}
+
+.box-tool-btn {
+    background: #666;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    width: 20px;
+    height: 20px;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.box-tool-btn:hover { background: #777; }
+
+/* SIZES */
+.box-12mm {
+    width: 12mm;
+    height: 12mm;
+    font-size: 9mm;
+}
+
+.box-10mm {
+    width: 10mm;
+    height: 10mm;
+    font-size: 7.5mm;
+}
+
+.box-8mm {
+    width: 8mm;
+    height: 8mm;
+    font-size: 6mm;
+}
+
+/* GUIDELINES */
+.show-guides .grid-box::before,
+.show-guides .grid-box::after {
+    content: '';
+    position: absolute;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.show-guides .grid-box::before {
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    border-top: 1px dashed #999;
+}
+
+.show-guides .grid-box::after {
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    border-left: 1px dashed #999;
+}
+
+/* Hide guides by default or when toggled */
+.hide-guides .grid-box::before,
+.hide-guides .grid-box::after {
+    display: none;
+}
+
+
+/* ===== TEXT & HEADER ROWS ===== */
+.worksheet-title {
+    font-size: 18pt;
+    font-weight: 700;
+    text-align: center;
+    margin: 0 0 0.2cm 0;
+    border: none;
+    background: transparent;
+    width: 100%;
+    outline: none;
+    padding: 5px;
+}
+
+.worksheet-title:hover {
+    background: #f8f9fa;
+}
+
+.text-row {
+    font-size: 12pt;
+    line-height: 1.4;
+    width: 100%;
+    margin: 0.1cm 0;
+    border: none;
+    background: transparent;
+    outline: none;
+    resize: none;
+    overflow: hidden;
+    min-height: 1.4em;
+    padding: 5px;
+}
+
+.text-row:hover {
+    background: #f8f9fa;
+}
+
+.header-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 1cm;
+    margin-bottom: 0.4cm;
+}
+
+.header-field {
+    flex: 1;
+    display: flex;
+    align-items: baseline;
+}
+
+.field-label {
+    font-weight: bold;
+    margin-right: 5px;
+    padding: 5px;
+}
+
+.field-label:hover {
+    background: #f8f9fa;
+}
+
+.header-line { flex: 1; border-bottom: 1px solid #000; }
+
+
+
+/* ===== VOCABULARY ROWS ===== */
+
+.vocabulary-row { display: flex; align-items: baseline; font-size: 11px; flex-grow: 1; min-width: 0; }
+
+.vocab-term { margin-right: 8px; padding: 2px 5px; white-space: nowrap; flex-shrink: 0; }
+
+.vocab-term:hover { background: #f8f9fa; }
+
+.vocab-line { flex: 1; border-bottom: 1px dashed #000; min-width: 1cm; /* Allow to shrink significantly */ }
+.solid-lines .vocab-line { border-bottom-style: solid; }
+
+.vocab-controls {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    display: none;
+    background: #f0f0f0;
+    padding: 2px;
+    border-radius: 3px;
+}
+.row-wrapper:hover .vocab-controls { display: block; }
+
+.selected-row {
+    border: 2px solid #4a90d9 !important; 
+    box-shadow: 0 0 10px rgba(74, 144, 217, 0.5);
+}
+
+.selected-section {
+    outline: 2px dashed #00bfff; /* Cyan dashed border */
+    outline-offset: 2px; /* Offset to not overlap content */
+}
+.vocab-controls button { font-size: 10px; padding: 2px 4px; }
+
+.vocabulary-container {
+    display: grid;
+    grid-template-columns: repeat(var(--vocab-columns, 2), 1fr);
+    gap: 0; /* No gap */
+    padding-top: 0; /* No space for inline controls anymore */
+}
+
+.add-vocab-btn {
+    display: block;
+    margin: 10px auto 0;
+    background: #f0f0f0;
+    border: 1px solid #ccc;
+    padding: 4px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.add-vocab-btn:hover { background: #e0e0e0; }
+
+/* ===== TOOLBARS (BUILDER ONLY) ===== */
+
+/* Floating Add/Print Toolbar */
+.floating-toolbar {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    padding: 10px 20px;
+    border-radius: 50px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    display: flex;
+    gap: 12px;
+    z-index: 2000;
+}
+
+.toolbar-btn {
+    background: transparent;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.toolbar-divider {
+    width: 1px;
+    background: #666;
+}
+
+/* Toolbar for selected grid-section */
+.section-toolbar {
+    position: absolute;
+    top: -45px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    padding: 6px;
+    border-radius: 6px;
+    display: none;
+    /* Hidden by default */
+    gap: 6px;
+    z-index: 100;
+    white-space: nowrap;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.section-toolbar::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #333 transparent transparent transparent;
+}
+
+.grid-section.selected .section-toolbar {
+    display: flex;
+}
+
+.tool-btn {
+    background: #555;
+    border: none;
+    color: white;
+    border-radius: 3px;
+    padding: 4px 8px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.tool-btn:hover {
+    background: #666;
+}
+
+.tool-btn.danger {
+    background: #d33;
+}
+
+.tool-select {
+    background: #555;
+    color: white;
+    border: none;
+    font-size: 12px;
+    padding: 4px;
+    border-radius: 3px;
+}
+
+/* '+' button to add new section to a grid line */
+.add-section-btn {
+    width: 32px;
+    height: 32px;
+    background: transparent;
+    border: 1px dashed #ccc;
+    color: #999;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 20px;
+    margin-left: 5px;
+    transition: all 0.2s;
+    align-self: flex-end;
+    margin-bottom: 1mm;
+}
+
+.add-section-btn:hover {
+    background: #e8f1fb;
     border-color: #4a90d9;
     color: #4a90d9;
 }
 
-.btn-toolbox.btn-header:hover {
-    background: #e8f1fb;
-}
-
-.btn-toolbox.btn-text {
-    border-color: #9b59b6;
-    color: #9b59b6;
-}
-
-.btn-toolbox.btn-text:hover {
-    background: #f5e8f9;
-}
-
-.btn-toolbox.btn-grid {
-    border-color: #27ae60;
-    color: #27ae60;
-}
-
-.btn-toolbox.btn-grid:hover {
-    background: #e8f8ef;
-}
-
-.toolbox-icon {
-    margin-right: 5px;
-}
-
-/* ========================================
-   Row Blocks
-   ======================================== */
-
-.row-block {
-    border: 2px solid #ddd;
-    border-radius: 6px;
-    margin-bottom: 15px;
-    background: #fff;
-    overflow: hidden;
-}
-
-.row-block.row-header {
-    border-color: #4a90d9;
-}
-
-.row-block.row-text {
-    border-color: #9b59b6;
-}
-
-.row-block.row-grid {
-    border-color: #27ae60;
-}
-
-.row-header-bar {
-    display: flex;
-    align-items: center;
-    padding: 8px 12px;
-    background: #f9f9f9;
-    border-bottom: 1px solid #eee;
-}
-
-.row-block.row-header .row-header-bar {
-    background: #e8f1fb;
-}
-
-.row-block.row-text .row-header-bar {
-    background: #f5e8f9;
-}
-
-.row-block.row-grid .row-header-bar {
-    background: #e8f8ef;
-}
-
-.row-type-badge {
-    padding: 3px 8px;
-    border-radius: 3px;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.badge-header {
-    background: #4a90d9;
-    color: #fff;
-}
-
-.badge-text {
-    background: #9b59b6;
-    color: #fff;
-}
-
-.badge-grid {
-    background: #27ae60;
-    color: #fff;
-}
-
-.row-number {
-    margin-left: 10px;
-    font-size: 12px;
-    color: #666;
-}
-
-.btn-remove {
-    margin-left: auto;
-    padding: 2px 8px;
-    font-size: 18px;
-    line-height: 1;
-    border: none;
-    background: transparent;
-    color: #999;
-    cursor: pointer;
-    transition: color 0.2s ease;
-}
-
-.btn-remove:hover {
-    color: #e74c3c;
-}
-
-.row-content {
-    padding: 15px;
-}
-
-/* ========================================
-   Empty State
-   ======================================== */
-
-.empty-state {
-    text-align: center;
-    padding: 40px 20px;
-    color: #999;
-}
-
-.empty-state p:first-child {
-    font-size: 16px;
-    margin-bottom: 5px;
-}
-
-/* ========================================
-   Form Enhancements
-   ======================================== */
-
-.checkbox-label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-    font-weight: 400;
-}
-
-.checkbox-label input[type="checkbox"] {
-    width: 16px;
-    height: 16px;
-    margin: 0;
-}
-
-.box-count-hint {
-    display: block;
-    margin-top: 4px;
-}
-
-/* ========================================
-   Badge in Card Header
-   ======================================== */
-
-.card-header .badge {
-    display: inline-block;
-    padding: 2px 8px;
-    font-size: 12px;
-    font-weight: 600;
-    background: #333;
-    color: #fff;
-    border-radius: 10px;
-    margin-left: 8px;
-}
-
-/* ========================================
-   Validation Result
-   ======================================== */
-
-#validationResult {
-    animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* ========================================
-   Utility Classes
-   ======================================== */
-
-.mr-10 {
-    margin-right: 10px;
-}
-
-.mt-10 {
-    margin-top: 10px;
-}
-
-/* ========================================
-   Responsive Adjustments
-   ======================================== */
-
-@media (max-width: 600px) {
-    .toolbox {
-        flex-direction: column;
+/* ===== PRINT OVERRIDES ===== */
+@media print {
+    body {
+        background: white;
+        padding: 0;
+        margin: 0;
+        display: block;
     }
 
-    .btn-toolbox {
+    .worksheet-container {
         width: 100%;
+        min-height: auto;
+        box-shadow: none;
+        margin: 0;
+        padding: 0;
+        border: none;
     }
 
-    .form-row {
-        flex-direction: column;
+    @page {
+        size: A4;
+        margin: 1.27cm;
     }
 
-    .row-content .form-group {
-        width: 100%;
+    /* Hide all builder UI */
+    .row-controls,
+    .section-toolbar,
+    .add-section-btn,
+    .floating-toolbar,
+    .no-print {
+        display: none !important;
+    }
+
+    /* Remove builder-specific styles */
+    .row-wrapper,
+    .row-wrapper:hover {
+        border: none !important;
+        background: none !important;
+        margin-bottom: 0 !important; /* Changed from 2mm to 0 */
+    }
+
+    .grid-section.selected {
+        box-shadow: none !important;
+        border-color: transparent !important;
+    }
+
+    [contenteditable]:hover {
+        background: none !important;
+    }
+
+    /* Ensure furigana and box content prints correctly */
+    .grid-furigana {
+        color: #000;
+    }
+
+    [contenteditable] {
+        outline: none;
+    }
+
+    /* Ensure guideline colors are correct for printing */
+    .show-guides .grid-box::before,
+    .show-guides .grid-box::after {
+        border-color: #999 !important;
     }
 }

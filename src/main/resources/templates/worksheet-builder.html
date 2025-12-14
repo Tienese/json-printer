@@ -2,218 +2,106 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Japanese Writing Worksheet Builder</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/css/bw-landing.css}">
+    <title>Worksheet Editor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/worksheet-builder.css}">
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 </head>
 <body>
 
-<div class="main-container">
-    <div class="page-header">
-        <h1><span class="icon">口</span> Japanese Writing Worksheet Builder</h1>
-        <p>Build custom Japanese writing practice sheets with flexible row composition</p>
-    </div>
+<div class="editor-container" onclick="if (event.target === this) setSelection(null, event);">
+    <!-- The Paper (Editor Canvas) -->
+    <div class="worksheet-container" id="editorCanvas" onclick="if (event.target === this) setSelection(null, event);">
+        <!-- Title -->
+        <h1 class="worksheet-title" contenteditable="true">Japanese Writing Practice</h1>
 
-    <!-- Navigation -->
-    <div class="mb-20">
-        <a href="/" class="btn btn-secondary">&larr; Back to Home</a>
-    </div>
+        <!-- Initial Header Example -->
+        <div class="row-wrapper" data-type="HEADER">
 
-    <!-- Global Settings Card -->
-    <div class="card mb-20">
-        <div class="card-header">
-            <h5>Worksheet Settings</h5>
-        </div>
-        <div class="card-body">
-            <div class="form-row">
-                <div class="form-group" style="flex: 2;">
-                    <label for="worksheetTitle">Worksheet Title</label>
-                    <input type="text"
-                           id="worksheetTitle"
-                           value="Japanese Writing Practice"
-                           placeholder="Enter worksheet title">
+
+            <div class="header-row">
+                <div class="header-field">
+                    <span class="field-label" contenteditable="true">Name:</span>
+                    <span class="field-line"></span>
                 </div>
-                <div class="form-group" style="flex: 1;">
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="showGuideLines" checked>
-                        Show Guide Lines (grid rows)
-                    </label>
+                <div class="header-field">
+                    <span class="field-label" contenteditable="true">Date:</span>
+                    <span class="field-line"></span>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Row Toolbox -->
-    <div class="card mb-20">
-        <div class="card-header">
-            <h5>Add Rows</h5>
+    <!-- Right Sidebar -->
+    <aside class="editor-sidebar no-print">
+        <!-- Floating Toolbar -->
+        <div class="floating-toolbar">
+            <button class="toolbar-btn" onclick="addBlock('HEADER')">+ Header</button>
+            <button class="toolbar-btn" onclick="addBlock('TEXT')">+ Text</button>
+            <button class="toolbar-btn" onclick="addBlock('GRID')">+ Grid Line</button>
+            <button class="toolbar-btn" onclick="addBlock('VOCABULARY')">+ Vocab</button>
+            <div class="toolbar-divider"></div>
+            <button class="toolbar-btn" onclick="toggleGuideLines()">Guides On/Off</button>
+            <div class="toolbar-divider"></div>
+            <button class="toolbar-btn" onclick="window.print()">🖨️ Print</button>
         </div>
-        <div class="card-body">
-            <div class="toolbox">
-                <button type="button" class="btn btn-toolbox btn-header" onclick="addRow('HEADER')">
-                    <span class="toolbox-icon">◇</span> + Header Row
-                </button>
-                <button type="button" class="btn btn-toolbox btn-text" onclick="addRow('TEXT')">
-                    <span class="toolbox-icon">¶</span> + Text Row
-                </button>
-                <button type="button" class="btn btn-toolbox btn-grid" onclick="addRow('GRID')">
-                    <span class="toolbox-icon">⊞</span> + Grid Row
-                </button>
-            </div>
-            <p class="text-muted text-center mt-10">
-                Click buttons above to add rows. Drag to reorder. Maximum 50 rows.
-            </p>
-        </div>
-    </div>
 
-    <!-- Dynamic Rows Container -->
-    <div class="card mb-20">
-        <div class="card-header">
-            <h5>Worksheet Rows <span id="rowCount" class="badge">0</span></h5>
+        <div id="layers-panel">
+            <!-- Layer list will be rendered here -->
         </div>
-        <div class="card-body">
-            <div id="rowsContainer">
-                <!-- Dynamic rows will be added here by JavaScript -->
-                <div class="empty-state" id="emptyState">
-                    <p>No rows added yet.</p>
-                    <p class="text-muted">Use the buttons above to add Header, Text, or Grid rows.</p>
-                </div>
-            </div>
+        <div id="properties-panel">
+            <!-- Properties for selected element will be rendered here -->
         </div>
-    </div>
-
-    <!-- Actions -->
-    <div class="card">
-        <div class="card-body text-center">
-            <button type="button" class="btn btn-secondary mr-10" onclick="validateWorksheet()">
-                <span class="btn-icon">✓</span> Validate
-            </button>
-            <button type="button" class="btn btn-primary btn-lg" onclick="generateWorksheet()">
-                <span class="btn-icon">▶</span> Generate & Print
-            </button>
-        </div>
-    </div>
-
-    <!-- Validation Result -->
-    <div id="validationResult" class="alert mt-20" style="display: none;"></div>
-
-    <div class="footer">
-        <p>QTI Helper v2.0 | Japanese Writing Worksheet Generator</p>
-    </div>
+    </aside>
 </div>
 
-<!-- Row Templates (hidden) -->
-<template id="headerRowTemplate">
-    <div class="row-block row-header" data-type="HEADER">
-        <div class="row-header-bar">
-            <span class="row-type-badge badge-header">HEADER</span>
-            <span class="row-number"></span>
-            <button type="button" class="btn btn-icon btn-remove" onclick="removeRow(this)" title="Remove row">×</button>
-        </div>
-        <div class="row-content">
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="checkbox-label">
-                        <input type="checkbox" class="header-showName" checked>
-                        Show Name Field
-                    </label>
-                    <input type="text" class="header-nameLabel" value="Name:" placeholder="Label text">
-                </div>
-                <div class="form-group">
-                    <label class="checkbox-label">
-                        <input type="checkbox" class="header-showDate" checked>
-                        Show Date Field
-                    </label>
-                    <input type="text" class="header-dateLabel" value="Date:" placeholder="Label text">
-                </div>
-            </div>
+<!-- Floating Toolbar -->
+
+<!-- Templates for New Rows -->
+<template id="tpl-header">
+    <div class="row-wrapper" data-type="HEADER">
+
+        <div class="header-row">
+            <div class="header-field"><span class="field-label" contenteditable="true">Name:</span><span class="field-line"></span></div>
+            <div class="header-field"><span class="field-label" contenteditable="true">Date:</span><span class="field-line"></span></div>
         </div>
     </div>
 </template>
 
-<template id="textRowTemplate">
-    <div class="row-block row-text" data-type="TEXT">
-        <div class="row-header-bar">
-            <span class="row-type-badge badge-text">TEXT</span>
-            <span class="row-number"></span>
-            <button type="button" class="btn btn-icon btn-remove" onclick="removeRow(this)" title="Remove row">×</button>
-        </div>
-        <div class="row-content">
-            <div class="form-group">
-                <label>Text Content</label>
-                <input type="text" class="text-content" placeholder="Enter instruction or prompt text">
+<template id="tpl-text">
+    <div class="row-wrapper" data-type="TEXT">
+
+        <div class="text-row" contenteditable="true">Type instructions here...</div>
+    </div>
+</template>
+
+<template id="tpl-grid">
+    <div class="row-wrapper" data-type="GRID">
+
+        <!-- Grid Line Container (Flex) -->
+        <div style="display: flex; align-items: flex-start; width: 100%;">
+            <div class="grid-line">
+                <!-- Sections injected here -->
             </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Font Size (pt)</label>
-                    <input type="number" class="text-fontSize" value="12" min="8" max="72">
-                </div>
-                <div class="form-group">
-                    <label class="checkbox-label">
-                        <input type="checkbox" class="text-bold">
-                        Bold
-                    </label>
-                </div>
-                <div class="form-group">
-                    <label>Alignment</label>
-                    <select class="text-alignment">
-                        <option value="left">Left</option>
-                        <option value="center">Center</option>
-                        <option value="right">Right</option>
-                    </select>
-                </div>
-            </div>
+            <button class="add-section-btn no-print" onclick="addSection(this)" title="Add Section to Line">+</button>
         </div>
     </div>
 </template>
 
-<template id="gridRowTemplate">
-    <div class="row-block row-grid" data-type="GRID">
-        <div class="row-header-bar">
-            <span class="row-type-badge badge-grid">GRID</span>
-            <span class="row-number"></span>
-            <button type="button" class="btn btn-icon btn-remove" onclick="removeRow(this)" title="Remove row">×</button>
-        </div>
-        <div class="row-content">
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Box Size</label>
-                    <select class="grid-boxSize" onchange="updateMaxBoxes(this)">
-                        <option th:each="size : ${boxSizes}"
-                                th:value="${size.name()}"
-                                th:text="${size.getCssClass()}"
-                                th:data-max="${size.maxBoxesPerRow}">
-                        </option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Box Count</label>
-                    <input type="number" class="grid-boxCount" value="10" min="1" max="15">
-                    <small class="text-muted box-count-hint">Max: <span class="max-boxes">15</span> boxes</small>
-                </div>
-                <div class="form-group">
-                    <label class="checkbox-label">
-                        <input type="checkbox" class="grid-showGuideLines" checked>
-                        Show Guides
-                    </label>
-                </div>
-            </div>
-            <div class="form-group">
-                <label>Content (characters to trace)</label>
-                <input type="text" class="grid-content" placeholder="e.g., あいうえお (leave empty for blank boxes)">
-                <small class="text-muted">Each character fills one box. Extra characters will be truncated.</small>
+<template id="tpl-vocabulary">
+    <div class="row-wrapper" data-type="VOCABULARY">
+
+
+        <div class="vocabulary-container">
+            <div class="vocabulary-row">
+                <span class="vocab-term" contenteditable="true">Term</span>
+                <span class="vocab-line"></span>
             </div>
         </div>
+
     </div>
 </template>
 
-<!-- BoxSize data for JavaScript -->
-<script th:inline="javascript">
-    const BOX_SIZES = /*[[${boxSizes}]]*/ [];
-</script>
 <script th:src="@{/js/worksheet-builder.js}"></script>
-
 </body>
 </html>

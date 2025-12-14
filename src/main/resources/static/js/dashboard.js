@@ -25,15 +25,15 @@ document.addEventListener('DOMContentLoaded', function() {
  * @param {boolean} refresh - Force refresh from Canvas
  */
 async function loadCourses(refresh = false) {
-    const loadingState = document.getElementById('loadingState');
     const coursesGrid = document.getElementById('coursesGrid');
+    const skeletonContainer = document.getElementById('skeletonContainer');
     const emptyState = document.getElementById('emptyState');
     const errorAlert = document.getElementById('errorAlert');
     const refreshBtn = document.getElementById('refreshBtn');
 
-    // Show loading state
-    loadingState.style.display = 'block';
-    coursesGrid.innerHTML = '';
+    // State: Loading
+    coursesGrid.style.display = 'none';
+    if (skeletonContainer) skeletonContainer.style.display = 'grid'; // Show Skeleton
     emptyState.style.display = 'none';
     errorAlert.style.display = 'none';
 
@@ -45,15 +45,15 @@ async function loadCourses(refresh = false) {
         const response = await fetch(`/api/courses?refresh=${refresh}`);
         const data = await response.json();
 
+        // State: Loaded - Hide Skeleton
+        if (skeletonContainer) skeletonContainer.style.display = 'none'; 
+        refreshBtn.classList.remove('refreshing');
+
         if (!data.success) {
             throw new Error(data.error || 'Failed to load courses');
         }
 
         console.log(`Loaded ${data.count} courses (fetch time: ${data.fetchTime}ms)`);
-
-        // Hide loading state
-        loadingState.style.display = 'none';
-        refreshBtn.classList.remove('refreshing');
 
         if (data.courses.length === 0) {
             emptyState.style.display = 'block';
@@ -62,10 +62,11 @@ async function loadCourses(refresh = false) {
 
         // Render courses
         renderCourses(data.courses);
+        coursesGrid.style.display = 'grid';
 
     } catch (error) {
         console.error('Error loading courses:', error);
-        loadingState.style.display = 'none';
+        if (skeletonContainer) skeletonContainer.style.display = 'none';
         refreshBtn.classList.remove('refreshing');
 
         // Show error
