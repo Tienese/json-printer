@@ -217,7 +217,7 @@ body {
 .text-field-content h5,
 .text-field-content h6 {
     margin-top: 0;
-    margin-bottom: 0.5em;
+    margin-bottom: 0em;
 }
 
 .column-break {
@@ -257,16 +257,42 @@ body {
     }
 }
 
-.worksheet-container {
-    width: 210mm;
-    min-height: 297mm;
+#editorCanvas {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* To allow for the zoom transform */
+    padding: 20px 0;
+}
+
+.sheet {
+    position: relative; /* For positioning the page-break-marker */
+    margin-bottom: 20px;
     background: white;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
     padding: 1.27cm;
     box-sizing: border-box;
-    margin: 0 auto; /* Center the paper */
+    width: 210mm;
+    min-height: 297mm;
+    max-height: 297mm;
+    overflow: hidden;
     transform-origin: top center;
     transition: transform 0.2s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.sheet:last-of-type {
+    margin-bottom: 0;
+}
+
+/* Remove the gray gap for pages with oversized content to prevent "Gray Box" */
+.sheet.has-oversized-content {
+    margin-bottom: 0;
+    box-shadow: none; /* Optional: merge visually with next page */
+    z-index: 1; /* Ensure text sits above any background */
+    overflow: visible; /* Allow content to hang out */
+    max-height: none; /* Allow sheet to grow beyond A4 size */
 }
 
 /* ===== ROW INTERACTION (BUILDER ONLY) ===== */
@@ -279,6 +305,7 @@ body {
     padding: 2px;
     min-height: 5mm;
     page-break-inside: avoid;
+    box-sizing: border-box;
 }
 
 /* Show a subtle guide on hover */
@@ -553,11 +580,6 @@ body {
 }
 .row-wrapper:hover .vocab-controls { display: block; }
 
-.selected-row {
-    border: 2px solid #4a90d9 !important; 
-    box-shadow: 0 0 10px rgba(74, 144, 217, 0.5);
-}
-
 .selected-section {
     outline: 2px dashed #00bfff; /* Cyan dashed border */
     outline-offset: 2px; /* Offset to not overlap content */
@@ -699,53 +721,93 @@ body {
     color: #4a90d9;
 }
 
+/* ===== VIRTUAL BREAK FOR OVERSIZED ROWS ===== */
+
+/* The Visual Line */
+.page-break-marker {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 297mm; /* Exact A4 height */
+    border-bottom: 2px dashed #dc3545; /* Red warning line */
+    opacity: 0.5;
+    pointer-events: none;
+    z-index: 100;
+}
+
+
 /* ===== PRINT OVERRIDES ===== */
 @media print {
-    body {
-        background: white;
-        padding: 0;
-        margin: 0;
-        display: block;
+    /* Phase 3: Enforce Paper Standards */
+    @page {
+        size: A4;
+        margin: 1.27cm; /* This is the ONLY source of margins */
     }
 
-    .worksheet-container {
-        width: 100%;
-        min-height: auto;
-        box-shadow: none;
-        margin: 0 !important;      /* Resets centering margins */
-        padding: 0;
-        border: none;
-        transform: none !important; /* Forces 100% scale */
+    body {
+        background: white !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        display: block !important;
+    }
+
+    /* Phase 1: Reset the App Shell */
+    .editor-container {
+        display: block !important;
+        height: auto !important;
+        overflow: visible !important;
+        width: 100% !important; /* Phase 2 */
+        grid-template-columns: none !important;
     }
 
     .canvas-viewport {
-        display: block;            /* Removes flex centering logic */
-        overflow: visible;         /* Ensures all pages print */
-        height: auto;
+        display: block !important;
+        overflow: visible !important;
+        height: auto !important;
+        padding: 0 !important; /* Phase 2: Remove Screen Padding */
+        margin: 0 !important;
+        width: 100% !important; /* Phase 2 */
+        background: none !important;
     }
 
-    @page {
-        size: A4;
-        margin: 1.27cm;
+    /* Phase 2: Fix Dimensions & Clean Up Visuals */
+    .sheet {
+        width: 100% !important;
+        min-height: auto;
+        max-height: none;
+        box-shadow: none !important;
+        border: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        transform: none !important;
+        overflow: visible !important;
+        page-break-after: always;
+    }
+
+    .sheet:last-of-type {
+        page-break-after: avoid;
+    }
+
+    #editorCanvas {
+        padding: 0;
+        display: block;
     }
 
     /* Hide all builder UI */
-    .row-controls,
-    .section-toolbar,
-    .add-section-btn,
     .floating-toolbar,
+    .editor-sidebar,
+    .sidebar-toggle,
     .no-print {
         display: none !important;
     }
 
-    /* Remove builder-specific styles */
+    /* Remove other builder-specific styles */
     .row-wrapper,
     .row-wrapper:hover {
         border: none !important;
         background: none !important;
-        margin-bottom: 0 !important; /* Changed from 2mm to 0 */
     }
-
+    
     .grid-section.selected {
         box-shadow: none !important;
         border-color: transparent !important;
@@ -754,19 +816,28 @@ body {
     [contenteditable]:hover {
         background: none !important;
     }
-
-    /* Ensure furigana and box content prints correctly */
-    .grid-furigana {
-        color: #000;
-    }
-
-    [contenteditable] {
-        outline: none;
-    }
-
-    /* Ensure guideline colors are correct for printing */
+    
+    /* Ensure content prints correctly */
+    .grid-furigana { color: #000; }
+    [contenteditable] { outline: none; }
     .show-guides .grid-box::before,
     .show-guides .grid-box::after {
         border-color: #999 !important;
+    }
+    
+    /* Hide virtual break indicators */
+    .page-break-marker {
+        display: none !important;
+    }
+
+    .row-wrapper.is-oversized-row {
+        break-inside: auto;
+    }
+
+    /* Remove focus rings in print */
+    *:focus,
+    *:focus-visible {
+        outline: none !important;
+        box-shadow: none !important;
     }
 }

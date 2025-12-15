@@ -16,7 +16,7 @@ function setSelection(element, event) {
     // Clear previous selection
     if (activeSelection) {
         const oldEl = document.getElementById(activeSelection.id);
-        if (oldEl) oldEl.classList.remove('selected-row', 'selected-section');
+        if (oldEl) oldEl.classList.remove('selected-section');
     }
 
     if (element) {
@@ -25,8 +25,10 @@ function setSelection(element, event) {
             id: element.id,
             type: isSection ? 'GRID_SECTION' : element.dataset.type
         };
-        const selectionClass = isSection ? 'selected-section' : 'selected-row';
-        element.classList.add(selectionClass);
+        
+        if (isSection) {
+            element.classList.add('selected-section');
+        }
         console.log('Selected:', activeSelection);
 
         // Context-aware tab switching
@@ -222,7 +224,8 @@ document.addEventListener('DOMContentLoaded', () => {
             animation: 150,
             handle: '.handle',
             ghostClass: 'sortable-ghost',
-            draggable: '.row-wrapper'
+            draggable: '.row-wrapper',
+            onEnd: paginate
         });
     }
 
@@ -232,7 +235,17 @@ document.addEventListener('DOMContentLoaded', () => {
             deselectAllSections();
         }
     });
+
+    // Debounced pagination for text input
+    const debouncedPaginate = debounce(paginate, 500);
+    canvas.addEventListener('input', (e) => {
+        if (e.target.closest('.text-col')) {
+            debouncedPaginate();
+        }
+    });
+
     renderLayersPanel(); // Initial render
+    paginate();
 });
 
 /**
@@ -263,6 +276,7 @@ function addBlock(type) {
     const editable = rowWrapper.querySelector('[contenteditable="true"]');
     if(editable) editable.focus();
     renderLayersPanel();
+    paginate();
 }
 
 /**
@@ -273,6 +287,7 @@ function deleteRow(element) {
         element.remove();
         renderLayersPanel();
         setSelection(null); // Deselect after deleting
+        paginate();
     }
 }
 
@@ -391,6 +406,7 @@ function changeSectionSize(section, size) {
     if(!section) return;
     section.dataset.size = size;
     renderBoxes(section);
+    paginate();
 }
 
 function modifyBoxCount(section, change) {
@@ -410,6 +426,7 @@ function modifyBoxCount(section, change) {
 
     section.dataset.boxes = JSON.stringify(boxes);
     renderBoxes(section);
+    paginate();
 }
 
 function setTextFieldColumns(element, columns) {
@@ -443,6 +460,7 @@ function setTextFieldColumns(element, columns) {
             }
         }
     }
+    paginate();
 }
 
 function handleInputBlur(e, el, index, field) {
@@ -501,12 +519,14 @@ function addVocabTerm(vocabularyElement) {
         <span class="vocab-line"></span>
     `;
     vocabularyContainer.appendChild(newVocabRow);
+    paginate();
 }
 
 function removeLastVocabTerm(vocabularyElement) {
     const vocabularyContainer = vocabularyElement.querySelector('.vocabulary-container');
     if (vocabularyContainer.children.length > 1) { // Keep at least one term
         vocabularyContainer.lastElementChild.remove();
+        paginate();
     }
 }
 
@@ -524,6 +544,118 @@ function changeVocabLine(element, style) {
         container.classList.remove('solid-lines');
     }
 }
+
+// ===== PAGINATION LOGIC =====
+
+function debounce(func, delay) {
+    let timeout;
+    return function(...args) {
+        const context = this;
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(context, args), delay);
+    };
+}
+
+const MAX_USABLE_HEIGHT_MM = 271.6;
+const MM_TO_PX = 3.7795275591; // Standard 96 DPI
+const MAX_USABLE_HEIGHT_PX = MAX_USABLE_HEIGHT_MM * MM_TO_PX;
+
+function createNewPage() {
+    const page = document.createElement('div');
+    page.className = 'sheet'; // Keep worksheet-container for compatibility
+    return page;
+}
+
+function paginate() {
+    const canvas = document.getElementById('editorCanvas');
+    if (!canvas) return;
+
+    // 0. Reset any previous oversized states and markers
+    document.querySelectorAll('.sheet.has-oversized-content').forEach(sheet => {
+        sheet.classList.remove('has-oversized-content');
+        sheet.querySelector('.page-break-marker')?.remove();
+        sheet.querySelector('.cut-line-warning')?.remove(); 
+    });
+    document.querySelectorAll('.row-wrapper.is-oversized-row').forEach(row => row.classList.remove('is-oversized-row'));
+
+
+    // 1. Gather all rows and the title from all pages
+    const allRows = Array.from(canvas.querySelectorAll('.row-wrapper'));
+    const title = document.querySelector('.worksheet-title'); // Assume only one title
+
+    // Detach them to preserve state and event listeners
+    allRows.forEach(row => row.remove());
+    if (title) title.remove();
+
+    // 2. Clear all pages from the canvas
+    canvas.innerHTML = '';
+
+    // 3. Create the first page
+    let currentPage = createNewPage();
+    canvas.appendChild(currentPage);
+
+    // 4. Add title to the first page and account for its height
+    let currentHeight = 0;
+    if (title) {
+        currentPage.appendChild(title);
+        currentHeight += title.offsetHeight;
+    }
+
+    // 5. Distribute rows one by one
+    allRows.forEach(row => {
+        // Temporarily append to measure height (will be moved if it overflows)
+        currentPage.appendChild(row);
+        const rowHeight = row.offsetHeight;
+        row.remove(); // Remove after measurement to correctly place
+
+
+        if (rowHeight > MAX_USABLE_HEIGHT_PX) { // FR-01: Detect "Super-Tall" Rows
+            // Case: Oversized Row
+            currentPage.appendChild(row); // Keep on current page
+            currentPage.classList.add('has-oversized-content'); // CSS to remove bottom margin/gap
+            row.classList.add('is-oversized-row'); // Flag row for print CSS
+
+            // Add visual marker
+            const marker = document.createElement('div');
+            marker.className = 'page-break-marker';
+            currentPage.appendChild(marker);
+
+            // Add warning icon as per FR
+            const warning = document.createElement('div');
+            warning.className = 'cut-line-warning'; 
+            warning.innerHTML = '&#9888; Content splits here'; // Warning symbol
+            currentPage.appendChild(warning);
+
+            // Force creation of next page for subsequent items (if any remain)
+            currentPage = createNewPage(); 
+            canvas.appendChild(currentPage);
+            currentHeight = 0; // Reset height for the next (empty) page.
+        }
+        else if (currentHeight + rowHeight > MAX_USABLE_HEIGHT_PX) { // Case: Standard Page Break
+            currentPage = createNewPage();
+            canvas.appendChild(currentPage);
+            currentPage.appendChild(row);
+            currentHeight = rowHeight;
+        } else { // Case: Fits
+            currentPage.appendChild(row);
+            currentHeight += rowHeight;
+        }
+    });
+
+    // 6. Clean up any empty pages
+    Array.from(canvas.querySelectorAll('.sheet')).forEach(page => {
+        // A page is empty if it has no rows and no title element
+        if (page.children.length === 0 || (page.children.length === 1 && page.querySelector('.worksheet-title'))) {
+             // Don't remove the very last page if it's the only one
+            if (canvas.children.length > 1) {
+                page.remove();
+            }
+        }
+    });
+}
+
+
+
 
 // --- SIDEBAR PROPERTIES RENDERERS ---
 

@@ -9,25 +9,29 @@
 </head>
 <body>
 
-<div class="editor-container" onclick="if (event.target === this) setSelection(null, event);">
+<div class="editor-container">
     <div class="canvas-viewport">
-        <!-- The Paper (Editor Canvas) -->
-        <div class="worksheet-container" id="editorCanvas" onclick="if (event.target === this) setSelection(null, event);">
-            <!-- Title -->
-            <h1 class="worksheet-title" contenteditable="true">Japanese Writing Practice</h1>
+        <!-- This is the container for all pages -->
+        <div id="editorCanvas" onclick="if (event.target === this) setSelection(null, event);">
 
-            <!-- Initial Header Example -->
-            <div class="row-wrapper" data-type="HEADER">
+            <!-- Page 1 -->
+            <div class="worksheet-container sheet">
+                <!-- Title -->
+                <h1 class="worksheet-title" contenteditable="true">Japanese Writing Practice</h1>
+
+                <!-- Initial Header Example -->
+                <div class="row-wrapper" data-type="HEADER">
 
 
-                <div class="header-row">
-                    <div class="header-field">
-                        <span class="field-label" contenteditable="true">Name:</span>
-                        <span class="field-line"></span>
-                    </div>
-                    <div class="header-field">
-                        <span class="field-label" contenteditable="true">Date:</span>
-                        <span class="field-line"></span>
+                    <div class="header-row">
+                        <div class="header-field">
+                            <span class="field-label" contenteditable="true">Name:</span>
+                            <span class="field-line"></span>
+                        </div>
+                        <div class="header-field">
+                            <span class="field-label" contenteditable="true">Date:</span>
+                            <span class="field-line"></span>
+                        </div>
                     </div>
                 </div>
             </div>
