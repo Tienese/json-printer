@@ -197,4 +197,199 @@ public class QuizImportController {
             return result;
         }
     }
+
+    // ====================================================================================
+    // REST API Endpoints for React Frontend
+    // ====================================================================================
+
+    /**
+     * REST API: Parse uploaded JSON file or pasted JSON text.
+     * Returns parsed quiz data as JSON.
+     */
+    @PostMapping("/api/parse")
+    @ResponseBody
+    public ParseQuizResponse parseQuizJsonApi(@RequestParam(value = "jsonFile", required = false) MultipartFile jsonFile,
+                                              @RequestParam(value = "jsonText", required = false) String jsonText) {
+
+        log.info("=== API: Starting quiz JSON parsing ===");
+        log.info("File uploaded: {}, Text provided: {}",
+                jsonFile != null && !jsonFile.isEmpty(),
+                jsonText != null && !jsonText.isBlank());
+
+        try {
+            UserQuizJson quiz;
+
+            // Prioritize file upload over text
+            if (jsonFile != null && !jsonFile.isEmpty()) {
+                log.info("Parsing JSON file: {} ({} bytes)",
+                        jsonFile.getOriginalFilename(), jsonFile.getSize());
+                quiz = jsonParserService.parseJsonFile(jsonFile);
+            } else if (jsonText != null && !jsonText.isBlank()) {
+                log.info("Parsing JSON text ({} characters)", jsonText.length());
+                quiz = jsonParserService.parseJsonString(jsonText);
+            } else {
+                throw new IllegalArgumentException("Please upload a JSON file or paste JSON text");
+            }
+
+            log.info("Successfully parsed quiz: {}", quiz);
+
+            ParseQuizResponse response = new ParseQuizResponse();
+            response.setQuiz(quiz);
+            response.setQuestionCount(quiz.getQuestions().size());
+
+            log.info("=== API: Quiz parsing completed successfully ===");
+            return response;
+
+        } catch (IllegalArgumentException e) {
+            log.error("Validation error parsing quiz JSON", e);
+            throw new RuntimeException("Invalid quiz format: " + e.getMessage());
+        } catch (java.io.IOException e) {
+            log.error("IO error reading quiz JSON", e);
+            throw new RuntimeException("Failed to read JSON file: " + e.getMessage());
+        } catch (Exception e) {
+            log.error("Unexpected error parsing quiz JSON", e);
+            throw new RuntimeException("An unexpected error occurred: " + e.getMessage());
+        }
+    }
+
+    /**
+     * REST API: Process edited quiz data and generate QTI package.
+     * Import to Canvas as Question Bank.
+     */
+    @PostMapping("/api/process")
+    @ResponseBody
+    public ProcessQuizResponse processAndImportQuizApi(@RequestBody ProcessQuizRequest request) {
+
+        log.info("=== API: Starting QTI generation and Canvas import ===");
+        log.info("Course ID: {}", request.getCourseId());
+
+        try {
+            // Validate course ID
+            if (request.getCourseId() == null || request.getCourseId().isBlank()) {
+                throw new IllegalArgumentException("Course ID is required");
+            }
+
+            // Parse the quiz JSON (edited form data)
+            UserQuizJson quiz = jsonParserService.parseJsonString(request.getQuizJson());
+            log.info("Parsed quiz for processing: {}", quiz);
+
+            // Call orchestration service to process and import
+            QuizImportManager.ImportResult result = quizImportManager.processAndImport(quiz, request.getCourseId());
+
+            ProcessQuizResponse response = new ProcessQuizResponse();
+            response.setSuccess(result.isSuccess());
+            response.setMessage(result.getMessage());
+            response.setQuiz(quiz);
+            response.setImportResult(result);
+
+            if (result.isSuccess()) {
+                log.info("=== API: QTI generation and import completed successfully ===");
+            } else {
+                log.error("API: QTI import failed: {}", result.getError());
+            }
+
+            return response;
+
+        } catch (IllegalArgumentException e) {
+            log.error("Validation error processing quiz", e);
+            throw new RuntimeException("Invalid quiz data: " + e.getMessage());
+        } catch (Exception e) {
+            log.error("Unexpected error processing quiz", e);
+            throw new RuntimeException("An unexpected error occurred: " + e.getMessage());
+        }
+    }
+
+    // ====================================================================================
+    // DTOs for REST API
+    // ====================================================================================
+
+    /**
+     * Response DTO for parse quiz API.
+     */
+    public static class ParseQuizResponse {
+        private UserQuizJson quiz;
+        private int questionCount;
+
+        public UserQuizJson getQuiz() {
+            return quiz;
+        }
+
+        public void setQuiz(UserQuizJson quiz) {
+            this.quiz = quiz;
+        }
+
+        public int getQuestionCount() {
+            return questionCount;
+        }
+
+        public void setQuestionCount(int questionCount) {
+            this.questionCount = questionCount;
+        }
+    }
+
+    /**
+     * Request DTO for process quiz API.
+     */
+    public static class ProcessQuizRequest {
+        private String courseId;
+        private String quizJson;
+
+        public String getCourseId() {
+            return courseId;
+        }
+
+        public void setCourseId(String courseId) {
+            this.courseId = courseId;
+        }
+
+        public String getQuizJson() {
+            return quizJson;
+        }
+
+        public void setQuizJson(String quizJson) {
+            this.quizJson = quizJson;
+        }
+    }
+
+    /**
+     * Response DTO for process quiz API.
+     */
+    public static class ProcessQuizResponse {
+        private boolean success;
+        private String message;
+        private UserQuizJson quiz;
+        private QuizImportManager.ImportResult importResult;
+
+        public boolean isSuccess() {
+            return success;
+        }
+
+        public void setSuccess(boolean success) {
+            this.success = success;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public void setMessage(String message) {
+            this.message = message;
+        }
+
+        public UserQuizJson getQuiz() {
+            return quiz;
+        }
+
+        public void setQuiz(UserQuizJson quiz) {
+            this.quiz = quiz;
+        }
+
+        public QuizImportManager.ImportResult getImportResult() {
+            return importResult;
+        }
+
+        public void setImportResult(QuizImportManager.ImportResult importResult) {
+            this.importResult = importResult;
+        }
+    }
 }

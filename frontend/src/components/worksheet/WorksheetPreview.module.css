@@ -1,0 +1,182 @@
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background: white;
+  border-bottom: 1px solid #ddd;
+  margin-bottom: 2rem;
+}
+
+.toolbarTitle {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #333;
+}
+
+.toolbarActions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.worksheetContainer {
+  max-width: 210mm;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.worksheetContainer.withGuideLines .page {
+  background-image: linear-gradient(#ddd 1px, transparent 1px);
+  background-size: 100% 10mm;
+}
+
+.page {
+  background: white;
+  padding: 20mm 15mm;
+  margin-bottom: 2rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  min-height: 277mm;
+  page-break-after: always;
+}
+
+.page:last-child {
+  page-break-after: avoid;
+}
+
+.rowContainer {
+  margin-bottom: 1rem;
+}
+
+/* Header Row */
+.headerRow {
+  margin-bottom: 2rem;
+}
+
+.headerLine {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  font-size: 12pt;
+}
+
+.dateField,
+.nameField {
+  flex: 1;
+}
+
+.worksheetTitle {
+  margin: 1rem 0;
+  text-align: center;
+  font-size: 18pt;
+  font-weight: bold;
+}
+
+/* Text Row */
+.textRow {
+  margin: 1rem 0;
+  line-height: 1.6;
+}
+
+/* Grid Row */
+.gridRow {
+  margin: 1rem 0;
+}
+
+.sectionWrapper {
+  margin-bottom: 0.5rem;
+}
+
+.gridSection {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+}
+
+.box {
+  border: 1px solid #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14pt;
+  font-family: 'Noto Sans JP', sans-serif;
+}
+
+.box.size_10mm {
+  width: 10mm;
+  height: 10mm;
+}
+
+.box.size_8mm {
+  width: 8mm;
+  height: 8mm;
+}
+
+.box.size_6mm {
+  width: 6mm;
+  height: 6mm;
+}
+
+.box.withGuides {
+  position: relative;
+}
+
+.box.withGuides::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-left: 1px dashed #999;
+  border-right: 1px dashed #999;
+}
+
+/* Vocabulary Row */
+.vocabularyRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.vocabItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.vocabTerm {
+  font-weight: bold;
+  min-width: 100px;
+}
+
+.vocabLine {
+  flex: 1;
+  border-bottom: 1px solid #333;
+}
+
+/* Print Styles */
+@media print {
+  .toolbar {
+    display: none !important;
+  }
+
+  .worksheetContainer {
+    max-width: 100%;
+    padding: 0;
+  }
+
+  .page {
+    border: none;
+    border-radius: 0;
+    margin-bottom: 0;
+    padding: 15mm;
+  }
+
+  .rowContainer {
+    break-inside: avoid;
+  }
+}

@@ -1,0 +1,67 @@
+.card {
+  margin-bottom: 2rem;
+}
+
+.title {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #333;
+}
+
+.description {
+  margin: 0 0 1.5rem 0;
+  color: #666;
+  line-height: 1.5;
+}
+
+.stats {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #eee;
+}
+
+.stat {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.statLabel {
+  font-weight: 600;
+  color: #666;
+}
+
+.statValue {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #333;
+}
+
+.types {
+  margin-top: 1.5rem;
+}
+
+.typesTitle {
+  margin: 0 0 0.75rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #666;
+}
+
+.typesList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.typeBadge {
+  padding: 0.375rem 0.75rem;
+  background-color: #f5f5f5;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #333;
+}

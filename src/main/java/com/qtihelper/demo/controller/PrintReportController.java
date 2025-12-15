@@ -505,4 +505,132 @@ public class PrintReportController {
         log.debug("Converted {} student edits to submissions", submissions.size());
         return submissions;
     }
+
+    // ====================================================================================
+    // REST API Endpoints for React Frontend
+    // ====================================================================================
+
+    /**
+     * REST API: Generate print report from Canvas quiz and CSV.
+     * Returns JSON instead of rendering template.
+     */
+    @PostMapping("/print-report/api/generate")
+    @ResponseBody
+    public QuizPrintViewModel generateReportApi(@RequestParam("courseId") String courseId,
+            @RequestParam("quizId") String quizId,
+            @RequestParam("csvFile") MultipartFile csvFile,
+            @RequestParam(value = "reportType", defaultValue = "slip") String reportType) {
+
+        long startTime = System.currentTimeMillis();
+        log.info("=== API: Starting print report generation ===");
+        log.info("Course ID: {}, Quiz ID: {}, Report Type: {}", courseId, quizId, reportType);
+
+        try {
+            // Validate inputs
+            if (courseId == null || courseId.isBlank()) {
+                throw new IllegalArgumentException("Course ID is required");
+            }
+            if (quizId == null || quizId.isBlank()) {
+                throw new IllegalArgumentException("Quiz ID is required");
+            }
+            if (csvFile == null || csvFile.isEmpty()) {
+                throw new IllegalArgumentException("CSV file is required");
+            }
+
+            // Fetch quiz from Canvas
+            log.info("Step 1/5: Fetching quiz from Canvas...");
+            CanvasQuizDto quiz = canvasFetcher.getQuiz(courseId, quizId);
+            if (quiz == null) {
+                throw new RuntimeException("Failed to fetch quiz from Canvas");
+            }
+            log.info("Successfully fetched quiz: {}", quiz.title());
+
+            // Fetch questions
+            log.info("Step 2/5: Fetching quiz questions...");
+            List<CanvasQuestionDto> questions = canvasFetcher.getQuizQuestions(courseId, quizId);
+            if (questions.isEmpty()) {
+                throw new RuntimeException("No questions found for this quiz");
+            }
+            log.info("Successfully fetched {} questions", questions.size());
+
+            // Parse CSV
+            log.info("Step 3/5: Parsing CSV file...");
+            List<StudentSubmission> submissions = csvParser.parseSubmissions(csvFile);
+            if (submissions.isEmpty()) {
+                throw new RuntimeException("No student submissions found in CSV file");
+            }
+            log.info("Successfully parsed {} student submissions", submissions.size());
+
+            // Generate report
+            log.info("Step 4/5: Generating print report...");
+            PrintReport report = reportGenerator.generateReport(quiz, questions, submissions);
+            log.info("Successfully generated report");
+
+            // Map to view model (same mapping for both full and slip, frontend will handle display)
+            log.info("Step 5/5: Mapping to view model...");
+            QuizPrintViewModel viewModel = viewModelMapper.mapToViewModel(quiz, questions, submissions, report);
+
+            long totalDuration = System.currentTimeMillis() - startTime;
+            log.info("=== API: Report generation completed in {}ms ===", totalDuration);
+
+            return viewModel;
+
+        } catch (Exception e) {
+            log.error("=== API: Error generating print report ===", e);
+            throw new RuntimeException("Failed to generate report: " + e.getMessage());
+        }
+    }
+
+    /**
+     * REST API: Generate blank quiz worksheet.
+     * Returns JSON instead of rendering template.
+     */
+    @GetMapping("/print-report/api/blank-quiz")
+    @ResponseBody
+    public QuizPrintViewModel generateBlankQuizApi(@RequestParam("courseId") String courseId,
+            @RequestParam("quizId") String quizId) {
+
+        long startTime = System.currentTimeMillis();
+        log.info("=== API: Starting blank quiz generation ===");
+        log.info("Course ID: {}, Quiz ID: {}", courseId, quizId);
+
+        try {
+            // Validate inputs
+            if (courseId == null || courseId.isBlank()) {
+                throw new IllegalArgumentException("Course ID is required");
+            }
+            if (quizId == null || quizId.isBlank()) {
+                throw new IllegalArgumentException("Quiz ID is required");
+            }
+
+            // Fetch quiz from Canvas
+            log.info("Step 1/3: Fetching quiz from Canvas...");
+            CanvasQuizDto quiz = canvasFetcher.getQuiz(courseId, quizId);
+            if (quiz == null) {
+                throw new RuntimeException("Failed to fetch quiz from Canvas");
+            }
+            log.info("Successfully fetched quiz: {}", quiz.title());
+
+            // Fetch questions
+            log.info("Step 2/3: Fetching quiz questions...");
+            List<CanvasQuestionDto> questions = canvasFetcher.getQuizQuestions(courseId, quizId);
+            if (questions.isEmpty()) {
+                throw new RuntimeException("No questions found for this quiz");
+            }
+            log.info("Successfully fetched {} questions", questions.size());
+
+            // Map to blank quiz view model
+            log.info("Step 3/3: Mapping to blank quiz view model...");
+            QuizPrintViewModel viewModel = viewModelMapper.mapToBlankQuizViewModel(quiz, questions);
+
+            long totalDuration = System.currentTimeMillis() - startTime;
+            log.info("=== API: Blank quiz generation completed in {}ms ===", totalDuration);
+
+            return viewModel;
+
+        } catch (Exception e) {
+            log.error("=== API: Error generating blank quiz ===", e);
+            throw new RuntimeException("Failed to generate blank quiz: " + e.getMessage());
+        }
+    }
 }
