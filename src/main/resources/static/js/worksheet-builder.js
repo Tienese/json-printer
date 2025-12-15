@@ -160,6 +160,7 @@ function renderLayersPanel() {
                 const canvasElement = document.getElementById(layer.dataset.id);
                 if(canvasElement) canvas.appendChild(canvasElement);
             });
+            paginate(); // Re-paginate the content after reordering
             renderLayersPanel(); // Re-render to fix numbering
         }
     });
@@ -232,7 +233,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Global Click Listener for Deselecting
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.grid-section') && !e.target.closest('.section-toolbar')) {
-            deselectAllSections();
+            setSelection(null, e); // Centralize deselection logic
         }
     });
 
@@ -241,6 +242,40 @@ document.addEventListener('DOMContentLoaded', () => {
     canvas.addEventListener('input', (e) => {
         if (e.target.closest('.text-col')) {
             debouncedPaginate();
+        }
+    });
+
+    // Hotkeys for Box Count
+    document.addEventListener('keydown', (e) => {
+        if (!activeSelection || activeSelection.type !== 'GRID_SECTION') return;
+
+        const section = document.getElementById(activeSelection.id);
+        if (!section) return;
+
+        if (e.ctrlKey && e.key === '[') {
+            e.preventDefault();
+            const boxes = JSON.parse(section.dataset.boxes);
+            if (boxes.length > 1) {
+                modifyBoxCount(section, -1);
+            }
+        } else if (e.ctrlKey && e.key === ']') {
+            e.preventDefault();
+            modifyBoxCount(section, 1);
+        } else if (e.ctrlKey && e.key === 'n') {
+            e.preventDefault();
+            addSectionToGridLine(section, 'after');
+        } else if (e.ctrlKey && (e.key === ',' || e.key === '.')) {
+            e.preventDefault();
+            const sizes = ['box-8mm', 'box-10mm', 'box-12mm'];
+            const currentSize = section.dataset.size;
+            const currentIndex = sizes.indexOf(currentSize);
+            let newIndex;
+            if (e.key === ',') { // Cycle down
+                newIndex = (currentIndex - 1 + sizes.length) % sizes.length;
+            } else { // Cycle up
+                newIndex = (currentIndex + 1) % sizes.length;
+            }
+            changeSectionSize(section, sizes[newIndex]);
         }
     });
 
@@ -274,7 +309,7 @@ function addBlock(type) {
     
     // Focus editable content if Text
     const editable = rowWrapper.querySelector('[contenteditable="true"]');
-    if(editable) editable.focus();
+    if (editable) editable.focus({ preventScroll: true });
     renderLayersPanel();
     paginate();
 }
@@ -292,12 +327,24 @@ function deleteRow(element) {
 }
 
 /**
+ * Delete a grid section
+ */
+function deleteSection(section) {
+    if (confirm('Delete this grid section?')) {
+        section.remove();
+        setSelection(null); // Deselect after deleting
+        paginate();
+    }
+}
+
+/**
  * Add a new Section to a Grid Line
  */
 function addSection(btn) {
     const gridLine = btn.previousElementSibling; // The .grid-line container
     // Add default section (5 boxes, 10mm)
-    addSectionToLine(gridLine, 5, 'box-10mm');
+    const newSection = addSectionToLine(gridLine, 5, 'box-10mm');
+    newSection.id = `section-${Date.now()}`;
 }
 
 /**
@@ -342,6 +389,8 @@ function renderBoxes(section) {
     gridContainer.style.display = 'grid';
     gridContainer.style.gridTemplateColumns = `repeat(${count}, ${sizeMm})`;
     
+    gridContainer.addEventListener('keydown', handleGridNavKeydown);
+
     boxes.forEach((boxData, i) => {
         const wrapper = document.createElement('div');
         wrapper.className = 'grid-box-wrapper';
@@ -350,7 +399,6 @@ function renderBoxes(section) {
         const furigana = document.createElement('div');
         furigana.className = 'grid-furigana';
         furigana.contentEditable = true;
-        furigana.onkeydown = function(e) { handleGridNavKeydown(e, this); };
         furigana.onblur = function(e) { handleInputBlur(e, this, i, 'furigana'); };
         furigana.innerText = boxData.furigana;
         
@@ -361,7 +409,6 @@ function renderBoxes(section) {
         box.dataset.fullText = boxData.text;
         box.innerText = boxData.text ? String(boxData.text).charAt(0) : '';
 
-        box.onkeydown = function(e) { handleGridNavKeydown(e, this); };
         box.onfocus = handleBoxFocus;
         box.onblur = function(e) { handleInputBlur(e, this, i, 'text'); };
         
@@ -377,9 +424,7 @@ function renderBoxes(section) {
     }
 }
 
-function deselectAllSections() {
-    document.querySelectorAll('.grid-section.selected').forEach(el => el.classList.remove('selected'));
-}
+
 
 function addSectionToGridLine(currentSection, position) {
     const gridLine = currentSection.closest('.grid-line');
@@ -545,6 +590,53 @@ function changeVocabLine(element, style) {
     }
 }
 
+/**
+ * Handles keyboard navigation for grid inputs.
+ * Requirements:
+ * 1. Arrow Left/Right: Move to the adjacent column (same input type).
+ * 2. Tab: Move from Furigana -> Box (Down).
+ * 3. Shift+Tab: Move from Box -> Furigana (Up).
+ */
+function handleGridNavKeydown(event) {
+    const currentInput = event.target;
+    
+    const isFurigana = currentInput.classList.contains('grid-furigana'); 
+    const isBox  = currentInput.classList.contains('grid-box');
+
+    if (!isFurigana && !isBox) return;
+
+    const currentColumn = currentInput.closest('.grid-box-wrapper'); 
+    
+    if (!currentColumn) return;
+
+    if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+        event.preventDefault();
+        
+        let targetColumn = null;
+        
+        if (event.key === 'ArrowLeft') {
+            targetColumn = currentColumn.previousElementSibling;
+        } else {
+            targetColumn = currentColumn.nextElementSibling;
+        }
+
+        if (targetColumn) {
+            const selector = isFurigana ? '.grid-furigana' : '.grid-box';
+            const targetInput = targetColumn.querySelector(selector);
+            if (targetInput) targetInput.focus();
+        }
+    } else if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+        event.preventDefault();
+        if (event.key === 'ArrowUp' && isBox) {
+            const furiganaSibling = currentColumn.querySelector('.grid-furigana');
+            if (furiganaSibling) furiganaSibling.focus();
+        } else if (event.key === 'ArrowDown' && isFurigana) {
+            const boxSibling = currentColumn.querySelector('.grid-box');
+            if (boxSibling) boxSibling.focus();
+        }
+    }
+}
+
 // ===== PAGINATION LOGIC =====
 
 function debounce(func, delay) {
@@ -678,6 +770,9 @@ function renderGridProperties(section) {
             <label class="prop-label" style="margin-top: 10px;">Add New Section</label>
             <button onclick="addSectionToGridLine(document.getElementById('${section.id}'), 'before')">+ Left</button>
             <button onclick="addSectionToGridLine(document.getElementById('${section.id}'), 'after')">+ Right</button>
+
+            <label class="prop-label" style="margin-top: 10px;">Actions</label>
+            <button class="prop-button-danger" onclick="deleteSection(document.getElementById('${section.id}'))">Delete Section</button>
         </div>
     `;
 }
