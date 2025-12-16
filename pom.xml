@@ -29,6 +29,9 @@
 	</scm>
 	<properties>
 		<java.version>21</java.version>
+		<frontend-maven-plugin.version>1.15.1</frontend-maven-plugin.version>
+		<node.version>v22.12.0</node.version>
+		<npm.version>10.9.0</npm.version>
 	</properties>
 	<dependencies>
 		<!-- Core Spring Boot capabilities -->
@@ -85,23 +88,24 @@
 			<plugin>
 				<groupId>com.github.eirslett</groupId>
 				<artifactId>frontend-maven-plugin</artifactId>
-				<version>1.15.0</version>
+				<version>1.15.1</version>
+
 				<configuration>
 					<workingDirectory>frontend</workingDirectory>
 					<installDirectory>target</installDirectory>
 				</configuration>
+
 				<executions>
-					<!-- Install Node and npm -->
 					<execution>
 						<id>install-node-and-npm</id>
 						<goals>
 							<goal>install-node-and-npm</goal>
 						</goals>
 						<configuration>
-							<nodeVersion>v20.10.0</nodeVersion>
+							<nodeVersion>v22.12.0</nodeVersion>
+							<npmVersion>10.9.0</npmVersion>
 						</configuration>
 					</execution>
-					<!-- Install npm dependencies -->
 					<execution>
 						<id>npm-install</id>
 						<goals>
@@ -111,13 +115,16 @@
 							<arguments>install</arguments>
 						</configuration>
 					</execution>
-					<!-- Build React app -->
+
 					<execution>
 						<id>npm-build</id>
 						<goals>
 							<goal>npm</goal>
 						</goals>
 						<configuration>
+							<environmentVariables>
+								<NODE_OPTIONS>--openssl-legacy-provider</NODE_OPTIONS>
+							</environmentVariables>
 							<arguments>run build</arguments>
 						</configuration>
 					</execution>

@@ -5,7 +5,7 @@
 /* ===== PAGE & CANVAS SETUP ===== */
 body {
     background-color: #525659;
-    font-family: 'Noto Sans JP', sans-serif;
+    font-family: 'Noto Sans', 'Noto Sans JP', sans-serif;
     margin: 0;
     height: 100vh;
     display: grid;
@@ -35,12 +35,14 @@ body {
     display: flex;
     flex-direction: column;
     height: 100%;
-    position: relative; /* Changed from static for toggle positioning */
+    position: relative;
+    /* Changed from static for toggle positioning */
     transition: width 0.3s ease;
 }
 
 .editor-sidebar.collapsed {
-    width: 40px; /* Collapsed width */
+    width: 40px;
+    /* Collapsed width */
 }
 
 .editor-sidebar.collapsed .sidebar-content {
@@ -114,21 +116,38 @@ body {
 }
 
 .floating-toolbar {
-    position: static; /* No longer floating */
+    position: static;
+    /* No longer floating */
     bottom: auto;
     left: auto;
     transform: none;
     background: #333;
     padding: 10px;
-    border-radius: 0; /* No longer rounded */
+    border-radius: 0;
+    /* No longer rounded */
     box-shadow: none;
     display: flex;
-    flex-wrap: wrap; /* Allow buttons to wrap */
+    flex-wrap: wrap;
+    /* Allow buttons to wrap */
     gap: 8px;
     z-index: 2000;
 }
-.toolbar-btn { background: transparent; border: none; color: white; cursor: pointer; font-size: 14px; font-weight: 600; padding: 4px 8px; border-radius: 4px; }
-.toolbar-divider { width: 1px; background: #666; }
+
+.toolbar-btn {
+    background: transparent;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.toolbar-divider {
+    width: 1px;
+    background: #666;
+}
 
 
 #layers-panel {
@@ -154,8 +173,14 @@ body {
     align-items: center;
 }
 
-.layer-item:hover { background: #f0f8ff; }
-.layer-item.selected-layer { border-color: #4a90d9; background: #e8f1fb; }
+.layer-item:hover {
+    background: #f0f8ff;
+}
+
+.layer-item.selected-layer {
+    border-color: #4a90d9;
+    background: #e8f1fb;
+}
 
 #properties-panel {
     padding: 10px;
@@ -180,7 +205,8 @@ body {
     color: #555;
 }
 
-.prop-input, .prop-select {
+.prop-input,
+.prop-select {
     width: 100%;
     padding: 6px;
     border: 1px solid #ccc;
@@ -266,10 +292,11 @@ body {
 }
 
 .sheet {
-    position: relative; /* For positioning the page-break-marker */
+    position: relative;
+    /* For positioning the page-break-marker */
     margin-bottom: 20px;
     background: white;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
     padding: 1.27cm;
     box-sizing: border-box;
     width: 210mm;
@@ -289,10 +316,14 @@ body {
 /* Remove the gray gap for pages with oversized content to prevent "Gray Box" */
 .sheet.has-oversized-content {
     margin-bottom: 0;
-    box-shadow: none; /* Optional: merge visually with next page */
-    z-index: 1; /* Ensure text sits above any background */
-    overflow: visible; /* Allow content to hang out */
-    max-height: none; /* Allow sheet to grow beyond A4 size */
+    box-shadow: none;
+    /* Optional: merge visually with next page */
+    z-index: 1;
+    /* Ensure text sits above any background */
+    overflow: visible;
+    /* Allow content to hang out */
+    max-height: none;
+    /* Allow sheet to grow beyond A4 size */
 }
 
 /* ===== ROW INTERACTION (BUILDER ONLY) ===== */
@@ -315,10 +346,12 @@ body {
 }
 
 .sortable-ghost {
-    opacity: 0.2; /* Make the original item semi-transparent */
+    opacity: 0.2;
+    /* Make the original item semi-transparent */
     background-color: #f0f8ff;
     border: 2px dashed #4a90d9;
-    min-height: 40px; /* Ensure visibility for empty rows */
+    min-height: 40px;
+    /* Ensure visibility for empty rows */
     box-sizing: border-box;
 }
 
@@ -333,7 +366,8 @@ body {
     /* Align boxes from the bottom */
     flex-wrap: wrap;
     /* Allow sections to wrap */
-    gap: 0; /* Changed from 1mm 0mm to 0 */
+    gap: 0;
+    /* Changed from 1mm 0mm to 0 */
     width: 100%;
     page-break-inside: avoid;
 }
@@ -393,7 +427,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: 'Noto Sans JP', sans-serif;
+    font-family: 'Noto Sans', 'Noto Sans JP', sans-serif;
     color: #000;
     /* Black for user input */
     line-height: 1;
@@ -443,7 +477,10 @@ body {
     align-items: center;
     justify-content: center;
 }
-.box-tool-btn:hover { background: #777; }
+
+.box-tool-btn:hover {
+    background: #777;
+}
 
 /* SIZES */
 .box-12mm {
@@ -554,20 +591,44 @@ body {
     background: #f8f9fa;
 }
 
-.header-line { flex: 1; border-bottom: 1px solid #000; }
+.header-line {
+    flex: 1;
+    border-bottom: 1px solid #000;
+}
 
 
 
 /* ===== VOCABULARY ROWS ===== */
 
-.vocabulary-row { display: flex; align-items: baseline; font-size: 11px; flex-grow: 1; min-width: 0; }
+.vocabulary-row {
+    display: flex;
+    align-items: baseline;
+    font-size: 11px;
+    flex-grow: 1;
+    min-width: 0;
+}
 
-.vocab-term { margin-right: 8px; padding: 2px 5px; white-space: nowrap; flex-shrink: 0; }
+.vocab-term {
+    margin-right: 8px;
+    padding: 2px 5px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
 
-.vocab-term:hover { background: #f8f9fa; }
+.vocab-term:hover {
+    background: #f8f9fa;
+}
 
-.vocab-line { flex: 1; border-bottom: 1px dashed #000; min-width: 1cm; /* Allow to shrink significantly */ }
-.solid-lines .vocab-line { border-bottom-style: solid; }
+.vocab-line {
+    flex: 1;
+    border-bottom: 1px dashed #000;
+    min-width: 1cm;
+    /* Allow to shrink significantly */
+}
+
+.solid-lines .vocab-line {
+    border-bottom-style: solid;
+}
 
 .vocab-controls {
     position: absolute;
@@ -578,19 +639,30 @@ body {
     padding: 2px;
     border-radius: 3px;
 }
-.row-wrapper:hover .vocab-controls { display: block; }
+
+.row-wrapper:hover .vocab-controls {
+    display: block;
+}
 
 .selected-section {
-    outline: 2px dashed #00bfff; /* Cyan dashed border */
-    outline-offset: 2px; /* Offset to not overlap content */
+    outline: 2px dashed #00bfff;
+    /* Cyan dashed border */
+    outline-offset: 2px;
+    /* Offset to not overlap content */
 }
-.vocab-controls button { font-size: 10px; padding: 2px 4px; }
+
+.vocab-controls button {
+    font-size: 10px;
+    padding: 2px 4px;
+}
 
 .vocabulary-container {
     display: grid;
     grid-template-columns: repeat(var(--vocab-columns, 2), 1fr);
-    gap: 0; /* No gap */
-    padding-top: 0; /* No space for inline controls anymore */
+    gap: 0;
+    /* No gap */
+    padding-top: 0;
+    /* No space for inline controls anymore */
 }
 
 .add-vocab-btn {
@@ -602,7 +674,10 @@ body {
     border-radius: 4px;
     cursor: pointer;
 }
-.add-vocab-btn:hover { background: #e0e0e0; }
+
+.add-vocab-btn:hover {
+    background: #e0e0e0;
+}
 
 /* ===== TOOLBARS (BUILDER ONLY) ===== */
 
@@ -728,8 +803,10 @@ body {
     position: absolute;
     left: 0;
     right: 0;
-    top: 297mm; /* Exact A4 height */
-    border-bottom: 2px dashed #dc3545; /* Red warning line */
+    top: 297mm;
+    /* Exact A4 height */
+    border-bottom: 2px dashed #dc3545;
+    /* Red warning line */
     opacity: 0.5;
     pointer-events: none;
     z-index: 100;
@@ -738,10 +815,12 @@ body {
 
 /* ===== PRINT OVERRIDES ===== */
 @media print {
+
     /* Phase 3: Enforce Paper Standards */
     @page {
         size: A4;
-        margin: 1.27cm; /* This is the ONLY source of margins */
+        margin: 1.27cm;
+        /* This is the ONLY source of margins */
     }
 
     body {
@@ -756,7 +835,8 @@ body {
         display: block !important;
         height: auto !important;
         overflow: visible !important;
-        width: 100% !important; /* Phase 2 */
+        width: 100% !important;
+        /* Phase 2 */
         grid-template-columns: none !important;
     }
 
@@ -764,9 +844,11 @@ body {
         display: block !important;
         overflow: visible !important;
         height: auto !important;
-        padding: 0 !important; /* Phase 2: Remove Screen Padding */
+        padding: 0 !important;
+        /* Phase 2: Remove Screen Padding */
         margin: 0 !important;
-        width: 100% !important; /* Phase 2 */
+        width: 100% !important;
+        /* Phase 2 */
         background: none !important;
     }
 
@@ -807,7 +889,7 @@ body {
         border: none !important;
         background: none !important;
     }
-    
+
     .grid-section.selected {
         box-shadow: none !important;
         border-color: transparent !important;
@@ -816,15 +898,21 @@ body {
     [contenteditable]:hover {
         background: none !important;
     }
-    
+
     /* Ensure content prints correctly */
-    .grid-furigana { color: #000; }
-    [contenteditable] { outline: none; }
+    .grid-furigana {
+        color: #000;
+    }
+
+    [contenteditable] {
+        outline: none;
+    }
+
     .show-guides .grid-box::before,
     .show-guides .grid-box::after {
         border-color: #999 !important;
     }
-    
+
     /* Hide virtual break indicators */
     .page-break-marker {
         display: none !important;

@@ -287,10 +287,11 @@ public class QuizPrintViewModelMapper {
     }
 
     /**
-     * Strips HTML tags from text.
+     * Strips HTML tags from text while preserving meaningful content.
+     * Detects images and equations and provides placeholders.
      *
      * @param text HTML text
-     * @return Plain text without HTML tags
+     * @return Plain text without HTML tags, with placeholders for images/equations
      */
     private String stripHtml(String text) {
         if (text == null) {

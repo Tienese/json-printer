@@ -9,6 +9,7 @@ export interface BaseRow {
   id: string;
   type: RowType;
   order: number;
+  name?: string; // Optional custom name for layer panel
 }
 
 export interface HeaderRow extends BaseRow {
@@ -55,6 +56,7 @@ export interface VocabularyRow extends BaseRow {
   terms: VocabTerm[];
   columns: 1 | 2 | 3;
   lineStyle: 'dashed' | 'solid';
+  fontSize?: number; // 8-24pt, defaults to 12
 }
 
 export type WorksheetRow = HeaderRow | TextRow | GridRow | VocabularyRow;

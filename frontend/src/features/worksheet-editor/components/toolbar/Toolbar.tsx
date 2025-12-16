@@ -9,11 +9,13 @@ import type { RowType } from '../../types/worksheet';
 import styles from './Toolbar.module.css';
 
 export function Toolbar() {
-  const { title, setTitle, showGuideLines, toggleGuideLines, addRow } =
+  const { title, setTitle, showGuideLines, toggleGuideLines, addRow, recalculatePagination } =
     useWorksheetStore();
 
   const handleAddRow = (type: RowType) => {
     addRow(type);
+    // Trigger pagination recalculation so new row appears immediately
+    recalculatePagination();
   };
 
   return (

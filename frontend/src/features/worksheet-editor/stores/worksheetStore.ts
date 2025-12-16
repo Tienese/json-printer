@@ -6,6 +6,10 @@
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
+import { enableMapSet } from 'immer';
+
+// Enable Immer to work with Map and Set
+enableMapSet();
 import type {
   WorksheetState,
   WorksheetRow,
@@ -59,6 +63,11 @@ interface WorksheetActions {
     field: 'text' | 'furigana',
     value: string
   ) => void;
+  reorderGridSections: (
+    rowId: string,
+    sourceIndex: number,
+    destinationIndex: number
+  ) => void;
 
   // Vocabulary operations
   addVocabTerm: (rowId: string) => void;
@@ -71,6 +80,10 @@ interface WorksheetActions {
   ) => void;
   setVocabColumns: (rowId: string, columns: 1 | 2 | 3) => void;
   setVocabLineStyle: (rowId: string, style: 'dashed' | 'solid') => void;
+  setVocabFontSize: (rowId: string, fontSize: number) => void;
+
+  // Row naming
+  renameRow: (id: string, name: string) => void;
 
   // Pagination
   setRowHeight: (rowId: string, height: number) => void;
@@ -186,6 +199,27 @@ export const useWorksheetStore = create<WorksheetStore>()(
             const duplicated = JSON.parse(JSON.stringify(row));
             duplicated.id = `row-${Date.now()}`;
 
+            // Regenerate nested IDs to avoid key conflicts
+            if (duplicated.type === 'GRID') {
+              duplicated.sections = duplicated.sections.map(
+                (section: any, sIdx: number) => ({
+                  ...section,
+                  id: `section-${Date.now()}-${sIdx}`,
+                  boxes: section.boxes.map((box: any, bIdx: number) => ({
+                    ...box,
+                    id: `box-${Date.now()}-${sIdx}-${bIdx}`,
+                  })),
+                })
+              );
+            } else if (duplicated.type === 'VOCABULARY') {
+              duplicated.terms = duplicated.terms.map(
+                (term: any, tIdx: number) => ({
+                  ...term,
+                  id: `term-${Date.now()}-${tIdx}`,
+                })
+              );
+            }
+
             const index = state.rows.findIndex((r) => r.id === id);
             state.rows.splice(index + 1, 0, duplicated);
 
@@ -193,6 +227,9 @@ export const useWorksheetStore = create<WorksheetStore>()(
             state.rows.forEach((r, idx) => {
               r.order = idx;
             });
+
+            // Auto-select the duplicated row
+            state.selectedRowId = duplicated.id;
           }),
 
         // Selection
@@ -327,6 +364,26 @@ export const useWorksheetStore = create<WorksheetStore>()(
             }
           }),
 
+        reorderGridSections: (rowId, sourceIndex, destinationIndex) =>
+          set((state) => {
+            const row = state.rows.find(
+              (r) => r.id === rowId && r.type === 'GRID'
+            ) as any;
+            if (!row) return;
+
+            if (
+              sourceIndex < 0 ||
+              sourceIndex >= row.sections.length ||
+              destinationIndex < 0 ||
+              destinationIndex >= row.sections.length
+            ) {
+              return;
+            }
+
+            const [removed] = row.sections.splice(sourceIndex, 1);
+            row.sections.splice(destinationIndex, 0, removed);
+          }),
+
         // Vocabulary operations
         addVocabTerm: (rowId) =>
           set((state) => {
@@ -379,6 +436,25 @@ export const useWorksheetStore = create<WorksheetStore>()(
             if (!row) return;
 
             row.lineStyle = style;
+          }),
+
+        setVocabFontSize: (rowId, fontSize) =>
+          set((state) => {
+            const row = state.rows.find(
+              (r) => r.id === rowId && r.type === 'VOCABULARY'
+            ) as any;
+            if (!row) return;
+
+            row.fontSize = Math.min(Math.max(fontSize, 8), 24);
+          }),
+
+        // Row naming
+        renameRow: (id, name) =>
+          set((state) => {
+            const row = state.rows.find((r) => r.id === id);
+            if (row) {
+              row.name = name;
+            }
           }),
 
         // Pagination

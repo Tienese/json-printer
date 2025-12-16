@@ -11,6 +11,22 @@ function formatDoc(command, value = null) {
     document.execCommand(command, false, value);
 }
 
+/**
+ * Toggle guide lines on all grid sections
+ */
+function toggleGuideLines() {
+    const sections = document.querySelectorAll('.grid-section');
+    sections.forEach(section => {
+        if (section.classList.contains('show-guides')) {
+            section.classList.remove('show-guides');
+            section.classList.add('hide-guides');
+        } else {
+            section.classList.remove('hide-guides');
+            section.classList.add('show-guides');
+        }
+    });
+}
+
 function setSelection(element, event) {
     if (event) event.stopPropagation();
 

@@ -3,6 +3,8 @@
  */
 
 import { useWorksheetStore } from '../../stores/worksheetStore';
+import { LayersPanel } from './LayersPanel';
+import { PropertiesPanel } from './properties/PropertiesPanel';
 import styles from './Sidebar.module.css';
 
 export function Sidebar() {
@@ -27,21 +29,9 @@ export function Sidebar() {
 
       <div className={styles.content}>
         {activeSidebarTab === 'properties' ? (
-          <div className={styles.panel}>
-            <p className={styles.placeholder}>
-              Select an element to edit properties
-            </p>
-            <p className={styles.note}>
-              Properties panel will be implemented in Phase 6
-            </p>
-          </div>
+          <PropertiesPanel />
         ) : (
-          <div className={styles.panel}>
-            <p className={styles.placeholder}>Layers panel</p>
-            <p className={styles.note}>
-              Drag-and-drop layers will be implemented in Phase 5
-            </p>
-          </div>
+          <LayersPanel />
         )}
       </div>
     </div>

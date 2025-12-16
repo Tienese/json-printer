@@ -16,12 +16,12 @@ import java.util.stream.Collectors;
 
 @Service
 public class PrintReportGenerator {
-    
+
     private static final Logger log = LoggerFactory.getLogger(PrintReportGenerator.class);
-    
+
     public PrintReport generateReport(CanvasQuizDto quiz,
-                                     List<CanvasQuestionDto> questions,
-                                     List<StudentSubmission> submissions) {
+            List<CanvasQuestionDto> questions,
+            List<StudentSubmission> submissions) {
 
         log.info("Starting report generation for quiz: {}", quiz.title());
         log.info("Processing {} students and {} questions", submissions.size(), questions.size());
@@ -103,10 +103,10 @@ public class PrintReportGenerator {
 
         return report;
     }
-    
+
     private void evaluateAnswer(CanvasQuestionDto question,
-                               String studentAnswer,
-                               PrintReport.QuestionResult result) {
+            String studentAnswer,
+            PrintReport.QuestionResult result) {
 
         String questionType = question.questionType();
         log.debug("Evaluating answer for question type: {}", questionType);
@@ -138,10 +138,10 @@ public class PrintReportGenerator {
         // Build comprehensive feedback
         buildFeedback(question, result);
     }
-    
+
     private void evaluateMultipleChoice(CanvasQuestionDto question,
-                                       String studentAnswer,
-                                       PrintReport.QuestionResult result) {
+            String studentAnswer,
+            PrintReport.QuestionResult result) {
         if (question.answers() == null) {
             log.warn("Question has no answers defined");
             return;
@@ -183,10 +183,10 @@ public class PrintReportGenerator {
 
         result.setCorrect(isCorrect);
     }
-    
+
     private void evaluateMultipleAnswers(CanvasQuestionDto question,
-                                        String studentAnswer,
-                                        PrintReport.QuestionResult result) {
+            String studentAnswer,
+            PrintReport.QuestionResult result) {
         // Multiple answers are typically comma-separated in CSV
         // e.g., "A,B,C" or "Answer1,Answer2"
 
@@ -244,61 +244,63 @@ public class PrintReportGenerator {
 
         result.setCorrect(isCorrect);
     }
-    
-    private void evaluateMultipleDropdowns(CanvasQuestionDto question, 
-                                          String studentAnswer, 
-                                          PrintReport.QuestionResult result) {
+
+    private void evaluateMultipleDropdowns(CanvasQuestionDto question,
+            String studentAnswer,
+            PrintReport.QuestionResult result) {
         // Multiple dropdowns have multiple blanks, each with correct answer
         // CSV format might be: "answer1;answer2;answer3" or similar
-        
-        if (question.answers() == null) return;
-        
+
+        if (question.answers() == null)
+            return;
+
         // Group correct answers by blank_id
         List<String> correctTexts = question.answers().stream()
                 .filter(CanvasAnswerDto::isCorrect)
                 .map(a -> stripHtml(a.text()))
                 .collect(Collectors.toList());
-        
+
         result.setCorrectAnswers(correctTexts);
-        
+
         // For now, do simple string matching
         // This might need refinement based on actual CSV format
-        boolean isCorrect = studentAnswer != null && 
+        boolean isCorrect = studentAnswer != null &&
                 correctTexts.stream().anyMatch(c -> studentAnswer.contains(c));
-        
+
         result.setCorrect(isCorrect);
     }
-    
-    private void evaluateMatching(CanvasQuestionDto question, 
-                                 String studentAnswer, 
-                                 PrintReport.QuestionResult result) {
+
+    private void evaluateMatching(CanvasQuestionDto question,
+            String studentAnswer,
+            PrintReport.QuestionResult result) {
         // Matching questions have pairs
         // Canvas exports might vary, but typically shows selected matches
-        
-        if (question.answers() == null) return;
-        
+
+        if (question.answers() == null)
+            return;
+
         List<String> correctTexts = question.answers().stream()
                 .filter(CanvasAnswerDto::isCorrect)
                 .map(a -> stripHtml(a.text()))
                 .collect(Collectors.toList());
-        
+
         result.setCorrectAnswers(correctTexts);
-        
+
         // Simple correctness check
         boolean isCorrect = studentAnswer != null && !studentAnswer.isEmpty();
         result.setCorrect(isCorrect);
     }
-    
+
     private void buildFeedback(CanvasQuestionDto question, PrintReport.QuestionResult result) {
         StringBuilder feedback = new StringBuilder();
-        
+
         // Add general/neutral feedback first (shown to everyone)
         if (question.neutralComments() != null && !question.neutralComments().isEmpty()) {
             feedback.append("<div class='feedback-general'>")
                     .append(question.neutralComments())
                     .append("</div>");
         }
-        
+
         // Add correct/incorrect specific feedback
         if (result.isCorrect()) {
             if (question.correctComments() != null && !question.correctComments().isEmpty()) {
@@ -313,14 +315,14 @@ public class PrintReportGenerator {
                         .append("</div>");
             }
         }
-        
+
         // Add answer-specific feedback if available
         if (question.answers() != null) {
             for (CanvasAnswerDto answer : question.answers()) {
                 if (answer.comments() != null && !answer.comments().isEmpty()) {
                     String answerText = stripHtml(answer.text());
-                    if (result.getStudentAnswer() != null && 
-                        result.getStudentAnswer().contains(answerText)) {
+                    if (result.getStudentAnswer() != null &&
+                            result.getStudentAnswer().contains(answerText)) {
                         feedback.append("<div class='feedback-answer-specific'>")
                                 .append(answer.comments())
                                 .append("</div>");
@@ -328,12 +330,59 @@ public class PrintReportGenerator {
                 }
             }
         }
-        
+
         result.setFeedbackToShow(feedback.toString());
     }
-    
+
+    /**
+     * Strips HTML tags from text while preserving meaningful content.
+     * Detects images and equations and provides placeholders.
+     *
+     * @param text HTML text
+     * @return Plain text without HTML tags, with placeholders for images/equations
+     */
     private String stripHtml(String text) {
-        if (text == null) return "";
-        return text.replaceAll("<[^>]*>", "").trim();
+        if (text == null) {
+            return "";
+        }
+
+        String result = text;
+
+        // Detect and replace images with placeholder
+        if (result.contains("<img")) {
+            // Extract alt text if available, otherwise use generic placeholder
+            result = result.replaceAll("<img[^>]*alt=[\"']([^\"']*)[\"'][^>]*>", "[Image: $1]");
+            result = result.replaceAll("<img[^>]*>", "[Image]");
+        }
+
+        // Detect and replace MathML/LaTeX equations with placeholder
+        if (result.contains("<math") || result.contains("\\(") || result.contains("\\[")) {
+            result = result.replaceAll("<math[^>]*>.*?</math>", "[Equation]");
+            result = result.replaceAll("\\\\\\([^\\)]*\\\\\\)", "[Equation]");
+            result = result.replaceAll("\\\\\\[[^\\]]*\\\\\\]", "[Equation]");
+        }
+
+        // Detect Canvas equation images (common pattern)
+        if (result.contains("equation_images")) {
+            result = result.replaceAll("<img[^>]*equation_images[^>]*>", "[Equation]");
+        }
+
+        // Strip remaining HTML tags
+        result = result.replaceAll("<[^>]*>", "").trim();
+
+        // Decode common HTML entities
+        result = result.replace("&nbsp;", " ")
+                .replace("&amp;", "&")
+                .replace("&lt;", "<")
+                .replace("&gt;", ">")
+                .replace("&quot;", "\"")
+                .replace("&#39;", "'");
+
+        // If result is empty or only whitespace after stripping, return a placeholder
+        if (result.isEmpty()) {
+            return "[No text content]";
+        }
+
+        return result.trim();
     }
 }

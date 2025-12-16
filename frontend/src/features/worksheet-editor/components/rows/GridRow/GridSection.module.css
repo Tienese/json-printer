@@ -3,61 +3,6 @@
   position: relative;
 }
 
-.sectionHeader {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 4px;
-  padding: 4px;
-  background: #f5f5f5;
-  border-radius: 4px;
-}
-
-.sectionControls {
-  display: flex;
-  gap: 4px;
-  margin-left: auto;
-}
-
-.controlBtn {
-  padding: 2px 8px;
-  font-size: 11px;
-  border: 1px solid #ccc;
-  background: white;
-  border-radius: 3px;
-  cursor: pointer;
-  color: #666;
-}
-
-.controlBtn:hover {
-  background: #e3f2fd;
-  border-color: #2196f3;
-  color: #2196f3;
-}
-
-.deleteBtn {
-  color: #d32f2f;
-}
-
-.deleteBtn:hover {
-  background: #ffebee;
-  border-color: #d32f2f;
-}
-
-.boxSizeSelect {
-  padding: 2px 6px;
-  font-size: 11px;
-  border: 1px solid #ccc;
-  border-radius: 3px;
-  background: white;
-  cursor: pointer;
-}
-
-.boxSizeSelect:focus {
-  outline: 2px solid #2196f3;
-  outline-offset: 1px;
-}
-
 .boxesContainer {
   display: flex;
   flex-wrap: wrap;
@@ -67,22 +12,6 @@
   border-radius: 4px;
   min-height: 40px;
   background: white;
-}
-
-.addBoxBtn {
-  padding: 4px 12px;
-  border: 1px dashed #2196f3;
-  background: #f0f8ff;
-  color: #2196f3;
-  border-radius: 3px;
-  cursor: pointer;
-  font-size: 12px;
-  align-self: flex-start;
-}
-
-.addBoxBtn:hover {
-  background: #e3f2fd;
-  border-style: solid;
 }
 
 .empty {
@@ -96,17 +25,9 @@
 
 /* Print styles */
 @media print {
-  .sectionHeader {
-    display: none;
-  }
-
   .boxesContainer {
     border: none;
     padding: 0;
     gap: 0;
-  }
-
-  .addBoxBtn {
-    display: none;
   }
 }

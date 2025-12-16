@@ -1,8 +1,8 @@
 /**
- * VocabularyRow component - Term: Meaning pairs
- * Full implementation in Phase 4
+ * VocabularyRow component - Term: _______ pairs
  */
 
+import { useWorksheetStore } from '../../../stores/worksheetStore';
 import { RowWrapper } from '../RowWrapper';
 import type { VocabularyRow as VocabularyRowType } from '../../../types/worksheet';
 import styles from './VocabularyRow.module.css';
@@ -12,16 +12,39 @@ interface VocabularyRowProps {
 }
 
 export function VocabularyRow({ row }: VocabularyRowProps) {
+  const { updateVocabTerm } = useWorksheetStore();
+
+  const handleTermBlur = (index: number, e: React.FocusEvent<HTMLSpanElement>) => {
+    const newValue = e.currentTarget.textContent || '';
+    updateVocabTerm(row.id, index, 'term', newValue);
+  };
+
   return (
     <RowWrapper rowId={row.id}>
-      <div className={styles.vocabRow}>
-        <p className={styles.placeholder}>
-          📚 Vocabulary Row (Phase 4: Term-meaning pairs)
-        </p>
-        <p className={styles.info}>
-          Terms: {row.terms.length} | Columns: {row.columns} | Style:{' '}
-          {row.lineStyle}
-        </p>
+      <div
+        className={styles.vocabContainer}
+        style={{
+          gridTemplateColumns: `repeat(${row.columns}, 1fr)`,
+          gap: '0.5rem',
+          fontSize: `${row.fontSize || 12}px`,
+        }}
+      >
+        {row.terms.map((term, index) => (
+          <div key={term.id} className={styles.vocabItem}>
+            <span
+              contentEditable
+              suppressContentEditableWarning
+              className={styles.term}
+              data-placeholder="Term"
+              onBlur={(e) => handleTermBlur(index, e)}
+            >
+              {term.term}
+            </span>
+            <span
+              className={`${styles.line} ${row.lineStyle === 'solid' ? styles.solid : styles.dashed}`}
+            />
+          </div>
+        ))}
       </div>
     </RowWrapper>
   );

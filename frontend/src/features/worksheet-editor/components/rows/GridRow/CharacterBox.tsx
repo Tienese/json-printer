@@ -38,10 +38,17 @@ export function CharacterBox({
   const boxDimensions = BOX_SIZES[boxSize];
   const sizePx = boxDimensions.px;
 
-  // Auto-focus when selected
+  // Auto-focus when selected programmatically (not by click)
+  // Only focus if neither input is already focused
   useEffect(() => {
     if (isSelected && characterRef.current) {
-      characterRef.current.focus();
+      const activeElement = document.activeElement;
+      const isAlreadyFocused =
+        activeElement === characterRef.current ||
+        activeElement === furiganaRef.current;
+      if (!isAlreadyFocused) {
+        characterRef.current.focus();
+      }
     }
   }, [isSelected]);
 
