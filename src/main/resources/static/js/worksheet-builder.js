@@ -3,6 +3,7 @@
  * Version: Section-Based Grid Layout
  */
 
+let isComposing = false;
 let currentZoom = 1.0;
 let activeSelection = null; // { id: string, type: string }
 
@@ -237,11 +238,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Debounced pagination for text input
-    const debouncedPaginate = debounce(paginate, 500);
-    canvas.addEventListener('input', (e) => {
+    // Set a flag during IME composition to prevent DOM manipulation.
+    canvas.addEventListener('compositionstart', () => {
+        isComposing = true;
+    });
+    canvas.addEventListener('compositionend', () => {
+        isComposing = false;
+    });
+
+    // To prevent focus loss while typing, pagination is moved from the `input` event
+    // to the `focusout` event. This solves both bugs because the DOM is not
+    // rebuilt until the user has finished interacting with the text field.
+    canvas.addEventListener('focusout', (e) => {
         if (e.target.closest('.text-col')) {
-            debouncedPaginate();
+            paginate();
         }
     });
 
@@ -427,7 +437,15 @@ function renderBoxes(section) {
 
 
 function addSectionToGridLine(currentSection, position) {
-    const gridLine = currentSection.closest('.grid-line');
+    // Determine the grid line container based on what currentSection is.
+    const isRow = currentSection.dataset.type === 'GRID';
+    const gridLine = isRow ? currentSection.querySelector('.grid-line') : currentSection.closest('.grid-line');
+
+    if (!gridLine) {
+        console.error('Could not find grid-line container for', currentSection);
+        return;
+    }
+
     const newSection = addSectionToLine(gridLine, 5, 'box-10mm'); // Default to 5 boxes, 10mm
     newSection.id = `section-${Date.now()}`;
 
@@ -435,11 +453,8 @@ function addSectionToGridLine(currentSection, position) {
         gridLine.insertBefore(newSection, currentSection);
     } else if (position === 'after') {
         currentSection.after(newSection);
-    } else { // This case handles adding to a GRID row, not a section
-        const gridRowElement = currentSection;
-        const gridLineContainer = gridRowElement.querySelector('.grid-line');
-        gridLineContainer.appendChild(newSection);
     }
+    // If `position` is undefined, `addSectionToLine` has already appended it to the end, which is correct.
 
     setSelection(newSection, null);
 }
@@ -449,13 +464,29 @@ function addSectionToGridLine(currentSection, position) {
  */
 function changeSectionSize(section, size) {
     if(!section) return;
+    
+    // 1. Save the ID before we touch the DOM
+    const sectionId = section.id;
+
+    // 2. Perform the updates
     section.dataset.size = size;
     renderBoxes(section);
     paginate();
+
+    // 3. RESTORE: Find the element again (it moved during paginate)
+    const updatedSection = document.getElementById(sectionId);
+    if (updatedSection) {
+        // Re-apply selection logic to show panel and CSS border
+        setSelection(updatedSection, null); 
+    }
 }
 
 function modifyBoxCount(section, change) {
     if(!section) return;
+
+    // 1. Save ID
+    const sectionId = section.id;
+
     let boxes = JSON.parse(section.dataset.boxes);
 
     if (change > 0) {
@@ -470,8 +501,16 @@ function modifyBoxCount(section, change) {
     if (boxes.length > 50) boxes.length = 50; // Max limit
 
     section.dataset.boxes = JSON.stringify(boxes);
+
+    // 2. Render and Paginate
     renderBoxes(section);
     paginate();
+
+    // 3. RESTORE
+    const updatedSection = document.getElementById(sectionId);
+    if (updatedSection) {
+        setSelection(updatedSection, null);
+    }
 }
 
 function setTextFieldColumns(element, columns) {
@@ -659,6 +698,9 @@ function createNewPage() {
 }
 
 function paginate() {
+    // Do not paginate while IME composition is in progress.
+    if (isComposing) return;
+
     const canvas = document.getElementById('editorCanvas');
     if (!canvas) return;
 

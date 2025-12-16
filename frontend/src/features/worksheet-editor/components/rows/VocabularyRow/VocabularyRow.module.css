@@ -1,0 +1,19 @@
+.vocabRow {
+  padding: 1rem;
+  background: #f9f9f9;
+  border: 1px dashed #ddd;
+  border-radius: 4px;
+}
+
+.placeholder {
+  margin: 0 0 0.5rem 0;
+  font-weight: 600;
+  color: #666;
+  font-size: 0.875rem;
+}
+
+.info {
+  margin: 0;
+  font-size: 0.75rem;
+  color: #999;
+}

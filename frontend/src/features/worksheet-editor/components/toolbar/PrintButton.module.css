@@ -1,0 +1,22 @@
+.printBtn {
+  padding: 0.5rem 1rem;
+  background: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.printBtn:hover {
+  background: #45a049;
+}
+
+.printBtn:active {
+  transform: translateY(1px);
+}

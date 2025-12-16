@@ -1,0 +1,28 @@
+.wrapper {
+  margin-bottom: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.wrapper:hover {
+  outline: 1px solid #e0e0e0;
+  outline-offset: 2px;
+}
+
+.selected {
+  outline: 2px solid #2196f3;
+  outline-offset: 2px;
+}
+
+@media print {
+  .wrapper {
+    margin-bottom: 0;
+    cursor: default;
+  }
+
+  .wrapper:hover,
+  .selected {
+    outline: none;
+  }
+}

@@ -1,0 +1,42 @@
+.viewport {
+  flex: 1;
+  overflow: auto;
+  display: flex;
+  justify-content: center;
+  padding: 2rem;
+  background: #f5f5f5;
+}
+
+.canvas {
+  transform-origin: top center;
+  transition: transform 0.2s ease;
+}
+
+.emptyState {
+  background: white;
+  border: 2px dashed #ddd;
+  border-radius: 8px;
+  padding: 3rem;
+  text-align: center;
+  color: #666;
+  min-width: 400px;
+}
+
+.emptyState p {
+  margin: 0.5rem 0;
+}
+
+@media print {
+  .viewport {
+    padding: 0;
+    overflow: visible;
+  }
+
+  .canvas {
+    transform: none !important;
+  }
+
+  .emptyState {
+    display: none;
+  }
+}

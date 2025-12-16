@@ -8,8 +8,8 @@ import {
   PrintReportPage,
   PrintReportViewPage,
   BlankQuizPage,
-  WorksheetPage,
 } from './pages';
+import { WorksheetEditorPage } from './features/worksheet-editor/WorksheetEditorPage';
 import './styles/theme/variables.css';
 import './styles/theme/reset.css';
 import './App.css';
@@ -41,8 +41,8 @@ function App() {
           <Route path="/quiz/editor" element={<QtiEditorPage />} />
           <Route path="/quiz/success" element={<QtiSuccessPage />} />
 
-          {/* Worksheet Builder route */}
-          <Route path="/worksheet" element={<WorksheetPage />} />
+          {/* Worksheet Editor route */}
+          <Route path="/worksheet" element={<WorksheetEditorPage />} />
 
           {/* 404 fallback */}
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
