@@ -4,6 +4,7 @@
 
 import type { ReactNode } from 'react';
 import { useWorksheetStore } from '../../stores/worksheetStore';
+import { usePagination } from '../../hooks/usePagination';
 import styles from './RowWrapper.module.css';
 
 interface RowWrapperProps {
@@ -14,6 +15,8 @@ interface RowWrapperProps {
 export function RowWrapper({ rowId, children }: RowWrapperProps) {
   const { selectedRowId, selectRow } = useWorksheetStore();
   const isSelected = selectedRowId === rowId;
+  // Use pagination hook to measure row height
+  const rowRef = usePagination(rowId);
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -22,6 +25,7 @@ export function RowWrapper({ rowId, children }: RowWrapperProps) {
 
   return (
     <div
+      ref={rowRef}
       className={`${styles.wrapper} ${isSelected ? styles.selected : ''}`}
       onClick={handleClick}
       data-row-id={rowId}

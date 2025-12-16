@@ -19,7 +19,7 @@ import {
   createVocabTerm,
   createCharacterBox,
 } from '../utils/rowFactory';
-import { DEFAULT_ZOOM } from '../utils/constants';
+import { DEFAULT_ZOOM, USABLE_HEIGHT_PX } from '../utils/constants';
 
 interface WorksheetActions {
   // Document actions
@@ -389,15 +389,63 @@ export const useWorksheetStore = create<WorksheetStore>()(
 
         recalculatePagination: () =>
           set((state) => {
-            // Pagination logic will be implemented in Phase 3
-            // For now, just put all rows on one page
-            state.pages = [
-              {
+            const pages: typeof state.pages = [];
+            let currentPage = {
+              pageNumber: 1,
+              rowIds: [] as string[],
+              usedHeight: 0,
+            };
+
+            // Iterate through rows in order
+            for (const row of state.rows) {
+              const rowHeight = state.rowHeights.get(row.id) || 0;
+
+              // If row is 0 height (not yet measured), add to current page
+              if (rowHeight === 0) {
+                currentPage.rowIds.push(row.id);
+                continue;
+              }
+
+              // If row fits on current page, add it
+              if (currentPage.usedHeight + rowHeight <= USABLE_HEIGHT_PX) {
+                currentPage.rowIds.push(row.id);
+                currentPage.usedHeight += rowHeight;
+              } else {
+                // Current page is full, save it and start a new page
+                if (currentPage.rowIds.length > 0) {
+                  pages.push({ ...currentPage });
+                }
+
+                // Start new page with this row
+                currentPage = {
+                  pageNumber: pages.length + 1,
+                  rowIds: [row.id],
+                  usedHeight: rowHeight,
+                };
+
+                // Handle oversized rows (taller than one page)
+                if (rowHeight > USABLE_HEIGHT_PX && currentPage.rowIds.length === 1) {
+                  // Row is too tall for one page, but add it anyway
+                  // It will overflow, but at least it's visible
+                }
+              }
+            }
+
+            // Don't forget the last page
+            if (currentPage.rowIds.length > 0) {
+              pages.push(currentPage);
+            }
+
+            // If no pages, create an empty page
+            if (pages.length === 0) {
+              pages.push({
                 pageNumber: 1,
-                rowIds: state.rows.map((r) => r.id),
+                rowIds: [],
                 usedHeight: 0,
-              },
-            ];
+              });
+            }
+
+            state.pages = pages;
           }),
 
         // Zoom & UI
