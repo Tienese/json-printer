@@ -1,19 +1,48 @@
 .gridRow {
-  padding: 1rem;
-  background: #f9f9f9;
-  border: 1px dashed #ddd;
+  padding: 8px 0;
+}
+
+.sections {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.addSectionBtn {
+  padding: 8px 16px;
+  border: 2px dashed #2196f3;
+  background: #f0f8ff;
+  color: #2196f3;
   border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  margin-top: 8px;
+  width: fit-content;
 }
 
-.placeholder {
-  margin: 0 0 0.5rem 0;
-  font-weight: 600;
-  color: #666;
-  font-size: 0.875rem;
+.addSectionBtn:hover {
+  background: #e3f2fd;
+  border-style: solid;
 }
 
-.info {
-  margin: 0;
-  font-size: 0.75rem;
+.empty {
+  padding: 20px;
+  text-align: center;
   color: #999;
+  font-style: italic;
+  border: 2px dashed #ddd;
+  border-radius: 4px;
+  background: #fafafa;
+}
+
+/* Print styles */
+@media print {
+  .addSectionBtn {
+    display: none;
+  }
+
+  .sections {
+    gap: 8px;
+  }
 }
