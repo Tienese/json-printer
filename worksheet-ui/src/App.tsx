@@ -1,0 +1,71 @@
+import './styles/tailwind.css';
+import { useNavigation } from './navigation/useNavigation';
+import { ROUTES } from './navigation/routes';
+import { WorksheetPage } from './pages/WorksheetPage';
+import { DashboardPage } from './pages/DashboardPage';
+import { PrintReportViewPage } from './pages/PrintReportViewPage';
+import { PrintReportSlipPage } from './pages/PrintReportSlipPage';
+import { PrintReportBlankPage } from './pages/PrintReportBlankPage';
+import { QtiImportPage } from './pages/QtiImportPage';
+import { QtiEditorPage } from './pages/QtiEditorPage';
+import { QtiSuccessPage } from './pages/QtiSuccessPage';
+import { AnalyticsPage } from './pages/AnalyticsPage';
+import { LandingPage } from './pages/LandingPage';
+
+import { ErrorBoundary } from './components/ErrorBoundary';
+
+/**
+ * Main App component - Hash-based router
+ * Routes are defined in navigation/routes.ts
+ * Navigation state managed by useNavigation hook
+ */
+function App() {
+  const { route, navigate } = useNavigation();
+
+  const renderPage = () => {
+    switch (route) {
+      // Landing page with sidebar
+      case ROUTES.HOME:
+        return <LandingPage onNavigate={navigate} />;
+
+      // All other pages - no sidebar
+      case ROUTES.WORKSHEET:
+        return <WorksheetPage onNavigate={navigate} />;
+
+      case ROUTES.PRINT_REPORT_VIEW:
+        return <PrintReportViewPage onNavigate={navigate} />;
+
+      case ROUTES.PRINT_REPORT_SLIP:
+        return <PrintReportSlipPage onNavigate={navigate} />;
+
+      case ROUTES.PRINT_REPORT_BLANK:
+        return <PrintReportBlankPage onNavigate={navigate} />;
+
+      case ROUTES.QUIZ_IMPORT:
+        return <QtiImportPage onNavigate={navigate} />;
+
+      case ROUTES.QUIZ_EDITOR:
+        return <QtiEditorPage onNavigate={navigate} />;
+
+      case ROUTES.QUIZ_SUCCESS:
+        return <QtiSuccessPage onNavigate={navigate} />;
+
+      case ROUTES.ANALYTICS:
+        return <AnalyticsPage onNavigate={navigate} />;
+
+      case ROUTES.CANVAS_COURSES:
+        return <DashboardPage onNavigate={navigate} />;
+
+      default:
+        return <LandingPage onNavigate={navigate} />;
+    }
+  };
+
+  return (
+    <ErrorBoundary>
+      {renderPage()}
+    </ErrorBoundary>
+  );
+}
+
+export default App;

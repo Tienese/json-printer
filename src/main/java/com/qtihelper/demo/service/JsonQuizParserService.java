@@ -133,25 +133,38 @@ public class JsonQuizParserService {
                 result.addError(String.format("Question %d: Prompt is required", questionNumber));
             }
 
-            // ERRORS - Answers list validation
-            if (question.getAnswers() == null || question.getAnswers().isEmpty()) {
-                result.addError(String.format("Question %d: Must have answer options", questionNumber));
-                continue; // Can't validate answers if list is null/empty
-            }
+            // ERRORS - Answers/Matching validation
+            String type = question.getType() != null ? question.getType().toUpperCase() : "";
+            boolean isMatching = "MT".equals(type);
 
-            // ERRORS - Correct answer count validation
-            long correctCount = question.getAnswers().stream()
-                    .filter(a -> a.getCorrect() != null && a.getCorrect())
-                    .count();
+            if (isMatching) {
+                boolean hasMatchingData = (question.getMatches() != null && !question.getMatches().isEmpty()) ||
+                                         (question.getMatchingPairs() != null && !question.getMatchingPairs().isEmpty()) ||
+                                         (question.getLeftColumn() != null && !question.getLeftColumn().isEmpty() &&
+                                          question.getRightColumn() != null && !question.getRightColumn().isEmpty());
+                if (!hasMatchingData) {
+                    result.addError(String.format("Question %d: Matching question must have matches or matching pairs", questionNumber));
+                }
+                // Skip answer validation for MT
+            } else {
+                if (question.getAnswers() == null || question.getAnswers().isEmpty()) {
+                    result.addError(String.format("Question %d: Must have answer options", questionNumber));
+                    continue; // Can't validate answers if list is null/empty
+                }
 
-            if (correctCount == 0) {
-                result.addError(String.format("Question %d: No correct answer marked", questionNumber));
-            } else if (correctCount > 1) {
-                // Only error for MC/TF types, MA expects multiple
-                String type = question.getType() != null ? question.getType().toUpperCase() : "";
-                if ("MC".equals(type) || "TF".equals(type)) {
-                    result.addError(String.format("Question %d: Multiple correct answers (expected exactly 1 for %s type)",
-                                                   questionNumber, type));
+                // ERRORS - Correct answer count validation
+                long correctCount = question.getAnswers().stream()
+                        .filter(a -> a.getCorrect() != null && a.getCorrect())
+                        .count();
+
+                if (correctCount == 0) {
+                    result.addError(String.format("Question %d: No correct answer marked", questionNumber));
+                } else if (correctCount > 1) {
+                    // Only error for MC/TF types, MA expects multiple
+                    if ("MC".equals(type) || "TF".equals(type)) {
+                        result.addError(String.format("Question %d: Multiple correct answers (expected exactly 1 for %s type)",
+                                                       questionNumber, type));
+                    }
                 }
             }
 

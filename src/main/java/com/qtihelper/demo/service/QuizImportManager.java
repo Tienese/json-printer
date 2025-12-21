@@ -18,15 +18,18 @@ public class QuizImportManager {
 
     private final ManifestGeneratorService manifestGenerator;
     private final QtiContentGeneratorService qtiContentGenerator;
+    private final QtiMetaGeneratorService qtiMetaGenerator;
     private final ZipArchiveService zipArchiveService;
     private final CanvasMigrationService canvasMigrationService;
 
     public QuizImportManager(ManifestGeneratorService manifestGenerator,
-                            QtiContentGeneratorService qtiContentGenerator,
-                            ZipArchiveService zipArchiveService,
-                            CanvasMigrationService canvasMigrationService) {
+            QtiContentGeneratorService qtiContentGenerator,
+            QtiMetaGeneratorService qtiMetaGenerator,
+            ZipArchiveService zipArchiveService,
+            CanvasMigrationService canvasMigrationService) {
         this.manifestGenerator = manifestGenerator;
         this.qtiContentGenerator = qtiContentGenerator;
+        this.qtiMetaGenerator = qtiMetaGenerator;
         this.zipArchiveService = zipArchiveService;
         this.canvasMigrationService = canvasMigrationService;
     }
@@ -46,44 +49,55 @@ public class QuizImportManager {
         ImportResult result = new ImportResult();
 
         try {
-            // Step 1: Generate IMS manifest
-            log.info("Step 1/4: Generating IMS manifest");
+            // Step 1: Generate QTI content (to get assessment ID)
+            log.info("Step 1/5: Generating QTI content XML");
             long step1Start = System.currentTimeMillis();
-            String manifestXml = manifestGenerator.generateManifest(quiz.getTitle());
+            QtiContentGeneratorService.QtiGenerationResult qtiResult = qtiContentGenerator.generateQtiContent(quiz);
+            String assessmentId = qtiResult.assessmentIdent();
+            String qtiContentXml = qtiResult.content();
             long step1Duration = System.currentTimeMillis() - step1Start;
-            log.info("Step 1/4: Manifest generated ({} bytes) in {}ms", manifestXml.length(), step1Duration);
-
-            result.setManifestGenerated(true);
-            result.setManifestSize(manifestXml.length());
-
-            // Step 2: Generate QTI content
-            log.info("Step 2/4: Generating QTI content XML");
-            long step2Start = System.currentTimeMillis();
-            String qtiContentXml = qtiContentGenerator.generateQtiContent(quiz);
-            long step2Duration = System.currentTimeMillis() - step2Start;
-            log.info("Step 2/4: QTI content generated ({} bytes) in {}ms", qtiContentXml.length(), step2Duration);
+            log.info("Step 1/5: QTI content generated ({} bytes) in {}ms", qtiContentXml.length(), step1Duration);
 
             result.setQtiContentGenerated(true);
             result.setQtiContentSize(qtiContentXml.length());
             result.setQuestionCount(quiz.getQuestions().size());
 
-            // Step 3: Create ZIP package
-            log.info("Step 3/4: Creating QTI package ZIP");
+            // Step 2: Generate Canvas assessment metadata
+            log.info("Step 2/5: Generating assessment metadata");
+            long step2Start = System.currentTimeMillis();
+            String assessmentMetaXml = qtiMetaGenerator.generateAssessmentMeta(quiz, assessmentId);
+            long step2Duration = System.currentTimeMillis() - step2Start;
+            log.info("Step 2/5: Assessment metadata generated ({} bytes) in {}ms", assessmentMetaXml.length(),
+                    step2Duration);
+
+            // Step 3: Generate IMS manifest
+            log.info("Step 3/5: Generating IMS manifest");
             long step3Start = System.currentTimeMillis();
-            byte[] qtiZipBytes = zipArchiveService.createQtiPackage(manifestXml, qtiContentXml);
+            String manifestXml = manifestGenerator.generateManifest(quiz.getTitle(), assessmentId);
             long step3Duration = System.currentTimeMillis() - step3Start;
-            log.info("Step 3/4: ZIP package created ({} bytes) in {}ms", qtiZipBytes.length, step3Duration);
+            log.info("Step 3/5: Manifest generated ({} bytes) in {}ms", manifestXml.length(), step3Duration);
+
+            result.setManifestGenerated(true);
+            result.setManifestSize(manifestXml.length());
+
+            // Step 4: Create ZIP package
+            log.info("Step 4/5: Creating QTI package ZIP");
+            long step4Start = System.currentTimeMillis();
+            byte[] qtiZipBytes = zipArchiveService.createCanvasQtiPackage(
+                    manifestXml, qtiContentXml, assessmentMetaXml, assessmentId);
+            long step4Duration = System.currentTimeMillis() - step4Start;
+            log.info("Step 4/5: ZIP package created ({} bytes) in {}ms", qtiZipBytes.length, step4Duration);
 
             result.setZipCreated(true);
             result.setZipSize(qtiZipBytes.length);
             result.setQtiPackage(qtiZipBytes);
 
-            // Step 4: Upload to Canvas
-            log.info("Step 4/4: Uploading to Canvas and initiating migration");
-            long step4Start = System.currentTimeMillis();
+            // Step 5: Upload to Canvas
+            log.info("Step 5/5: Uploading to Canvas and initiating migration");
+            long step5Start = System.currentTimeMillis();
             String migrationStatus = canvasMigrationService.uploadAndMigrate(courseId, qtiZipBytes, quiz.getTitle());
-            long step4Duration = System.currentTimeMillis() - step4Start;
-            log.info("Step 4/4: Upload completed in {}ms", step4Duration);
+            long step5Duration = System.currentTimeMillis() - step5Start;
+            log.info("Step 5/5: Upload completed in {}ms", step5Duration);
 
             result.setCanvasUploadCompleted(true);
             result.setMigrationStatus(migrationStatus);
@@ -95,8 +109,8 @@ public class QuizImportManager {
             result.setMessage("QTI package successfully uploaded to Canvas. Check Canvas for import status.");
 
             log.info("=== QTI import workflow completed successfully in {}ms ===", totalDuration);
-            log.info("Performance: Manifest={}ms, QTI={}ms, ZIP={}ms, Upload={}ms",
-                    step1Duration, step2Duration, step3Duration, step4Duration);
+            log.info("Performance: QTI={}ms, Meta={}ms, Manifest={}ms, ZIP={}ms, Upload={}ms",
+                    step1Duration, step2Duration, step3Duration, step4Duration, step5Duration);
 
             return result;
 
@@ -125,14 +139,20 @@ public class QuizImportManager {
     public byte[] generateQtiPackageOnly(UserQuizJson quiz) throws IOException {
         log.info("Generating QTI package (no upload) for quiz: {}", quiz.getTitle());
 
-        // Generate manifest
-        String manifestXml = manifestGenerator.generateManifest(quiz.getTitle());
+        // Generate QTI content (returns both content and assessment ID)
+        QtiContentGeneratorService.QtiGenerationResult qtiResult = qtiContentGenerator.generateQtiContent(quiz);
+        String assessmentId = qtiResult.assessmentIdent();
+        String qtiContentXml = qtiResult.content();
 
-        // Generate QTI content
-        String qtiContentXml = qtiContentGenerator.generateQtiContent(quiz);
+        // Generate Canvas assessment metadata
+        String assessmentMetaXml = qtiMetaGenerator.generateAssessmentMeta(quiz, assessmentId);
 
-        // Create ZIP
-        byte[] qtiZipBytes = zipArchiveService.createQtiPackage(manifestXml, qtiContentXml);
+        // Generate manifest (now includes reference to meta file)
+        String manifestXml = manifestGenerator.generateManifest(quiz.getTitle(), assessmentId);
+
+        // Create ZIP with Canvas-compatible structure
+        byte[] qtiZipBytes = zipArchiveService.createCanvasQtiPackage(
+                manifestXml, qtiContentXml, assessmentMetaXml, assessmentId);
 
         log.info("QTI package generated ({} bytes)", qtiZipBytes.length);
         return qtiZipBytes;

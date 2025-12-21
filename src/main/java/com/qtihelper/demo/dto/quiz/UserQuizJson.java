@@ -14,12 +14,14 @@ public class UserQuizJson {
 
     private String title;
     private String description;
+    private QuizSettings settings; // Canvas quiz configuration (optional)
 
     @JsonProperty("questions")
     private List<UserQuestion> questions = new ArrayList<>();
 
     // Constructors
-    public UserQuizJson() {}
+    public UserQuizJson() {
+    }
 
     public UserQuizJson(String title, String description) {
         this.title = title;
@@ -52,7 +54,19 @@ public class UserQuizJson {
     }
 
     /**
+     * Returns quiz settings, using defaults if not provided.
+     */
+    public QuizSettings getSettings() {
+        return settings != null ? settings : new QuizSettings();
+    }
+
+    public void setSettings(QuizSettings settings) {
+        this.settings = settings;
+    }
+
+    /**
      * Validates the quiz structure.
+     * 
      * @return true if valid, false otherwise
      */
     public boolean isValid() {

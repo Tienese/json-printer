@@ -5,11 +5,11 @@ import java.util.List;
 
 /**
  * DTO representing the result of validating a quiz JSON.
- * Contains validation errors (which fail validation) and warnings (which don't).
+ * Contains validation errors (which fail validation) and warnings (which
+ * don't).
  */
 public class QuizValidationResult {
 
-    private boolean valid;
     private List<String> errors;
     private List<String> warnings;
 
@@ -23,9 +23,7 @@ public class QuizValidationResult {
      * Create a successful validation result.
      */
     public static QuizValidationResult success() {
-        QuizValidationResult result = new QuizValidationResult();
-        result.valid = true;
-        return result;
+        return new QuizValidationResult();
     }
 
     /**
@@ -33,7 +31,6 @@ public class QuizValidationResult {
      */
     public static QuizValidationResult failure(List<String> errors) {
         QuizValidationResult result = new QuizValidationResult();
-        result.valid = false;
         result.errors = new ArrayList<>(errors);
         return result;
     }

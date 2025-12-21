@@ -39,11 +39,11 @@ public class QuizPrintViewModel {
         this.studentCount = studentCount;
     }
 
-    public long getQuizId() {
+    public Long getQuizId() {
         return quizId;
     }
 
-    public void setQuizId(long quizId) {
+    public void setQuizId(Long quizId) {
         this.quizId = quizId;
     }
 

@@ -21,7 +21,7 @@ public class ZipArchiveService {
     /**
      * Create a ZIP archive containing manifest and QTI content files.
      *
-     * @param manifestXml  Content of imsmanifest.xml
+     * @param manifestXml   Content of imsmanifest.xml
      * @param qtiContentXml Content of quiz_content.xml
      * @return Byte array of the ZIP file
      * @throws IOException if ZIP creation fails
@@ -30,7 +30,7 @@ public class ZipArchiveService {
         log.info("Creating QTI package ZIP file");
 
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
-             ZipOutputStream zos = new ZipOutputStream(baos)) {
+                ZipOutputStream zos = new ZipOutputStream(baos)) {
 
             // Add imsmanifest.xml
             log.debug("Adding imsmanifest.xml to ZIP");
@@ -60,6 +60,60 @@ public class ZipArchiveService {
     }
 
     /**
+     * Create a Canvas-compatible ZIP archive with assessment subdirectory
+     * structure.
+     *
+     * @param manifestXml       Content of imsmanifest.xml
+     * @param qtiContentXml     Content of the QTI assessment XML
+     * @param assessmentMetaXml Content of assessment_meta.xml
+     * @param assessmentIdent   Assessment identifier (used for directory name)
+     * @return Byte array of the ZIP file
+     * @throws IOException if ZIP creation fails
+     */
+    public byte[] createCanvasQtiPackage(String manifestXml, String qtiContentXml,
+            String assessmentMetaXml, String assessmentIdent) throws IOException {
+        log.info("Creating Canvas-compatible QTI package ZIP file");
+
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                ZipOutputStream zos = new ZipOutputStream(baos)) {
+
+            // Add imsmanifest.xml at root
+            log.debug("Adding imsmanifest.xml to ZIP");
+            ZipEntry manifestEntry = new ZipEntry("imsmanifest.xml");
+            zos.putNextEntry(manifestEntry);
+            zos.write(manifestXml.getBytes(StandardCharsets.UTF_8));
+            zos.closeEntry();
+
+            // Create assessment subdirectory and add QTI content
+            String qtiFilePath = assessmentIdent + "/" + assessmentIdent + ".xml";
+            log.debug("Adding {} to ZIP", qtiFilePath);
+            ZipEntry contentEntry = new ZipEntry(qtiFilePath);
+            zos.putNextEntry(contentEntry);
+            zos.write(qtiContentXml.getBytes(StandardCharsets.UTF_8));
+            zos.closeEntry();
+
+            // Add assessment_meta.xml to subdirectory
+            String metaFilePath = assessmentIdent + "/assessment_meta.xml";
+            log.debug("Adding {} to ZIP", metaFilePath);
+            ZipEntry metaEntry = new ZipEntry(metaFilePath);
+            zos.putNextEntry(metaEntry);
+            zos.write(assessmentMetaXml.getBytes(StandardCharsets.UTF_8));
+            zos.closeEntry();
+
+            zos.finish();
+
+            byte[] zipBytes = baos.toByteArray();
+            log.info("Created Canvas QTI package ZIP ({} bytes)", zipBytes.length);
+
+            return zipBytes;
+
+        } catch (IOException e) {
+            log.error("Failed to create Canvas QTI package ZIP", e);
+            throw new IOException("Failed to create ZIP archive: " + e.getMessage(), e);
+        }
+    }
+
+    /**
      * Create a ZIP archive with custom file entries.
      *
      * @param files Map of filename to file content
@@ -70,7 +124,7 @@ public class ZipArchiveService {
         log.info("Creating ZIP archive with {} files", files.size());
 
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
-             ZipOutputStream zos = new ZipOutputStream(baos)) {
+                ZipOutputStream zos = new ZipOutputStream(baos)) {
 
             for (java.util.Map.Entry<String, String> entry : files.entrySet()) {
                 String filename = entry.getKey();

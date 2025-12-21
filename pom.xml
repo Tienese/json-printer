@@ -48,7 +48,8 @@
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-thymeleaf</artifactId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
@@ -76,6 +77,12 @@
 			<scope>runtime</scope>
 			<optional>true</optional>
 		</dependency>
+
+		<!-- Validation API -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation</artifactId>
+		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
@@ -91,7 +98,7 @@
 				<version>1.15.1</version>
 
 				<configuration>
-					<workingDirectory>frontend</workingDirectory>
+					<workingDirectory>worksheet-ui</workingDirectory>
 					<installDirectory>target</installDirectory>
 				</configuration>
 
@@ -147,7 +154,7 @@
 							<outputDirectory>${project.build.directory}/classes/static</outputDirectory>
 							<resources>
 								<resource>
-									<directory>frontend/dist</directory>
+									<directory>worksheet-ui/dist</directory>
 									<filtering>false</filtering>
 								</resource>
 							</resources>

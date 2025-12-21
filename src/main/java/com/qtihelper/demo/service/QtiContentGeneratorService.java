@@ -3,6 +3,7 @@ package com.qtihelper.demo.service;
 import com.qtihelper.demo.dto.quiz.UserAnswer;
 import com.qtihelper.demo.dto.quiz.UserQuestion;
 import com.qtihelper.demo.dto.quiz.UserQuizJson;
+import com.qtihelper.demo.util.XmlUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -21,12 +22,72 @@ public class QtiContentGeneratorService {
     private static final Logger log = LoggerFactory.getLogger(QtiContentGeneratorService.class);
 
     /**
+     * Result record containing both QTI content and assessment identifier.
+     */
+    public record QtiGenerationResult(String content, String assessmentIdent) {
+    }
+
+    // XML Structure Constants
+    private static final String GT_NEWLINE = ">\n";
+    private static final String QUESTION_PREFIX = "question_";
+    private static final String RESPONSE_PREFIX = "response_";
+
+    // Item-level constants (items are now nested inside assessment > section)
+    private static final String ITEM_IDENT_START = "      <item ident=\"";
+    private static final String TITLE_ATTR = "\" title=\"";
+    private static final String ITEM_END = "      </item>\n";
+
+    // Metadata constants
+    private static final String METADATA_FIELD_START = "          <qtimetadatafield>\n";
+    private static final String METADATA_FIELD_END = "          </qtimetadatafield>\n";
+    private static final String ITEMMETADATA_START = "      <itemmetadata>\n";
+    private static final String ITEMMETADATA_END = "      </itemmetadata>\n";
+    private static final String QTIMETADATA_START = "        <qtimetadata>\n";
+    private static final String QTIMETADATA_END = "        </qtimetadata>\n";
+    private static final String FIELDLABEL_QUESTION_TYPE = "            <fieldlabel>question_type</fieldlabel>\n";
+    private static final String FIELDLABEL_POINTS_POSSIBLE = "            <fieldlabel>points_possible</fieldlabel>\n";
+    private static final String FIELDENTRY_START = "            <fieldentry>";
+    private static final String FIELDENTRY_END = "</fieldentry>\n";
+
+    // Presentation constants
+    private static final String PRESENTATION_START = "      <presentation>\n";
+    private static final String PRESENTATION_END = "      </presentation>\n";
+    private static final String MATERIAL_START = "          <material>\n";
+    private static final String MATERIAL_END = "          </material>\n";
+    private static final String INNER_MATERIAL_START = "              <material>\n";
+    private static final String INNER_MATERIAL_END = "              </material>\n";
+    private static final String MATTEXT_HTML_START = "            <mattext texttype=\"text/html\">";
+    private static final String MATTEXT_HTML_END = "</mattext>\n";
+    private static final String MATTEXT_PLAIN_START = "                <mattext texttype=\"text/plain\">";
+
+    // Response constants
+    private static final String RESPONSE_LID_START = "        <response_lid ident=\"";
+    private static final String RESPONSE_LID_END = "        </response_lid>\n";
+    private static final String RENDER_CHOICE_START = "          <render_choice>\n";
+    private static final String RENDER_CHOICE_END = "          </render_choice>\n";
+    private static final String RESPONSE_LABEL_START = "            <response_label ident=\"";
+    private static final String RESPONSE_LABEL_END = "            </response_label>\n";
+
+    // Response processing constants
+    private static final String CONDITIONVAR_START = "          <conditionvar>\n";
+    private static final String CONDITIONVAR_END = "          </conditionvar>\n";
+    private static final String VAREQUAL_START = "            <varequal respident=\"";
+    private static final String VAREQUAL_END = "</varequal>\n";
+    private static final String RESPCONDITION_END = "        </respcondition>\n";
+
+    // Feedback constants
+    private static final String FLOW_MAT_START = "        <flow_mat>\n";
+    private static final String FLOW_MAT_END = "        </flow_mat>\n";
+    private static final String FEEDBACK_END = "      </itemfeedback>\n";
+    private static final String ANSWER_PREFIX = "answer_";
+
+    /**
      * Generate complete QTI content XML for a quiz.
      *
      * @param quiz UserQuizJson object containing quiz data
-     * @return XML string for quiz_content.xml
+     * @return QtiGenerationResult containing XML content and assessment identifier
      */
-    public String generateQtiContent(UserQuizJson quiz) {
+    public QtiGenerationResult generateQtiContent(UserQuizJson quiz) {
         log.info("Generating QTI content for quiz: {}", quiz.getTitle());
 
         StringBuilder xml = new StringBuilder();
@@ -34,37 +95,43 @@ public class QtiContentGeneratorService {
         // XML Declaration
         xml.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
 
-        // Object bank root
-        String bankId = "qb_" + UUID.randomUUID().toString().replace("-", "");
+        // Generate assessment ident (will be used for manifest linking)
+        String assessmentId = "g" + UUID.randomUUID().toString().replace("-", "");
+
         xml.append("<questestinterop xmlns=\"http://www.imsglobal.org/xsd/ims_qtiasiv1p2\" ");
         xml.append("xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" ");
         xml.append("xsi:schemaLocation=\"http://www.imsglobal.org/xsd/ims_qtiasiv1p2 ");
         xml.append("http://www.imsglobal.org/xsd/ims_qtiasiv1p2p1.xsd\">\n");
 
-        // Object bank (for question bank)
-        xml.append("  <objectbank ident=\"").append(bankId).append("\">\n");
+        // Assessment root (for Canvas Quiz, not Question Bank)
+        xml.append("  <assessment ident=\"").append(assessmentId).append("\" title=\"");
+        xml.append(XmlUtils.escape(quiz.getTitle())).append("\">\n");
 
-        // QTI metadata
+        // Assessment-level QTI metadata (cc_maxattempts)
         xml.append("    <qtimetadata>\n");
         xml.append("      <qtimetadatafield>\n");
-        xml.append("        <fieldlabel>bank_title</fieldlabel>\n");
-        xml.append("        <fieldentry>").append(escapeXml(quiz.getTitle())).append("</fieldentry>\n");
+        xml.append("        <fieldlabel>cc_maxattempts</fieldlabel>\n");
+        xml.append("        <fieldentry>1</fieldentry>\n");
         xml.append("      </qtimetadatafield>\n");
         xml.append("    </qtimetadata>\n");
 
-        // Generate each question (direct children of objectbank)
+        // Section wrapper (required by Canvas assessment structure)
+        xml.append("    <section ident=\"root_section\">\n");
+
+        // Generate each question (children of section)
         for (int i = 0; i < quiz.getQuestions().size(); i++) {
             UserQuestion question = quiz.getQuestions().get(i);
             String questionXml = generateQuestion(question, i + 1);
             xml.append(questionXml);
         }
 
-        xml.append("  </objectbank>\n");
+        xml.append("    </section>\n");
+        xml.append("  </assessment>\n");
         xml.append("</questestinterop>\n");
 
         log.info("Generated QTI content with {} questions ({} bytes)",
                 quiz.getQuestions().size(), xml.length());
-        return xml.toString();
+        return new QtiGenerationResult(xml.toString(), assessmentId);
     }
 
     /**
@@ -76,13 +143,13 @@ public class QtiContentGeneratorService {
         log.debug("Generating question #{} (type: {})", questionNumber, type);
 
         return switch (type) {
-            case "MC", "TF" -> generateMultipleChoice(question, questionNumber);
-            case "MA" -> generateMultipleAnswer(question, questionNumber);
-            case "MD", "DD" -> generateMultipleDropdown(question, questionNumber);
-            case "MT" -> generateMatching(question, questionNumber);
+            case "MC", "TF" -> generateMultipleChoice(question);
+            case "MA" -> generateMultipleAnswer(question);
+            case "MD", "DD" -> generateMultipleDropdown(question);
+            case "MT" -> generateMatching(question);
             default -> {
                 log.warn("Unsupported question type: {}, defaulting to MC", type);
-                yield generateMultipleChoice(question, questionNumber);
+                yield generateMultipleChoice(question);
             }
         };
     }
@@ -90,53 +157,56 @@ public class QtiContentGeneratorService {
     /**
      * Generate Multiple Choice or True/False question.
      */
-    private String generateMultipleChoice(UserQuestion question, int questionNumber) {
-        String itemId = "question_" + UUID.randomUUID().toString().replace("-", "");
-        String responseId = "response_" + UUID.randomUUID().toString().replace("-", "");
+    private String generateMultipleChoice(UserQuestion question) {
+        String itemId = QUESTION_PREFIX + UUID.randomUUID().toString().replace("-", "");
+        String responseId = RESPONSE_PREFIX + UUID.randomUUID().toString().replace("-", "");
 
         StringBuilder xml = new StringBuilder();
 
-        xml.append("    <item ident=\"").append(itemId).append("\" title=\"").append(escapeXml(question.getTitle())).append("\">\n");
+        xml.append(ITEM_IDENT_START).append(itemId).append(TITLE_ATTR).append(XmlUtils.escape(question.getTitle()))
+                .append("\"").append(GT_NEWLINE);
 
         // Metadata
-        xml.append("      <itemmetadata>\n");
-        xml.append("        <qtimetadata>\n");
-        xml.append("          <qtimetadatafield>\n");
-        xml.append("            <fieldlabel>question_type</fieldlabel>\n");
-        xml.append("            <fieldentry>multiple_choice_question</fieldentry>\n");
-        xml.append("          </qtimetadatafield>\n");
-        xml.append("          <qtimetadatafield>\n");
-        xml.append("            <fieldlabel>points_possible</fieldlabel>\n");
-        xml.append("            <fieldentry>").append(question.getPoints()).append("</fieldentry>\n");
-        xml.append("          </qtimetadatafield>\n");
-        xml.append("        </qtimetadata>\n");
-        xml.append("      </itemmetadata>\n");
+        xml.append(ITEMMETADATA_START);
+        xml.append(QTIMETADATA_START);
+        xml.append(METADATA_FIELD_START);
+        xml.append(FIELDLABEL_QUESTION_TYPE);
+        xml.append(FIELDENTRY_START).append("multiple_choice_question").append(FIELDENTRY_END);
+        xml.append(METADATA_FIELD_END);
+        xml.append(METADATA_FIELD_START);
+        xml.append(FIELDLABEL_POINTS_POSSIBLE);
+        xml.append(FIELDENTRY_START).append(question.getPoints()).append(FIELDENTRY_END);
+        xml.append(METADATA_FIELD_END);
+        xml.append(QTIMETADATA_END);
+        xml.append(ITEMMETADATA_END);
 
         // Presentation
-        xml.append("      <presentation>\n");
-        xml.append("        <material>\n");
-        xml.append("          <mattext texttype=\"text/html\">").append(escapeXml(question.getPrompt())).append("</mattext>\n");
-        xml.append("        </material>\n");
+        xml.append(PRESENTATION_START);
+        xml.append(MATERIAL_START);
+        xml.append(MATTEXT_HTML_START).append(XmlUtils.escape(question.getPrompt()))
+                .append(MATTEXT_HTML_END);
+        xml.append(MATERIAL_END);
 
         // Response (Single cardinality for MC/TF)
-        xml.append("        <response_lid ident=\"").append(responseId).append("\" rcardinality=\"Single\">\n");
-        xml.append("          <render_choice>\n");
+        xml.append(RESPONSE_LID_START).append(responseId).append("\" rcardinality=\"Single\">\n");
+        xml.append(RENDER_CHOICE_START);
 
         // Answer choices
         for (int i = 0; i < question.getAnswers().size(); i++) {
             UserAnswer answer = question.getAnswers().get(i);
-            String answerId = "answer_" + i;
+            String answerId = ANSWER_PREFIX + i;
 
-            xml.append("            <response_label ident=\"").append(answerId).append("\">\n");
-            xml.append("              <material>\n");
-            xml.append("                <mattext texttype=\"text/plain\">").append(escapeXml(answer.getText())).append("</mattext>\n");
-            xml.append("              </material>\n");
-            xml.append("            </response_label>\n");
+            xml.append(RESPONSE_LABEL_START).append(answerId).append("\"").append(GT_NEWLINE);
+            xml.append(INNER_MATERIAL_START);
+            xml.append(MATTEXT_PLAIN_START).append(XmlUtils.escape(answer.getText()))
+                    .append(MATTEXT_HTML_END);
+            xml.append(INNER_MATERIAL_END);
+            xml.append(RESPONSE_LABEL_END);
         }
 
-        xml.append("          </render_choice>\n");
-        xml.append("        </response_lid>\n");
-        xml.append("      </presentation>\n");
+        xml.append(RENDER_CHOICE_END);
+        xml.append(RESPONSE_LID_END);
+        xml.append(PRESENTATION_END);
 
         // Response processing
         xml.append(generateResponseProcessingWithPerAnswerFeedback(question, responseId));
@@ -144,7 +214,7 @@ public class QtiContentGeneratorService {
         // Feedback
         xml.append(generateFeedback(question));
 
-        xml.append("    </item>\n");
+        xml.append(ITEM_END);
 
         return xml.toString();
     }
@@ -152,53 +222,56 @@ public class QtiContentGeneratorService {
     /**
      * Generate Multiple Answer question.
      */
-    private String generateMultipleAnswer(UserQuestion question, int questionNumber) {
-        String itemId = "question_" + UUID.randomUUID().toString().replace("-", "");
-        String responseId = "response_" + UUID.randomUUID().toString().replace("-", "");
+    private String generateMultipleAnswer(UserQuestion question) {
+        String itemId = QUESTION_PREFIX + UUID.randomUUID().toString().replace("-", "");
+        String responseId = RESPONSE_PREFIX + UUID.randomUUID().toString().replace("-", "");
 
         StringBuilder xml = new StringBuilder();
 
-        xml.append("    <item ident=\"").append(itemId).append("\" title=\"").append(escapeXml(question.getTitle())).append("\">\n");
+        xml.append(ITEM_IDENT_START).append(itemId).append(TITLE_ATTR).append(XmlUtils.escape(question.getTitle()))
+                .append(GT_NEWLINE);
 
         // Metadata
-        xml.append("      <itemmetadata>\n");
-        xml.append("        <qtimetadata>\n");
-        xml.append("          <qtimetadatafield>\n");
-        xml.append("            <fieldlabel>question_type</fieldlabel>\n");
-        xml.append("            <fieldentry>multiple_answers_question</fieldentry>\n");
-        xml.append("          </qtimetadatafield>\n");
-        xml.append("          <qtimetadatafield>\n");
-        xml.append("            <fieldlabel>points_possible</fieldlabel>\n");
-        xml.append("            <fieldentry>").append(question.getPoints()).append("</fieldentry>\n");
-        xml.append("          </qtimetadatafield>\n");
-        xml.append("        </qtimetadata>\n");
-        xml.append("      </itemmetadata>\n");
+        xml.append(ITEMMETADATA_START);
+        xml.append(QTIMETADATA_START);
+        xml.append(METADATA_FIELD_START);
+        xml.append(FIELDLABEL_QUESTION_TYPE);
+        xml.append(FIELDENTRY_START).append("multiple_answers_question").append(FIELDENTRY_END);
+        xml.append(METADATA_FIELD_END);
+        xml.append(METADATA_FIELD_START);
+        xml.append(FIELDLABEL_POINTS_POSSIBLE);
+        xml.append(FIELDENTRY_START).append(question.getPoints()).append(FIELDENTRY_END);
+        xml.append(METADATA_FIELD_END);
+        xml.append(QTIMETADATA_END);
+        xml.append(ITEMMETADATA_END);
 
         // Presentation
-        xml.append("      <presentation>\n");
-        xml.append("        <material>\n");
-        xml.append("          <mattext texttype=\"text/html\">").append(escapeXml(question.getPrompt())).append("</mattext>\n");
-        xml.append("        </material>\n");
+        xml.append(PRESENTATION_START);
+        xml.append(MATERIAL_START);
+        xml.append(MATTEXT_HTML_START).append(XmlUtils.escape(question.getPrompt()))
+                .append(MATTEXT_HTML_END);
+        xml.append(MATERIAL_END);
 
         // Response (Multiple cardinality for MA)
-        xml.append("        <response_lid ident=\"").append(responseId).append("\" rcardinality=\"Multiple\">\n");
-        xml.append("          <render_choice>\n");
+        xml.append(RESPONSE_LID_START).append(responseId).append("\" rcardinality=\"Multiple\">\n");
+        xml.append(RENDER_CHOICE_START);
 
         // Answer choices
         for (int i = 0; i < question.getAnswers().size(); i++) {
             UserAnswer answer = question.getAnswers().get(i);
-            String answerId = "answer_" + i;
+            String answerId = ANSWER_PREFIX + i;
 
-            xml.append("            <response_label ident=\"").append(answerId).append("\">\n");
-            xml.append("              <material>\n");
-            xml.append("                <mattext texttype=\"text/plain\">").append(escapeXml(answer.getText())).append("</mattext>\n");
-            xml.append("              </material>\n");
-            xml.append("            </response_label>\n");
+            xml.append(RESPONSE_LABEL_START).append(answerId).append("\"").append(GT_NEWLINE);
+            xml.append(INNER_MATERIAL_START);
+            xml.append(MATTEXT_PLAIN_START).append(XmlUtils.escape(answer.getText()))
+                    .append(MATTEXT_HTML_END);
+            xml.append(INNER_MATERIAL_END);
+            xml.append(RESPONSE_LABEL_END);
         }
 
-        xml.append("          </render_choice>\n");
-        xml.append("        </response_lid>\n");
-        xml.append("      </presentation>\n");
+        xml.append(RENDER_CHOICE_END);
+        xml.append(RESPONSE_LID_END);
+        xml.append(PRESENTATION_END);
 
         // Response processing
         xml.append(generateResponseProcessingWithPerAnswerFeedback(question, responseId));
@@ -206,7 +279,7 @@ public class QtiContentGeneratorService {
         // Feedback
         xml.append(generateFeedback(question));
 
-        xml.append("    </item>\n");
+        xml.append(ITEM_END);
 
         return xml.toString();
     }
@@ -214,76 +287,107 @@ public class QtiContentGeneratorService {
     /**
      * Generate Multiple Dropdown question.
      */
-    private String generateMultipleDropdown(UserQuestion question, int questionNumber) {
-        // For now, treat as multiple choice
-        // TODO: Implement proper multiple dropdown logic with blank_id mapping
-        log.warn("Multiple Dropdown questions converted to Multiple Choice format");
-        return generateMultipleChoice(question, questionNumber);
-    }
-
-    /**
-     * Generate Matching question.
-     */
-    private String generateMatching(UserQuestion question, int questionNumber) {
-        // Simplified matching - would need proper match pairs
-        log.warn("Matching questions have simplified implementation");
-        return generateMultipleChoice(question, questionNumber);
-    }
-
-    /**
-     * Generate response processing block.
-     */
-    private String generateResponseProcessing(UserQuestion question, String responseId) {
+    private String generateMultipleDropdown(UserQuestion question) {
+        String itemId = QUESTION_PREFIX + UUID.randomUUID().toString().replace("-", "");
         StringBuilder xml = new StringBuilder();
 
+        xml.append(ITEM_IDENT_START).append(itemId).append(TITLE_ATTR).append(XmlUtils.escape(question.getTitle()))
+                .append(GT_NEWLINE);
+
+        // Metadata
+        xml.append(ITEMMETADATA_START);
+        xml.append(QTIMETADATA_START);
+        xml.append(METADATA_FIELD_START);
+        xml.append(FIELDLABEL_QUESTION_TYPE);
+        xml.append(FIELDENTRY_START).append("multiple_dropdowns_question").append(FIELDENTRY_END);
+        xml.append(METADATA_FIELD_END);
+        xml.append(METADATA_FIELD_START);
+        xml.append(FIELDLABEL_POINTS_POSSIBLE);
+        xml.append(FIELDENTRY_START).append(question.getPoints()).append(FIELDENTRY_END);
+        xml.append(METADATA_FIELD_END);
+        xml.append(QTIMETADATA_END);
+        xml.append(ITEMMETADATA_END);
+
+        // Presentation
+        xml.append(PRESENTATION_START);
+        xml.append(MATERIAL_START);
+        xml.append(MATTEXT_HTML_START).append(XmlUtils.escape(question.getPrompt()))
+                .append(MATTEXT_HTML_END);
+        xml.append(MATERIAL_END);
+
+        // Group answers by blankId
+        java.util.Map<String, List<UserAnswer>> blanks = question.getAnswers().stream()
+                .filter(a -> a.getBlankId() != null)
+                .collect(Collectors.groupingBy(UserAnswer::getBlankId));
+
+        if (blanks.isEmpty()) {
+            // Fallback to MC-like behavior if no blanks identified
+            return generateMultipleChoice(question);
+        }
+
+        for (java.util.Map.Entry<String, List<UserAnswer>> entry : blanks.entrySet()) {
+            String blankId = entry.getKey();
+            List<UserAnswer> options = entry.getValue();
+            String responseId = RESPONSE_PREFIX + blankId;
+
+            xml.append(RESPONSE_LID_START).append(responseId).append("\" rcardinality=\"Single\">\n");
+            xml.append(RENDER_CHOICE_START);
+
+            for (int i = 0; i < options.size(); i++) {
+                UserAnswer opt = options.get(i);
+                String optId = "opt_" + blankId + "_" + i;
+                xml.append(RESPONSE_LABEL_START).append(optId).append(GT_NEWLINE);
+                xml.append(INNER_MATERIAL_START);
+                xml.append(MATTEXT_PLAIN_START).append(XmlUtils.escape(opt.getText()))
+                        .append(MATTEXT_HTML_END);
+                xml.append(INNER_MATERIAL_END);
+                xml.append(RESPONSE_LABEL_END);
+            }
+
+            xml.append(RENDER_CHOICE_END);
+            xml.append(RESPONSE_LID_END);
+        }
+
+        xml.append(PRESENTATION_END);
+
+        // Simplified resprocessing for MD
         xml.append("      <resprocessing>\n");
         xml.append("        <outcomes>\n");
         xml.append("          <decvar maxvalue=\"100\" minvalue=\"0\" varname=\"SCORE\" vartype=\"Decimal\"/>\n");
         xml.append("        </outcomes>\n");
 
-        // Get correct answers
-        List<String> correctAnswerIds = question.getAnswers().stream()
-                .filter(a -> a.getCorrect() != null && a.getCorrect())
-                .map(a -> "answer_" + question.getAnswers().indexOf(a))
-                .collect(Collectors.toList());
+        for (java.util.Map.Entry<String, List<UserAnswer>> entry : blanks.entrySet()) {
+            String blankId = entry.getKey();
+            List<UserAnswer> options = entry.getValue();
+            String responseId = RESPONSE_PREFIX + blankId;
 
-        // Correct response condition
-        if (!correctAnswerIds.isEmpty()) {
-            xml.append("        <respcondition continue=\"No\">\n");
-            xml.append("          <conditionvar>\n");
-
-            if (correctAnswerIds.size() == 1) {
-                // Single correct answer
-                xml.append("            <varequal respident=\"").append(responseId).append("\">")
-                   .append(correctAnswerIds.get(0)).append("</varequal>\n");
-            } else {
-                // Multiple correct answers - use AND logic
-                xml.append("            <and>\n");
-                for (String answerId : correctAnswerIds) {
-                    xml.append("              <varequal respident=\"").append(responseId).append("\">")
-                       .append(answerId).append("</varequal>\n");
+            for (int i = 0; i < options.size(); i++) {
+                UserAnswer opt = options.get(i);
+                if (opt.getCorrect() != null && opt.getCorrect()) {
+                    xml.append("        <respcondition>\n");
+                    xml.append(CONDITIONVAR_START);
+                    xml.append(VAREQUAL_START).append(responseId).append("\">")
+                            .append("opt_").append(blankId).append("_").append(i).append(VAREQUAL_END);
+                    xml.append(CONDITIONVAR_END);
+                    xml.append("          <setvar action=\"Add\" varname=\"SCORE\">")
+                            .append(100.0 / blanks.size()).append("</setvar>\n");
+                    xml.append(RESPCONDITION_END);
                 }
-                xml.append("            </and>\n");
             }
-
-            xml.append("          </conditionvar>\n");
-            xml.append("          <setvar action=\"Set\" varname=\"SCORE\">100</setvar>\n");
-            xml.append("          <displayfeedback feedbacktype=\"Response\" linkrefid=\"correct_fb\"/>\n");
-            xml.append("        </respcondition>\n");
         }
-
-        // Incorrect response condition
-        xml.append("        <respcondition continue=\"Yes\">\n");
-        xml.append("          <conditionvar>\n");
-        xml.append("            <other/>\n");
-        xml.append("          </conditionvar>\n");
-        xml.append("          <setvar action=\"Set\" varname=\"SCORE\">0</setvar>\n");
-        xml.append("          <displayfeedback feedbacktype=\"Response\" linkrefid=\"incorrect_fb\"/>\n");
-        xml.append("        </respcondition>\n");
-
         xml.append("      </resprocessing>\n");
 
+        // Feedback
+        xml.append(generateFeedback(question));
+
+        xml.append(ITEM_END);
+
         return xml.toString();
+    }
+
+    private String generateMatching(UserQuestion question) {
+        log.warn("Matching questions have simplified implementation, converting to MD/MC format");
+        return generateMultipleChoice(question);
     }
 
     /**
@@ -298,88 +402,87 @@ public class QtiContentGeneratorService {
         xml.append("          <decvar maxvalue=\"100\" minvalue=\"0\" varname=\"SCORE\" vartype=\"Decimal\"/>\n");
         xml.append("        </outcomes>\n");
 
-        // Get correct answer identifiers
-        List<String> correctAnswerIds = question.getAnswers().stream()
-                .filter(a -> a.getCorrect() != null && a.getCorrect())
-                .map(a -> "answer_" + question.getAnswers().indexOf(a))
-                .collect(Collectors.toList());
+        // PHASE 1: Per-answer feedback
+        addPerAnswerFeedbackConditions(question, responseId, xml);
 
-        // PHASE 1: Per-answer feedback conditions (continue="Yes")
-        // Loop through all answers to create feedback conditions
+        // PHASE 2: General feedback
+        addGeneralFeedbackCondition(question, xml);
+
+        // PHASE 3 & 4: Scoring
+        addScoringConditions(question, responseId, xml);
+
+        xml.append("      </resprocessing>\n");
+        return xml.toString();
+    }
+
+    private void addPerAnswerFeedbackConditions(UserQuestion question, String responseId, StringBuilder xml) {
         for (int i = 0; i < question.getAnswers().size(); i++) {
             UserAnswer answer = question.getAnswers().get(i);
-            String answerId = "answer_" + i;
+            String answerId = ANSWER_PREFIX + i;
 
-            // Only generate if answer has specific feedback
             if (answer.getFeedback() != null && !answer.getFeedback().isBlank()) {
                 xml.append("        <respcondition continue=\"Yes\">\n");
-                xml.append("          <conditionvar>\n");
-                xml.append("            <varequal respident=\"").append(responseId).append("\">")
-                   .append(answerId).append("</varequal>\n");
-                xml.append("          </conditionvar>\n");
+                xml.append(CONDITIONVAR_START);
+                xml.append(VAREQUAL_START).append(responseId).append("\">")
+                        .append(answerId).append(VAREQUAL_END);
+                xml.append(CONDITIONVAR_END);
                 xml.append("          <displayfeedback feedbacktype=\"Response\" linkrefid=\"")
-                   .append(answerId).append("_fb\"/>\n");
-                xml.append("        </respcondition>\n");
+                        .append(answerId).append("_fb\"/>\n");
+                xml.append(RESPCONDITION_END);
             }
         }
+    }
 
-        // PHASE 2: General feedback condition (continue="Yes")
+    private void addGeneralFeedbackCondition(UserQuestion question, StringBuilder xml) {
         if (question.getGeneralFeedback() != null && !question.getGeneralFeedback().isBlank()) {
             xml.append("        <respcondition continue=\"Yes\">\n");
-            xml.append("          <conditionvar>\n");
+            xml.append(CONDITIONVAR_START);
             xml.append("            <other/>\n");
-            xml.append("          </conditionvar>\n");
+            xml.append(CONDITIONVAR_END);
             xml.append("          <displayfeedback feedbacktype=\"Response\" linkrefid=\"general_fb\"/>\n");
-            xml.append("        </respcondition>\n");
+            xml.append(RESPCONDITION_END);
         }
+    }
 
-        // PHASE 3: Scoring condition - Correct match (continue="No")
+    private void addScoringConditions(UserQuestion question, String responseId, StringBuilder xml) {
+        List<String> correctAnswerIds = question.getAnswers().stream()
+                .filter(a -> a.getCorrect() != null && a.getCorrect())
+                .map(a -> ANSWER_PREFIX + question.getAnswers().indexOf(a))
+                .toList();
+
+        // Correct condition
         if (!correctAnswerIds.isEmpty()) {
             xml.append("        <respcondition continue=\"No\">\n");
-            xml.append("          <conditionvar>\n");
-
+            xml.append(CONDITIONVAR_START);
             if (correctAnswerIds.size() == 1) {
-                // Single correct answer
-                xml.append("            <varequal respident=\"").append(responseId).append("\">")
-                   .append(correctAnswerIds.get(0)).append("</varequal>\n");
+                xml.append(VAREQUAL_START).append(responseId).append("\">")
+                        .append(correctAnswerIds.get(0)).append(VAREQUAL_END);
             } else {
-                // Multiple correct answers - use AND logic
                 xml.append("            <and>\n");
                 for (String answerId : correctAnswerIds) {
                     xml.append("              <varequal respident=\"").append(responseId).append("\">")
-                       .append(answerId).append("</varequal>\n");
+                            .append(answerId).append(VAREQUAL_END);
                 }
                 xml.append("            </and>\n");
             }
-
-            xml.append("          </conditionvar>\n");
+            xml.append(CONDITIONVAR_END);
             xml.append("          <setvar action=\"Set\" varname=\"SCORE\">100</setvar>\n");
-
-            // Display correct feedback if present
             if (question.getCorrectFeedback() != null && !question.getCorrectFeedback().isBlank()) {
                 xml.append("          <displayfeedback feedbacktype=\"Response\" linkrefid=\"correct_fb\"/>\n");
             }
-
-            xml.append("        </respcondition>\n");
+            xml.append(RESPCONDITION_END);
         }
 
-        // PHASE 4: Incorrect fallback (continue="No")
+        // Incorrect fallback
         xml.append("        <respcondition continue=\"No\">\n");
-        xml.append("          <conditionvar>\n");
+        xml.append(CONDITIONVAR_START);
         xml.append("            <other/>\n");
-        xml.append("          </conditionvar>\n");
+        xml.append(CONDITIONVAR_END);
         xml.append("          <setvar action=\"Set\" varname=\"SCORE\">0</setvar>\n");
-
-        // Display incorrect feedback if present
         if (question.getIncorrectFeedback() != null && !question.getIncorrectFeedback().isBlank()) {
             xml.append("          <displayfeedback feedbacktype=\"Response\" linkrefid=\"incorrect_fb\"/>\n");
         }
-
-        xml.append("        </respcondition>\n");
-
-        xml.append("      </resprocessing>\n");
-
-        return xml.toString();
+        xml.append(RESPCONDITION_END);
     }
 
     /**
@@ -391,71 +494,58 @@ public class QtiContentGeneratorService {
         // Per-answer feedback blocks
         for (int i = 0; i < question.getAnswers().size(); i++) {
             UserAnswer answer = question.getAnswers().get(i);
-            String answerId = "answer_" + i;
+            String answerId = ANSWER_PREFIX + i;
 
             // Only generate if answer has specific feedback
             if (answer.getFeedback() != null && !answer.getFeedback().isBlank()) {
                 xml.append("      <itemfeedback ident=\"").append(answerId).append("_fb\">\n");
-                xml.append("        <flow_mat>\n");
-                xml.append("          <material>\n");
-                xml.append("            <mattext texttype=\"text/html\">")
-                   .append(escapeXml(answer.getFeedback())).append("</mattext>\n");
-                xml.append("          </material>\n");
-                xml.append("        </flow_mat>\n");
-                xml.append("      </itemfeedback>\n");
+                xml.append(FLOW_MAT_START);
+                xml.append(MATERIAL_START);
+                xml.append(MATTEXT_HTML_START)
+                        .append(XmlUtils.escape(answer.getFeedback())).append(MATTEXT_HTML_END);
+                xml.append(MATERIAL_END);
+                xml.append(FLOW_MAT_END);
+                xml.append(FEEDBACK_END);
             }
         }
 
         // General feedback
         if (question.getGeneralFeedback() != null && !question.getGeneralFeedback().isBlank()) {
             xml.append("      <itemfeedback ident=\"general_fb\">\n");
-            xml.append("        <flow_mat>\n");
-            xml.append("          <material>\n");
-            xml.append("            <mattext texttype=\"text/html\">")
-               .append(escapeXml(question.getGeneralFeedback())).append("</mattext>\n");
-            xml.append("          </material>\n");
-            xml.append("        </flow_mat>\n");
-            xml.append("      </itemfeedback>\n");
+            xml.append(FLOW_MAT_START);
+            xml.append(MATERIAL_START);
+            xml.append(MATTEXT_HTML_START)
+                    .append(XmlUtils.escape(question.getGeneralFeedback())).append(MATTEXT_HTML_END);
+            xml.append(MATERIAL_END);
+            xml.append(FLOW_MAT_END);
+            xml.append(FEEDBACK_END);
         }
 
         // Correct feedback
         if (question.getCorrectFeedback() != null && !question.getCorrectFeedback().isBlank()) {
             xml.append("      <itemfeedback ident=\"correct_fb\">\n");
-            xml.append("        <flow_mat>\n");
-            xml.append("          <material>\n");
-            xml.append("            <mattext texttype=\"text/html\">")
-               .append(escapeXml(question.getCorrectFeedback())).append("</mattext>\n");
-            xml.append("          </material>\n");
-            xml.append("        </flow_mat>\n");
-            xml.append("      </itemfeedback>\n");
+            xml.append(FLOW_MAT_START);
+            xml.append(MATERIAL_START);
+            xml.append(MATTEXT_HTML_START)
+                    .append(XmlUtils.escape(question.getCorrectFeedback())).append(MATTEXT_HTML_END);
+            xml.append(MATERIAL_END);
+            xml.append(FLOW_MAT_END);
+            xml.append(FEEDBACK_END);
         }
 
         // Incorrect feedback
         if (question.getIncorrectFeedback() != null && !question.getIncorrectFeedback().isBlank()) {
             xml.append("      <itemfeedback ident=\"incorrect_fb\">\n");
-            xml.append("        <flow_mat>\n");
-            xml.append("          <material>\n");
-            xml.append("            <mattext texttype=\"text/html\">")
-               .append(escapeXml(question.getIncorrectFeedback())).append("</mattext>\n");
-            xml.append("          </material>\n");
-            xml.append("        </flow_mat>\n");
-            xml.append("      </itemfeedback>\n");
+            xml.append(FLOW_MAT_START);
+            xml.append(MATERIAL_START);
+            xml.append(MATTEXT_HTML_START)
+                    .append(XmlUtils.escape(question.getIncorrectFeedback())).append(MATTEXT_HTML_END);
+            xml.append(MATERIAL_END);
+            xml.append(FLOW_MAT_END);
+            xml.append(FEEDBACK_END);
         }
 
         return xml.toString();
     }
 
-    /**
-     * Escape special XML characters.
-     */
-    private String escapeXml(String text) {
-        if (text == null) {
-            return "";
-        }
-        return text.replace("&", "&amp;")
-                   .replace("<", "&lt;")
-                   .replace(">", "&gt;")
-                   .replace("\"", "&quot;")
-                   .replace("'", "&apos;");
-    }
 }

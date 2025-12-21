@@ -1,19 +1,21 @@
 package com.qtihelper.demo.controller;
 
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.view.RedirectView;
 
 /**
  * Controller to support client-side routing for the React SPA.
- * Forwards all non-API routes to index.html so React Router can handle them.
+ * Forwards all non-API routes to index.html so the React app can handle them.
  *
- * This is necessary because in a SPA, the frontend routing is handled by React
- * Router,
- * but when users navigate directly to a route (e.g., /dashboard) or refresh the
- * page,
- * the browser makes a request to the server. Without this controller, the
- * server
- * would return a 404 for routes that don't have server-side handlers.
+ * The React app uses hash-based navigation (e.g., /#dashboard, /#worksheet),
+ * so the browser only requests "/" from the server. The hash determines which
+ * page the React app renders.
+ *
+ * The additional routes are kept for backward compatibility and direct URL
+ * access. If a user types /dashboard directly, they'll be forwarded to
+ * index.html and the React app will show the landing page.
  */
 @Controller
 public class SpaController {
@@ -28,16 +30,34 @@ public class SpaController {
 	 *
 	 * This ensures that React Router can handle the routing on the client side.
 	 */
-	@RequestMapping(value = {
-			"/",
-			"/dashboard",
-			"/print-report",
-			"/print-report/**",
-			"/quiz/**",
-			"/worksheet",
-			"/worksheet/**"
-	})
+	@RequestMapping(value = { "/" })
 	public String forward() {
 		return "forward:/index.html";
+	}
+
+	/**
+	 * Redirect Worksheet path to the hash-based route.
+	 */
+	@GetMapping({ "/worksheet", "/worksheet/**" })
+	public RedirectView redirectWorksheet() {
+		return new RedirectView("/#worksheet");
+	}
+
+	/**
+	 * Redirect Quiz paths to their respective hash-based routes.
+	 */
+	@GetMapping("/quiz/editor")
+	public RedirectView redirectQuizEditor() {
+		return new RedirectView("/#quiz/editor");
+	}
+
+	@GetMapping("/quiz/success")
+	public RedirectView redirectQuizSuccess() {
+		return new RedirectView("/#quiz/success");
+	}
+
+	@GetMapping("/quiz-import")
+	public RedirectView redirectQuizImport() {
+		return new RedirectView("/#quiz-import");
 	}
 }

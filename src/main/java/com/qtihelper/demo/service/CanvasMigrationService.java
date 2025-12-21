@@ -4,18 +4,20 @@ import com.qtihelper.demo.config.CanvasProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ByteArrayResource;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
-
+import org.springframework.core.ParameterizedTypeReference;
+import com.qtihelper.demo.exception.CanvasApiException;
 import java.util.Map;
+import java.util.Objects;
 
 /**
- * Service for uploading QTI packages to Canvas and initiating content migrations.
+ * Service for uploading QTI packages to Canvas and initiating content
+ * migrations.
  */
 @Service
 public class CanvasMigrationService {
@@ -27,17 +29,21 @@ public class CanvasMigrationService {
 
     public CanvasMigrationService(CanvasProperties canvasProperties) {
         this.canvasProperties = canvasProperties;
+        String baseUrl = canvasProperties.url();
+        if (baseUrl == null) {
+            throw new IllegalStateException("Canvas URL must be configured");
+        }
         this.restClient = RestClient.builder()
-                .baseUrl(canvasProperties.url())
+                .baseUrl(baseUrl)
                 .build();
     }
 
     /**
      * Upload QTI package to Canvas and initiate content migration.
      *
-     * @param courseId  Canvas course ID
+     * @param courseId    Canvas course ID
      * @param qtiZipBytes QTI package ZIP file bytes
-     * @param quizTitle Title for the question bank
+     * @param quizTitle   Title for the question bank
      * @return Migration ID or status message
      */
     public String uploadAndMigrate(String courseId, byte[] qtiZipBytes, String quizTitle) {
@@ -51,14 +57,17 @@ public class CanvasMigrationService {
 
             // Step 2: Upload the file
             log.info("Step 2: Uploading QTI package");
-            String uploadResult = uploadQtiPackage(migrationData, qtiZipBytes, quizTitle);
+            String uploadResult = uploadQtiPackage(migrationData, qtiZipBytes);
 
             log.info("=== Canvas migration completed successfully ===");
             return uploadResult;
 
+        } catch (CanvasApiException e) {
+            // Re-throw domain exceptions without wrapping
+            throw e;
         } catch (Exception e) {
-            log.error("=== Canvas migration failed ===", e);
-            throw new RuntimeException("Failed to upload QTI package to Canvas: " + e.getMessage(), e);
+            // Rethrow with context - caller is responsible for logging
+            throw new CanvasApiException("Canvas migration failed for course " + courseId + ": " + e.getMessage(), e);
         }
     }
 
@@ -80,18 +89,23 @@ public class CanvasMigrationService {
         body.add("pre_attachment[size]", "1048576"); // Placeholder size
 
         try {
+            String token = canvasProperties.token();
+            if (token == null) {
+                throw new IllegalStateException("Canvas token must be configured");
+            }
             Map<String, Object> response = restClient.post()
-                    .uri(url)
-                    .header("Authorization", "Bearer " + canvasProperties.token())
-                    .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                    .uri(url != null ? url : "")
+                    .header("Authorization", "Bearer " + token)
+                    .contentType(Objects.requireNonNull(MediaType.APPLICATION_FORM_URLENCODED))
                     .body(body)
                     .retrieve()
-                    .body(Map.class);
+                    .body(new ParameterizedTypeReference<Map<String, Object>>() {
+                    });
 
             log.debug("Migration initiated, response: {}", response);
 
             if (response == null || !response.containsKey("pre_attachment")) {
-                throw new RuntimeException("Invalid migration response: missing pre_attachment");
+                throw new CanvasApiException("Invalid migration response: missing pre_attachment");
             }
 
             Map<String, Object> preAttachment = (Map<String, Object>) response.get("pre_attachment");
@@ -100,9 +114,11 @@ public class CanvasMigrationService {
 
             return preAttachment;
 
+        } catch (CanvasApiException e) {
+            throw e;
         } catch (Exception e) {
-            log.error("Failed to initiate migration", e);
-            throw new RuntimeException("Failed to initiate Canvas migration: " + e.getMessage(), e);
+            throw new CanvasApiException(
+                    "Failed to initiate Canvas migration for course " + courseId + ": " + e.getMessage(), e);
         }
     }
 
@@ -110,12 +126,12 @@ public class CanvasMigrationService {
      * Upload QTI package to Canvas using the provided upload parameters.
      */
     @SuppressWarnings("unchecked")
-    private String uploadQtiPackage(Map<String, Object> uploadParams, byte[] qtiZipBytes, String filename) {
+    private String uploadQtiPackage(Map<String, Object> uploadParams, byte[] qtiZipBytes) {
         String uploadUrl = (String) uploadParams.get("upload_url");
         Map<String, Object> uploadFields = (Map<String, Object>) uploadParams.get("upload_params");
 
         if (uploadUrl == null) {
-            throw new RuntimeException("Missing upload_url in migration response");
+            throw new CanvasApiException("Missing upload_url in migration response");
         }
 
         log.debug("Uploading to: {}", uploadUrl);
@@ -126,11 +142,12 @@ public class CanvasMigrationService {
 
             // Add upload fields from Canvas
             if (uploadFields != null) {
-                uploadFields.forEach((key, value) -> form.add(key, value));
+                uploadFields.forEach(form::add);
             }
 
             // Add file
-            ByteArrayResource fileResource = new ByteArrayResource(qtiZipBytes) {
+            byte[] fileBytes = qtiZipBytes != null ? qtiZipBytes : new byte[0];
+            ByteArrayResource fileResource = new ByteArrayResource(fileBytes) {
                 @Override
                 public String getFilename() {
                     return "qti_package.zip";
@@ -142,8 +159,6 @@ public class CanvasMigrationService {
             // Upload
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-
-            HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(form, headers);
 
             RestClient uploadClient = RestClient.builder().build();
             String response = uploadClient.post()
@@ -158,8 +173,7 @@ public class CanvasMigrationService {
             return "Migration initiated successfully. Check Canvas for import status.";
 
         } catch (Exception e) {
-            log.error("Failed to upload QTI package", e);
-            throw new RuntimeException("Failed to upload file to Canvas: " + e.getMessage(), e);
+            throw new CanvasApiException("Failed to upload QTI package to Canvas: " + e.getMessage(), e);
         }
     }
 
@@ -176,10 +190,15 @@ public class CanvasMigrationService {
         log.debug("GET {}", url);
 
         try {
-            @SuppressWarnings("unchecked")
+            String token = canvasProperties.token();
+            if (token == null) {
+                return "error: token missing";
+            }
+
+            @SuppressWarnings({ "unchecked", "null" })
             Map<String, Object> response = restClient.get()
                     .uri(url)
-                    .header("Authorization", "Bearer " + canvasProperties.token())
+                    .header("Authorization", "Bearer " + Objects.requireNonNull(token, "Token must not be null"))
                     .retrieve()
                     .body(Map.class);
 

@@ -10,8 +10,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
+import com.qtihelper.demo.exception.CanvasApiException;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class CanvasQuizFetcher {
@@ -27,8 +29,9 @@ public class CanvasQuizFetcher {
                 : "****");
 
         this.restClient = builder
-                .baseUrl(props.url())
-                .defaultHeader("Authorization", "Bearer " + props.token())
+                .baseUrl(Objects.requireNonNull(props.url(), "Canvas URL must be configured"))
+                .defaultHeader("Authorization",
+                        "Bearer " + Objects.requireNonNull(props.token(), "Canvas token must be configured"))
                 .build();
     }
 
@@ -47,38 +50,16 @@ public class CanvasQuizFetcher {
                     quiz != null ? quiz.title() : "null");
             return quiz;
         } catch (Exception e) {
-            log.error("Failed to fetch quiz {}/{} from Canvas: {}", courseId, quizId, e.getMessage(), e);
-            throw new RuntimeException("Failed to fetch quiz from Canvas API", e);
+            throw new CanvasApiException(
+                    "Failed to fetch quiz " + courseId + "/" + quizId + " from Canvas: " + e.getMessage(), e);
         }
     }
 
     public List<CanvasQuestionDto> getQuizQuestions(String courseId, String quizId) {
         log.info("Fetching questions for quiz {}/{}", courseId, quizId);
-        log.debug("Canvas API URL: /api/v1/courses/{}/quizzes/{}/questions?per_page=100", courseId, quizId);
-
-        try {
-            List<CanvasQuestionDto> questions = restClient.get()
-                    .uri("/api/v1/courses/{courseId}/quizzes/{quizId}/questions?per_page=100",
-                            courseId, quizId)
-                    .retrieve()
-                    .body(new ParameterizedTypeReference<List<CanvasQuestionDto>>() {
-                    });
-
-            int questionCount = questions != null ? questions.size() : 0;
-            log.info("Successfully fetched {} questions", questionCount);
-
-            if (questions != null && !questions.isEmpty()) {
-                log.debug("Question types: {}", questions.stream()
-                        .map(CanvasQuestionDto::questionType)
-                        .distinct()
-                        .toList());
-            }
-
-            return questions != null ? questions : List.of();
-        } catch (Exception e) {
-            log.error("Failed to fetch questions for quiz {}/{}: {}", courseId, quizId, e.getMessage(), e);
-            throw new RuntimeException("Failed to fetch quiz questions from Canvas API", e);
-        }
+        String url = String.format("/api/v1/courses/%s/quizzes/%s/questions?per_page=100", courseId, quizId);
+        return fetchAllPages(url, new ParameterizedTypeReference<List<CanvasQuestionDto>>() {
+        });
     }
 
     /**
@@ -88,21 +69,9 @@ public class CanvasQuizFetcher {
      */
     public List<CanvasCourseDto> getCourses() {
         log.info("Fetching courses from Canvas");
-
-        try {
-            List<CanvasCourseDto> courses = restClient.get()
-                .uri("/api/v1/courses?enrollment_state=active&per_page=100")
-                .retrieve()
-                .body(new ParameterizedTypeReference<List<CanvasCourseDto>>() {});
-
-            int courseCount = courses != null ? courses.size() : 0;
-            log.info("Successfully fetched {} courses", courseCount);
-
-            return courses != null ? courses : List.of();
-        } catch (Exception e) {
-            log.error("Failed to fetch courses: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to fetch courses from Canvas API", e);
-        }
+        return fetchAllPages("/api/v1/courses?enrollment_state=active&per_page=100",
+                new ParameterizedTypeReference<List<CanvasCourseDto>>() {
+                });
     }
 
     /**
@@ -113,20 +82,66 @@ public class CanvasQuizFetcher {
      */
     public List<CanvasQuizSummaryDto> getQuizzes(String courseId) {
         log.info("Fetching quizzes for course {}", courseId);
+        String url = String.format("/api/v1/courses/%s/quizzes?per_page=100", courseId);
+        return fetchAllPages(url, new ParameterizedTypeReference<List<CanvasQuizSummaryDto>>() {
+        });
+    }
 
-        try {
-            List<CanvasQuizSummaryDto> quizzes = restClient.get()
-                .uri("/api/v1/courses/{courseId}/quizzes?per_page=100", courseId)
-                .retrieve()
-                .body(new ParameterizedTypeReference<List<CanvasQuizSummaryDto>>() {});
+    /**
+     * Generic method to fetch all pages of a paginated Canvas API resource.
+     * Follows RFC 5988 Link headers.
+     */
+    private <T> List<T> fetchAllPages(String initialUrl, ParameterizedTypeReference<List<T>> typeRef) {
+        List<T> allResults = new java.util.ArrayList<>();
+        String nextUrl = initialUrl;
 
-            int quizCount = quizzes != null ? quizzes.size() : 0;
-            log.info("Successfully fetched {} quizzes for course {}", quizCount, courseId);
+        while (nextUrl != null) {
+            log.debug("Fetching page: {}", nextUrl);
 
-            return quizzes != null ? quizzes : List.of();
-        } catch (Exception e) {
-            log.error("Failed to fetch quizzes for course {}: {}", courseId, e.getMessage(), e);
-            throw new RuntimeException("Failed to fetch quizzes from Canvas API", e);
+            try {
+                var responseEntity = restClient.get()
+                        .uri(nextUrl)
+                        .retrieve()
+                        .toEntity(typeRef != null ? typeRef : new ParameterizedTypeReference<List<T>>() {
+                        });
+
+                List<T> pageResults = responseEntity.getBody();
+                if (pageResults != null) {
+                    allResults.addAll(pageResults);
+                }
+
+                // Parse Link header for next page
+                // Header format: <https://canvas.instructure.com/api/v1/...>; rel="current",
+                // <https://canvas.instructure.com/api/v1/...>; rel="next"
+                String linkHeader = responseEntity.getHeaders().getFirst("Link");
+                nextUrl = parseNextUrl(linkHeader);
+
+            } catch (Exception e) {
+                throw new CanvasApiException("Canvas API pagination failed at " + nextUrl + ": " + e.getMessage(), e);
+            }
         }
+
+        log.info("Total items fetched: {}", allResults.size());
+        return allResults;
+    }
+
+    /**
+     * Extracts the 'next' URL from the Link header.
+     * Returns null if no next page exists.
+     */
+    private String parseNextUrl(String linkHeader) {
+        if (linkHeader == null || linkHeader.isEmpty()) {
+            return null;
+        }
+
+        // Regex to match <url>; rel="next"
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("<([^>]+)>;\\s*rel=\"next\"");
+        java.util.regex.Matcher matcher = pattern.matcher(linkHeader);
+
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+
+        return null;
     }
 }

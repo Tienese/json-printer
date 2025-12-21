@@ -7,7 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,10 +16,10 @@ import java.util.Map;
  * Controller for dashboard with course/quiz browser.
  *
  * Endpoints:
- * - GET /dashboard                    : Course/quiz browser UI
- * - GET /api/courses                  : AJAX endpoint for courses list
- * - GET /api/courses/{id}/quizzes     : AJAX endpoint for quizzes list
- * - POST /api/cache/refresh           : Manual cache refresh
+ * - GET /dashboard : Course/quiz browser UI
+ * - GET /api/courses : AJAX endpoint for courses list
+ * - GET /api/courses/{id}/quizzes : AJAX endpoint for quizzes list
+ * - POST /api/cache/refresh : Manual cache refresh
  */
 @Controller
 public class DashboardController {
@@ -31,25 +30,6 @@ public class DashboardController {
 
     public DashboardController(CanvasCacheService cacheService) {
         this.cacheService = cacheService;
-    }
-
-    /**
-     * Dashboard landing page with course browser.
-     */
-    @GetMapping("/dashboard")
-    public String showDashboard(Model model) {
-        log.info("Dashboard accessed");
-
-        try {
-            List<CanvasCourseDto> courses = cacheService.getCourses(false);
-            model.addAttribute("courses", courses);
-            model.addAttribute("courseCount", courses.size());
-        } catch (Exception e) {
-            log.error("Failed to load courses for dashboard", e);
-            model.addAttribute("error", "Failed to load courses. Please check your Canvas API configuration.");
-        }
-
-        return "dashboard";
     }
 
     /**
@@ -69,17 +49,15 @@ public class DashboardController {
             long duration = System.currentTimeMillis() - startTime;
 
             return ResponseEntity.ok(Map.of(
-                "success", true,
-                "courses", courses,
-                "count", courses.size(),
-                "fetchTime", duration
-            ));
+                    "success", true,
+                    "courses", courses,
+                    "count", courses.size(),
+                    "fetchTime", duration));
         } catch (Exception e) {
             log.error("API error fetching courses", e);
             return ResponseEntity.status(500).body(Map.of(
-                "success", false,
-                "error", e.getMessage()
-            ));
+                    "success", false,
+                    "error", e.getMessage()));
         }
     }
 
@@ -101,17 +79,15 @@ public class DashboardController {
             long duration = System.currentTimeMillis() - startTime;
 
             return ResponseEntity.ok(Map.of(
-                "success", true,
-                "quizzes", quizzes,
-                "count", quizzes.size(),
-                "fetchTime", duration
-            ));
+                    "success", true,
+                    "quizzes", quizzes,
+                    "count", quizzes.size(),
+                    "fetchTime", duration));
         } catch (Exception e) {
             log.error("API error fetching quizzes for course {}", courseId, e);
             return ResponseEntity.status(500).body(Map.of(
-                "success", false,
-                "error", e.getMessage()
-            ));
+                    "success", false,
+                    "error", e.getMessage()));
         }
     }
 
@@ -130,15 +106,13 @@ public class DashboardController {
             cacheService.getCourses(true);
 
             return ResponseEntity.ok(Map.of(
-                "success", true,
-                "message", "Cache refreshed successfully"
-            ));
+                    "success", true,
+                    "message", "Cache refreshed successfully"));
         } catch (Exception e) {
             log.error("API error refreshing cache", e);
             return ResponseEntity.status(500).body(Map.of(
-                "success", false,
-                "error", e.getMessage()
-            ));
+                    "success", false,
+                    "error", e.getMessage()));
         }
     }
 }

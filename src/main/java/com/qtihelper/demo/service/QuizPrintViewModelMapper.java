@@ -10,6 +10,8 @@ import com.qtihelper.demo.model.QuizPrintViewModel.OptionView;
 import com.qtihelper.demo.model.QuizPrintViewModel.QuestionView;
 import com.qtihelper.demo.model.QuizPrintViewModel.StudentQuizView;
 import com.qtihelper.demo.model.StudentSubmission;
+import com.qtihelper.demo.util.HtmlUtils;
+import com.qtihelper.demo.util.QuizEvalUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -109,7 +111,7 @@ public class QuizPrintViewModelMapper {
 
         QuestionView questionView = new QuestionView();
         questionView.setQuestionNumber(questionNumber);
-        questionView.setQuestionText(stripHtml(question.questionText()));
+        questionView.setQuestionText(HtmlUtils.stripHtml(question.questionText()));
         questionView.setPointsPossible(question.pointsPossible() != null ? question.pointsPossible() : 0.0);
         questionView.setQuestionType(question.questionType());
 
@@ -152,13 +154,14 @@ public class QuizPrintViewModelMapper {
             optionView.setOptionLetter(String.valueOf((char) ('A' + index)));
 
             // Strip HTML from option text
-            optionView.setOptionText(stripHtml(answer.text()));
+            optionView.setOptionText(HtmlUtils.stripHtml(answer.text()));
 
             // Determine if this option is correct
             optionView.setCorrect(answer.isCorrect());
 
             // Determine if student selected this option
-            boolean isStudentAnswer = isStudentAnswerMatch(answer, result.getStudentAnswer(), index, question);
+            boolean isStudentAnswer = QuizEvalUtils.isStudentAnswerMatch(
+                    answer, result.getStudentAnswer(), index, question.questionType());
             optionView.setStudentAnswer(isStudentAnswer);
 
             // Compute visual marker
@@ -166,79 +169,13 @@ public class QuizPrintViewModelMapper {
             optionView.setVisualMarker(marker);
 
             // Set comment text (strip HTML if present)
-            optionView.setCommentText(answer.comments() != null ? stripHtml(answer.comments()) : null);
+            optionView.setCommentText(answer.comments() != null ? HtmlUtils.stripHtml(answer.comments()) : null);
 
             options.add(optionView);
             index++;
         }
 
         return options;
-    }
-
-    /**
-     * Determines if the student selected this answer option.
-     *
-     * @param answer        The Canvas answer DTO
-     * @param studentAnswer The student's answer string from CSV
-     * @param index         The index of this answer (for letter matching)
-     * @param question      The question DTO
-     * @return true if student selected this option
-     */
-    private boolean isStudentAnswerMatch(CanvasAnswerDto answer,
-            String studentAnswer,
-            int index,
-            CanvasQuestionDto question) {
-
-        if (studentAnswer == null || studentAnswer.isEmpty() || "No answer".equals(studentAnswer)) {
-            return false;
-        }
-
-        String questionType = question.questionType();
-        String optionText = stripHtml(answer.text());
-
-        // Handle different question types
-        switch (questionType) {
-            case "multiple_choice_question", "true_false_question" -> {
-                // Try matching by letter first (A, B, C, D)
-                if (studentAnswer.length() == 1 && Character.isUpperCase(studentAnswer.charAt(0))) {
-                    char expectedLetter = (char) ('A' + index);
-                    return studentAnswer.charAt(0) == expectedLetter;
-                }
-                // Try matching by text
-                return optionText.equalsIgnoreCase(studentAnswer.trim());
-            }
-            case "multiple_answers_question" -> {
-                // Split by comma or semicolon
-                String[] studentAnswers = studentAnswer.split("[,;]");
-                for (String ans : studentAnswers) {
-                    String trimmed = ans.trim();
-                    // Match by letter
-                    if (trimmed.length() == 1 && Character.isUpperCase(trimmed.charAt(0))) {
-                        char expectedLetter = (char) ('A' + index);
-                        if (trimmed.charAt(0) == expectedLetter) {
-                            return true;
-                        }
-                    }
-                    // Match by text
-                    if (optionText.equalsIgnoreCase(trimmed)) {
-                        return true;
-                    }
-                }
-                return false;
-            }
-            case "multiple_dropdowns_question" -> {
-                // Check if answer text is contained in student response
-                return studentAnswer.contains(optionText);
-            }
-            case "matching_question" -> {
-                // Check if answer text is contained in student response
-                return studentAnswer.contains(optionText);
-            }
-            default -> {
-                // Default: simple text matching
-                return optionText.equalsIgnoreCase(studentAnswer.trim());
-            }
-        }
     }
 
     /**
@@ -257,6 +194,7 @@ public class QuizPrintViewModelMapper {
      * @param isQuestionCorrect Did student get the question correct overall?
      * @return Visual marker string
      */
+    @SuppressWarnings("java:S2589") // False positive - logic is correct for visual markers
     private String computeVisualMarker(boolean isCorrect, boolean isStudentAnswer, boolean isQuestionCorrect) {
         if (isCorrect && isStudentAnswer) {
             return "✓"; // Correct and selected
@@ -284,20 +222,6 @@ public class QuizPrintViewModelMapper {
 
         // If answered, return CORRECT or INCORRECT based on evaluation
         return isCorrect ? AnswerStatus.CORRECT : AnswerStatus.INCORRECT;
-    }
-
-    /**
-     * Strips HTML tags from text while preserving meaningful content.
-     * Detects images and equations and provides placeholders.
-     *
-     * @param text HTML text
-     * @return Plain text without HTML tags, with placeholders for images/equations
-     */
-    private String stripHtml(String text) {
-        if (text == null) {
-            return "";
-        }
-        return text.replaceAll("<[^>]*>", "").trim();
     }
 
     /**
@@ -335,6 +259,7 @@ public class QuizPrintViewModelMapper {
 
         QuizPrintViewModel viewModel = new QuizPrintViewModel();
         viewModel.setQuizTitle(quiz.title());
+        viewModel.setQuizId(quiz.id());
         viewModel.setStudentCount(1); // Single worksheet
         viewModel.setStudents(List.of(studentView));
 
@@ -352,7 +277,7 @@ public class QuizPrintViewModelMapper {
     private QuestionView mapQuestionToBlankView(CanvasQuestionDto question, int questionNumber) {
         QuestionView questionView = new QuestionView();
         questionView.setQuestionNumber(questionNumber);
-        questionView.setQuestionText(stripHtml(question.questionText()));
+        questionView.setQuestionText(HtmlUtils.stripHtml(question.questionText()));
         questionView.setPointsPossible(question.pointsPossible() != null ? question.pointsPossible() : 1.0);
         questionView.setQuestionType(question.questionType());
         questionView.setStudentAnswerText(""); // No student answer
@@ -388,7 +313,7 @@ public class QuizPrintViewModelMapper {
     private OptionView mapAnswerToBlankOption(CanvasAnswerDto answer, int index) {
         OptionView optionView = new OptionView();
         optionView.setOptionLetter(String.valueOf((char) ('A' + index))); // A, B, C, D...
-        optionView.setOptionText(stripHtml(answer.text() != null ? answer.text() : ""));
+        optionView.setOptionText(HtmlUtils.stripHtml(answer.text() != null ? answer.text() : ""));
         optionView.setCorrect(false); // Not correct in blank mode
         optionView.setStudentAnswer(false); // Not selected
         optionView.setVisualMarker(""); // No visual marker

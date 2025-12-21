@@ -1,0 +1,389 @@
+import React, { useEffect, useState } from 'react';
+import type { WorksheetItem, ViewMode, WorksheetTemplate } from '../types/worksheet';
+import { HeaderItemComponent } from '../components/HeaderItem';
+import { GridItemComponent } from '../components/GridItem';
+import { TextItemComponent } from '../components/TextItem';
+import { VocabItemComponent } from '../components/VocabItem';
+import { MultipleChoiceItemComponent } from '../components/new/MultipleChoiceItem';
+import { TrueFalseItemComponent } from '../components/new/TrueFalseItem';
+import { MatchingItemComponent } from '../components/new/MatchingItem';
+import { ClozeItemComponent } from '../components/new/ClozeItem';
+import { useWorksheet } from '../hooks/useWorksheet';
+import { Sidebar } from '../components/Sidebar';
+import { SaveLoadToolbar } from '../components/new/SaveLoadToolbar';
+import { ModeToggle } from '../components/new/ModeToggle';
+import { saveWorksheetToFile, loadWorksheetFromFile } from '../utils/worksheetStorage';
+import { createMultipleChoiceItem, createTrueFalseItem, createMatchingItem, createClozeItem, createTextItem, createGridItem, createVocabItem } from '../utils/worksheetFactory';
+import { useAutoSave } from '../hooks/useAutoSave';
+import { TimelineSidebar } from '../components/TimelineSidebar';
+import { Navbar } from '../components/Navbar';
+import { ROUTES } from '../navigation/routes';
+import { aiLog } from '../utils/aiLogger';
+
+// Helper to create items based on type
+const createItemByType = (type: string): WorksheetItem => {
+  switch (type) {
+    case 'TEXT': return createTextItem();
+    case 'GRID': return createGridItem();
+    case 'VOCAB': return createVocabItem();
+    case 'MULTIPLE_CHOICE': return createMultipleChoiceItem();
+    case 'TRUE_FALSE': return createTrueFalseItem();
+    case 'MATCHING': return createMatchingItem();
+    case 'CLOZE': return createClozeItem();
+    default: throw new Error(`Unknown item type: ${type}`);
+  }
+};
+
+interface WorksheetItemRendererProps {
+  readonly item: WorksheetItem;
+  readonly mode: ViewMode;
+  readonly isSelected: boolean;
+  readonly isPreviewMode: boolean;
+  readonly onUpdate: (item: any) => void;
+}
+
+// Extracted component to render specific worksheet items
+function WorksheetItemRenderer({
+  item,
+  mode,
+  isSelected,
+  isPreviewMode,
+  onUpdate
+}: WorksheetItemRendererProps) {
+  const updateHandler = isPreviewMode ? () => { } : onUpdate;
+
+  switch (item.type) {
+    case 'HEADER':
+      return <HeaderItemComponent key={item.id} item={item as any} onUpdate={updateHandler} />;
+    case 'TEXT':
+      return <TextItemComponent key={item.id} item={item as any} onUpdate={updateHandler} />;
+    case 'GRID':
+      return <GridItemComponent key={item.id} item={item as any} isSelected={isSelected} onUpdate={updateHandler} />;
+    case 'VOCAB':
+      return <VocabItemComponent key={item.id} item={item as any} onUpdate={updateHandler} />;
+    case 'MULTIPLE_CHOICE':
+      return <MultipleChoiceItemComponent key={item.id} item={item as any} mode={mode} onUpdate={updateHandler} />;
+    case 'TRUE_FALSE':
+      return <TrueFalseItemComponent key={item.id} item={item as any} mode={mode} onUpdate={updateHandler} />;
+    case 'MATCHING':
+      return <MatchingItemComponent key={item.id} item={item as any} mode={mode} onUpdate={updateHandler} />;
+    case 'CLOZE':
+      return <ClozeItemComponent key={item.id} item={item as any} mode={mode} />;
+    default:
+      return <div>Unknown item type: {(item as any).type}</div>;
+  }
+}
+
+interface WorksheetPageProps {
+  readonly onNavigate?: (route: string) => void;
+}
+
+export function WorksheetPage({ onNavigate }: WorksheetPageProps) {
+  const {
+    items,
+    selectedItem,
+    mode,
+    metadata,
+    handleSelectItem,
+    updateItem,
+    addItem,
+    deleteItem,
+    setItems,
+    toggleMode,
+    updateMetadata,
+    addVocabTerm,
+    addTFQuestion,
+  } = useWorksheet([]);
+
+  const { history, renameHistoryEntry, triggerManualSave } = useAutoSave(items, metadata);
+  const [isTimelineOpen, setIsTimelineOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [previewTemplate, setPreviewTemplate] = useState<WorksheetTemplate | null>(null);
+
+  // AI Debug: Log page mount
+  useEffect(() => {
+    aiLog.mount('WorksheetPage', '#worksheet', {
+      mode,
+      itemCount: items.length,
+      selectedItemId: selectedItem?.id || null
+    });
+  }, []);
+
+  // AI Debug: Log mode changes
+  useEffect(() => {
+    aiLog.state('WorksheetPage', 'MODE_CHANGED', { mode, itemCount: items.length });
+  }, [mode]);
+
+  const isPreviewMode = !!previewTemplate;
+  const displayItems = previewTemplate ? previewTemplate.items : items;
+  const displayMetadata = previewTemplate ? previewTemplate.metadata : metadata;
+
+  const [contextMenu, setContextMenu] = useState<{
+    x: number;
+    y: number;
+    type: 'ADD' | 'DELETE';
+    index?: number;
+    targetItem?: WorksheetItem;
+  } | null>(null);
+
+  // Close context menu on click elsewhere
+  useEffect(() => {
+    const handleClick = () => setContextMenu(null);
+    globalThis.addEventListener('click', handleClick);
+    return () => globalThis.removeEventListener('click', handleClick);
+  }, []);
+
+  const handleSave = () => {
+    saveWorksheetToFile({ metadata, items });
+  };
+
+  const handleLoad = async () => {
+    const template = await loadWorksheetFromFile();
+    if (template) {
+      setItems(template.items);
+      updateMetadata(template.metadata);
+    }
+  };
+
+  const handleContextMenu = (e: React.MouseEvent, type: 'ADD' | 'DELETE', item?: WorksheetItem) => {
+    e.preventDefault();
+    setContextMenu({
+      x: e.clientX,
+      y: e.clientY,
+      type,
+      targetItem: item
+    });
+  };
+
+  const addNewItem = (type: string, index: number) => {
+    const newItem = createItemByType(type);
+    addItem(newItem, index);
+    setContextMenu(null);
+  };
+
+  return (
+    <div className={`grid grid-rows-[auto_1fr] h-screen w-full bg-app-gray overflow-hidden print:bg-white print:h-auto print:overflow-visible print:block ${isSidebarOpen ? 'grid-cols-[auto_1fr_300px]' : 'grid-cols-[auto_1fr_40px]'}`}>
+      {/* Top Toolbar */}
+      <div className="col-span-3 print:hidden">
+        <Navbar
+          onBack={() => onNavigate?.(ROUTES.HOME)}
+          actions={
+            <>
+              <div className="h-6 w-px bg-gray-200"></div>
+              <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
+                {[
+                  { label: 'Text', type: 'TEXT' },
+                  { label: 'Grid', type: 'GRID' },
+                  { label: 'Vocab', type: 'VOCAB' },
+                  { label: 'MC', type: 'MULTIPLE_CHOICE' },
+                  { label: 'T/F', type: 'TRUE_FALSE' },
+                  { label: 'Match', type: 'MATCHING' },
+                  { label: 'Cloze', type: 'CLOZE' },
+                ].map(opt => (
+                  <button
+                    key={opt.type}
+                    className="px-3 py-1.5 text-xs font-semibold rounded-md text-gray-600"
+                    onClick={() => addItem(createItemByType(opt.type), items.length)}
+                  >
+                    + {opt.label}
+                  </button>
+                ))}
+              </div>
+              <SaveLoadToolbar
+                onSave={handleSave}
+                onLoad={handleLoad}
+                onSnapshot={triggerManualSave}
+              />
+              <div className="h-6 w-px bg-gray-200"></div>
+              <ModeToggle mode={mode} onToggle={toggleMode} />
+            </>
+          }
+        />
+      </div>
+
+      {/* Left Sidebar - Timeline */}
+      <div className="row-span-1 border-r border-gray-200 bg-gray-50 print:hidden h-full overflow-hidden flex flex-col">
+        <TimelineSidebar
+          history={history}
+          onPreview={setPreviewTemplate}
+          onRename={renameHistoryEntry}
+          isOpen={isTimelineOpen}
+          onToggle={() => setIsTimelineOpen(!isTimelineOpen)}
+        />
+      </div>
+
+      {/* Main Content Area */}
+      <main
+        className="overflow-auto p-10 bg-app-gray flex flex-col items-center print:p-0 print:m-0 print:w-full print:bg-white print:block print:overflow-visible print:h-auto scroll-smooth outline-none"
+        onClick={() => !isPreviewMode && handleSelectItem(null)}
+        onKeyDown={(e) => { if (e.key === 'Escape') !isPreviewMode && handleSelectItem(null); }}
+        onContextMenu={(e) => {
+          if (!isPreviewMode && e.target === e.currentTarget) {
+            handleContextMenu(e, 'ADD');
+          }
+        }}
+        tabIndex={-1}
+      >
+        {isPreviewMode && (
+          <div className="mb-6 w-[210mm] bg-amber-50 border border-amber-200 p-4 rounded-xl shadow-sm flex items-center justify-between animate-in slide-in-from-top duration-300">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-600">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+              </div>
+              <div>
+                <p className="text-amber-900 font-bold leading-tight">Previewing History Version</p>
+                <p className="text-amber-700 text-sm">You are viewing a previous save. Editing is disabled.</p>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setPreviewTemplate(null)}
+                className="px-4 py-2 bg-white border border-amber-200 text-amber-900 rounded-lg hover:bg-amber-100 transition-colors font-medium shadow-sm"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setItems(previewTemplate.items);
+                  updateMetadata(previewTemplate.metadata);
+                  setPreviewTemplate(null);
+                }}
+                className="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors font-bold shadow-md shadow-amber-200"
+              >
+                Restore this version
+              </button>
+            </div>
+          </div>
+        )}
+
+        <section
+          className={`relative mb-10 bg-white shadow-[0_20px_50px_rgba(0,0,0,0.15)] p-[1.27cm] box-border w-[210mm] min-h-[297mm] flex flex-col origin-top transition-all duration-300 print:w-full print:shadow-none print:border-none print:m-0 print:p-0 print:transform-none print:overflow-visible print:max-h-none outline-none ${isPreviewMode ? 'ring-4 ring-amber-400 pointer-events-none opacity-80 scale-[0.98]' : ''}`}
+          onClick={(e) => e.stopPropagation()}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') e.stopPropagation(); }}
+          aria-label="Worksheet Editor Content"
+        >
+          {displayItems.length === 0 ? (
+            <div className="flex-1 flex flex-col items-center justify-center text-gray-300 border-2 border-dashed border-gray-100 rounded-2xl m-8">
+              <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="mb-4 opacity-20"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" /><polyline points="14.5 2 14.5 7.5 20 7.5" /><line x1="12" y1="18" x2="12" y2="12" /><line x1="9" y1="15" x2="15" y2="15" /></svg>
+              <p className="text-xl font-medium">Worksheet is empty</p>
+              <p className="text-sm">Right click or use the toolbar to add content</p>
+            </div>
+          ) : (
+            displayItems.map((item) => {
+              const worksheetItemRenderer = (
+                <WorksheetItemRenderer
+                  item={item}
+                  mode={mode}
+                  isSelected={selectedItem?.id === item.id}
+                  isPreviewMode={isPreviewMode}
+                  onUpdate={updateItem}
+                />
+              );
+
+              return (
+                <div
+                  key={item.id}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (!isPreviewMode) handleSelectItem(item);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.stopPropagation();
+                      if (!isPreviewMode) handleSelectItem(item);
+                    }
+                  }}
+                  onContextMenu={(e) => {
+                    if (!isPreviewMode) {
+                      handleSelectItem(item);
+                      handleContextMenu(e, 'DELETE', item);
+                    }
+                  }}
+                  role="button"
+                  tabIndex={isPreviewMode ? -1 : 0}
+                  aria-pressed={selectedItem?.id === item.id}
+                  className={`group/item relative rounded-lg mb-[2mm] p-0 min-h-[3mm] box-border print:border-none print:mb-[1.5mm] outline-none text-left w-full block bg-transparent border-none ${selectedItem?.id === item.id ? 'ring-2 ring-primary-blue shadow-lg shadow-blue-50 ring-offset-2 z-10 print:ring-0' : ''}`}>
+                  {worksheetItemRenderer}
+
+                  {!isPreviewMode && selectedItem?.id === item.id && (
+                    <div className="absolute -right-12 top-0 flex flex-col gap-1 opacity-0 group-hover/item:opacity-100 transition-opacity print:hidden">
+                      <button
+                        onClick={() => deleteItem(item)}
+                        className="p-2 bg-white text-red-500 rounded-full shadow-md hover:bg-red-50 transition-colors"
+                        title="Delete"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /></svg>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </section>
+      </main>
+
+      {/* Right Sidebar - Properties */}
+      <div className="row-span-1 border-l border-gray-200 bg-white print:hidden h-full overflow-hidden flex flex-col">
+        <Sidebar
+          items={displayItems}
+          selectedItem={selectedItem}
+          onSelectItem={handleSelectItem}
+          onUpdate={updateItem}
+          onDelete={deleteItem}
+          onReorderItems={setItems}
+          metadata={displayMetadata}
+          onUpdateMetadata={updateMetadata}
+          onAddVocabTerm={addVocabTerm}
+          onAddTFQuestion={addTFQuestion}
+          isOpen={isSidebarOpen}
+          onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+        />
+      </div>
+
+      {/* Context Menu */}
+      {
+        contextMenu && (
+          <div
+            className="fixed z-[100] bg-white border border-gray-200 shadow-xl rounded-xl py-1.5 min-w-[180px] animate-in fade-in zoom-in-95 duration-150"
+            style={{ left: contextMenu.x, top: contextMenu.y }}
+          >
+            {contextMenu.type === 'ADD' && (
+              <>
+                <div className="px-4 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Add Element</div>
+                {[
+                  { label: 'Text Block', type: 'TEXT', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 7V4h16v3M9 20h6M12 4v16" /></svg> },
+                  { label: 'Writing Grid', type: 'GRID', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect width="18" height="18" x="3" y="3" rx="2" /><path d="M3 9h18M3 15h18M9 3v18M15 3v18" /></svg> },
+                  { label: 'Vocabulary', type: 'VOCAB', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z" /></svg> },
+                  { label: 'Multiple Choice', type: 'MULTIPLE_CHOICE', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="m9 12 2 2 4-4" /></svg> },
+                  { label: 'True / False', type: 'TRUE_FALSE', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 6 9 17l-5-5" /></svg> },
+                  { label: 'Matching', type: 'MATCHING', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5" /></svg> },
+                  { label: 'Cloze / Blank', type: 'CLOZE', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 20h16M4 16h16M4 12h16M8 8h8" /></svg> },
+                ].map(opt => (
+                  <button
+                    key={opt.type}
+                    className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-primary-blue flex items-center gap-3 active:bg-blue-100 transition-colors"
+                    onClick={() => addNewItem(opt.type, items.length)}
+                  >
+                    <span className="text-gray-400">{opt.icon}</span>
+                    {opt.label}
+                  </button>
+                ))}
+              </>
+            )}
+
+            {contextMenu.type === 'DELETE' && contextMenu.targetItem && (
+              <button
+                className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 flex items-center gap-3 active:bg-red-100 transition-colors"
+                onClick={() => deleteItem(contextMenu.targetItem!)}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /></svg>
+                Delete Element
+              </button>
+            )}
+          </div>
+        )
+      }
+    </div>
+  );
+}

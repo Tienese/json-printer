@@ -1,129 +1,173 @@
-# Print Report Feature - Quick Start
+# QTI Helper - Quiz to Canvas Converter
 
-## 📋 What This Does
+A modern Spring Boot + React application for creating, converting, and printing educational quizzes for Canvas LMS.
 
-Generates printable student reports that combine:
-- Canvas quiz structure (from API)
-- Student responses (from CSV export)
-- Correct/incorrect indicators
-- Comprehensive feedback
-
-**Output:** A4-sized, B&W-optimized HTML page ready for printing
-
----
-
-## 🚀 Quick Installation
-
-### Option 1: Automatic Installation (Recommended)
+## 🚀 Quick Start
 
 ```bash
-chmod +x install-print-report.sh
-./install-print-report.sh
+# Build and run
+mvn clean install
+mvn spring-boot:run
+
+# Development mode (separate terminal for React hot reload)
+cd worksheet-ui && npm run dev
 ```
 
-Then add the dependency to `pom.xml` (see `pom-dependency-snippet.xml`).
-
-### Option 2: Manual Installation
-
-1. **Copy Java files** to their respective packages:
-   - `dto/canvas/*.java` → `src/main/java/com/qtihelper/demo/dto/canvas/`
-   - `model/*.java` → `src/main/java/com/qtihelper/demo/model/`
-   - `service/*.java` → `src/main/java/com/qtihelper/demo/service/`
-   - `controller/*.java` → `src/main/java/com/qtihelper/demo/controller/`
-
-2. **Copy HTML templates** to:
-   - `print-report-*.html` → `src/main/resources/templates/`
-
-3. **Add Maven dependency** (from `pom-dependency-snippet.xml`):
-   ```xml
-   <dependency>
-       <groupId>org.apache.commons</groupId>
-       <artifactId>commons-csv</artifactId>
-       <version>1.10.0</version>
-   </dependency>
-   ```
-
-4. **(Optional) Add navigation link** to `index.html` (see `index-html-update.html`)
+**Access:** `http://localhost:8080`
 
 ---
 
-## 📝 Usage
+## 📋 Features
 
-### Step 1: Export from Canvas
-1. Canvas → Quiz → **Student Analysis**
-2. Click **"Download All Student Responses"**
-3. Save the CSV file
+### 🎨 Worksheet Builder (`/#worksheet`)
+- Visual WYSIWYG worksheet editor
+- Grid boxes for handwriting practice
+- Header rows with date/name fields
+- Text rows with customizable formatting
+- Print-optimized A4 output
 
-### Step 2: Generate Report
-1. Go to `http://localhost:8080/print-report`
-2. Enter **Course ID** (from Canvas URL)
-3. Enter **Quiz ID** (from Canvas URL)
-4. Upload the CSV file
-5. Click **Generate**
+### 📚 Quiz Import & QTI Converter (`/#dashboard`)
+- Import JSON quiz definitions
+- Convert to QTI 1.2 format
+- Direct Canvas LMS migration
+- Support for multiple question types:
+  - Multiple Choice
+  - Multiple Answer
+  - True/False
+  - Multiple Dropdowns
+  - Matching
 
-### Step 3: Print
-1. Review the report
-2. Click **Print Report** button
-3. Select B&W printing for cost savings
-4. Print!
-
----
-
-## 📦 Files Included
-
-### Java Source Files (11 files)
-- **DTOs:** `CanvasQuizDto`, `CanvasQuestionDto`, `CanvasAnswerDto`, `CanvasMatchDto`
-- **Models:** `StudentSubmission`, `PrintReport`
-- **Services:** `CsvSubmissionParser`, `CanvasQuizFetcher`, `PrintReportGenerator`
-- **Controller:** `PrintReportController`
-
-### Templates (2 files)
-- `print-report-upload.html` - Upload form
-- `print-report-view.html` - Printable report
-
-### Documentation & Scripts
-- `IMPLEMENTATION_GUIDE.md` - Detailed technical documentation
-- `install-print-report.sh` - Automated installation script
-- `pom-dependency-snippet.xml` - Maven dependency
-- `index-html-update.html` - Navigation link snippet
-- `README.md` - This file
+### 🖨️ Print Report Generator (`/#print-report`)
+- Generate printable student reports
+- Combine Canvas quiz data with CSV exports
+- Automatic correctness evaluation
+- Comprehensive feedback display
+- B&W-optimized A4 output
 
 ---
 
-## 🎯 Features
+## 🏗️ Architecture
 
-✅ **Automatic Correctness Evaluation**
-- Multiple Choice, True/False
-- Multiple Answers
-- Multiple Dropdowns
-- Matching Questions
-
-✅ **Comprehensive Feedback Display**
-- General feedback
-- Correct/Incorrect specific feedback
-- Answer-specific feedback
-
-✅ **Print-Optimized**
-- A4 page size with 1.72cm margins
-- Page breaks between students
-- Black & white friendly
-- Space-efficient layout
-
-✅ **Multi-Student Support**
-- Process entire class at once
-- Automatic pagination
-- Clear student identification
+```
+┌─────────────────────────────────────────────────────────┐
+│                   Frontend (React + Vite)               │
+│  worksheet-ui/                                          │
+│  - Hash Router (#dashboard, #worksheet, #print-report)  │
+│  - Tailwind CSS                                         │
+│  - TypeScript                                           │
+└─────────────────────────────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────┐
+│                 Backend (Spring Boot 3.5)               │
+├─────────────────────────────────────────────────────────┤
+│  Controllers:                                           │
+│  - DashboardController    /api/courses, /api/quizzes    │
+│  - PrintReportController  /api/print-report/*           │
+│  - QuizImportController   /quiz/api/*                   │
+│  - SpaController          SPA routing support           │
+├─────────────────────────────────────────────────────────┤
+│  Services:                                              │
+│  - CanvasQuizFetcher      Canvas API integration        │
+│  - CanvasMigrationService QTI upload to Canvas          │
+│  - QtiContentGeneratorService   QTI 1.2 XML generation  │
+│  - PrintReportGenerator   Student report generation     │
+│  - WorksheetGeneratorService    Worksheet PDF generation│
+└─────────────────────────────────────────────────────────┘
+```
 
 ---
 
-## 🔧 Configuration
+## 🔌 API Endpoints
 
-Your Canvas API credentials should already be configured in `application.properties`:
+### Dashboard API
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/courses` | List Canvas courses |
+| GET | `/api/courses/{courseId}/quizzes` | List quizzes in course |
+| POST | `/api/cache/refresh` | Clear and refresh cache |
+
+### Print Report API
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/print-report/blank-quiz` | Get blank quiz template |
+| POST | `/api/print-report/generate` | Generate student reports |
+
+### Quiz Import API
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/quiz/api/parse` | Parse JSON quiz |
+| POST | `/quiz/api/process` | Convert to QTI & upload |
+| POST | `/quiz/validate` | Validate quiz structure |
+
+---
+
+## ⚙️ Configuration
+
+### Canvas API Settings (`application.properties`)
 
 ```properties
 app.canvas.url=https://your-canvas-instance.com
 app.canvas.token=your_api_token_here
 ```
+
+### Environment Requirements
+
+| Component | Version |
+|-----------|---------|
+| Java | 21 LTS |
+| Node.js | 22.x |
+| Maven | 3.9+ |
+| Spring Boot | 3.5.x |
+
+---
+
+## 📦 Project Structure
+
+```
+json-printer/
+├── src/main/java/com/qtihelper/demo/
+│   ├── config/          # Configuration (CanvasProperties)
+│   ├── controller/      # REST controllers
+│   ├── dto/             # Data Transfer Objects (Records)
+│   │   ├── canvas/      # Canvas API DTOs
+│   │   ├── quiz/        # Quiz import DTOs
+│   │   └── worksheet/   # Worksheet DTOs
+│   ├── exception/       # Custom exceptions
+│   ├── model/           # Domain models
+│   └── service/         # Business logic
+├── worksheet-ui/        # React frontend (Vite + Tailwind)
+├── pom.xml              # Maven configuration
+└── README.md            # This file
+```
+
+---
+
+## 🛠️ Development
+
+### Build Commands
+
+```bash
+# Full build (backend + frontend)
+mvn clean install
+
+# Backend only
+mvn compile
+
+# Frontend only
+cd worksheet-ui && npm run build
+
+# Run tests
+mvn test
+```
+
+### Code Quality
+
+The codebase follows modern Java practices:
+- **Java 21 Records** for DTOs (no Lombok)
+- **SonarLint compliant** code
+- **Null-safe** with `Objects.requireNonNull()`
+- **Custom exceptions** for error handling
 
 ---
 
@@ -131,47 +175,17 @@ app.canvas.token=your_api_token_here
 
 | Issue | Solution |
 |-------|----------|
-| "Failed to fetch quiz" | Check Canvas API token |
+| "Failed to fetch quiz" | Check Canvas API token permissions |
 | "No questions found" | Ensure quiz has published questions |
-| CSV parsing errors | Verify CSV format matches Canvas export |
-| Incorrect evaluation | Check logs for answer format comparison |
+| CSV parsing errors | Verify CSV matches Canvas export format |
+| Build fails | Ensure Java 21 and Node 22 are installed |
 
 ---
 
-## 📖 Documentation
+## 📝 License
 
-For detailed technical documentation, see **`IMPLEMENTATION_GUIDE.md`**
-
----
-
-## 🎓 Example Workflow
-
-```
-Canvas CSV Export
-     ↓
-Upload to /print-report
-     ↓
-System fetches quiz from Canvas API
-     ↓
-System parses student responses
-     ↓
-System merges data & evaluates
-     ↓
-Printable HTML report generated
-     ↓
-Print for distribution!
-```
+MIT License - See LICENSE file for details.
 
 ---
 
-## 📞 Support
-
-- Review logs for detailed error messages
-- Check Canvas API documentation: https://canvas.instructure.com/doc/api/
-- Verify Canvas API token has correct permissions
-
----
-
-**Ready to use!** 🎉
-
-After installation, visit: `http://localhost:8080/print-report`
+**Ready to use!** 🎉 Visit `http://localhost:8080` after starting the application.
