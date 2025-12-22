@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Import Quiz JSON - QTI Converter</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/bw-landing.css}">
+</head>
+<body>
+
+<div class="main-container">
+    <div class="page-header">
+        <h1><span class="icon">↻</span> QTI 1.2 Converter</h1>
+        <p>Convert Custom JSON Quiz to Canvas Question Bank</p>
+    </div>
+
+    <!-- Navigation -->
+    <div class="mb-20">
+        <a href="/" class="btn btn-secondary">&larr; Back to Home</a>
+    </div>
+
+    <!-- Error Message -->
+    <div th:if="${error}" class="alert alert-error mb-20" role="alert">
+        <strong>Error:</strong> <span th:text="${error}"></span>
+    </div>
+
+    <!-- Main Card -->
+    <div class="card">
+        <div class="card-header">
+            <h3>Step 1: Import Quiz JSON</h3>
+        </div>
+        <div class="card-body">
+            <!-- Tabs for Upload vs Paste -->
+            <div class="tabs">
+                <ul class="tab-list" role="tablist">
+                    <li role="presentation">
+                        <button class="tab-button active" id="upload-tab" onclick="switchTab('upload')">
+                            ▸ Upload JSON File
+                        </button>
+                    </li>
+                    <li role="presentation">
+                        <button class="tab-button" id="paste-tab" onclick="switchTab('paste')">
+                            □ Paste JSON Text
+                        </button>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Upload Tab -->
+            <div class="tab-content active" id="upload-pane">
+                <form method="post" action="/quiz/parse" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label for="jsonFile">Select JSON File</label>
+                        <input type="file"
+                               id="jsonFile"
+                               name="jsonFile"
+                               accept=".json"
+                               required>
+                        <small class="text-muted">
+                            Upload a .json file containing your quiz structure
+                        </small>
+                    </div>
+
+                    <div class="text-center mt-20">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <span class="btn-icon">▶</span> Parse & Edit
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Paste Tab -->
+            <div class="tab-content" id="paste-pane">
+                <form method="post" action="/quiz/parse">
+                    <div class="form-group">
+                        <label for="jsonText">Paste JSON Content</label>
+                        <textarea id="jsonText"
+                                  name="jsonText"
+                                  rows="15"
+                                  placeholder='{"title": "My Quiz", "description": "...", "questions": [...]}'
+                                  required></textarea>
+                        <small class="text-muted">
+                            Paste your JSON quiz structure here
+                        </small>
+                    </div>
+
+                    <div class="text-center mt-20">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <span class="btn-icon">▶</span> Parse & Edit
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Format Guide -->
+            <div class="alert alert-info mt-20">
+                <h6><strong>JSON Format Guide:</strong></h6>
+                <p>Your JSON should follow this structure:</p>
+                <pre><code>{
+  "title": "Quiz Title",
+  "description": "Quiz description",
+  "questions": [
+    {
+      "type": "MC",
+      "title": "Question 1",
+      "prompt": "What is 2+2?",
+      "points": 1.0,
+      "answers": [
+        {"text": "3", "correct": false},
+        {"text": "4", "correct": true}
+      ]
+    }
+  ]
+}</code></pre>
+                <small><strong>Supported Types:</strong> MC (Multiple Choice), MA (Multiple Answer),
+                MD (Multiple Dropdown), MT (Matching), TF (True/False)</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>QTI Helper v2.0 | QTI 1.2 Converter</p>
+    </div>
+</div>
+
+<script>
+    // Simple tab switching for B&W design
+    function switchTab(tab) {
+        // Hide all tab content
+        document.querySelectorAll('.tab-content').forEach(pane => {
+            pane.classList.remove('active');
+        });
+
+        // Remove active class from all buttons
+        document.querySelectorAll('.tab-button').forEach(btn => {
+            btn.classList.remove('active');
+        });
+
+        // Show selected tab
+        if (tab === 'upload') {
+            document.getElementById('upload-pane').classList.add('active');
+            document.getElementById('upload-tab').classList.add('active');
+        } else {
+            document.getElementById('paste-pane').classList.add('active');
+            document.getElementById('paste-tab').classList.add('active');
+        }
+    }
+</script>
+</body>
+</html>

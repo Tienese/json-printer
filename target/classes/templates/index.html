@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QTI Helper - Home</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/bw-landing.css}">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><span class="title-icon">◆</span> QTI Helper</h1>
+            <p>Canvas LMS Quiz Report Generator</p>
+        </div>
+
+        <div class="features-grid">
+            <!-- Print Report Generator - Full -->
+            <a href="/print-report?type=full" class="feature-card">
+                <span class="feature-icon">▪</span>
+                <h2 class="feature-title">Full Print Report</h2>
+                <p class="feature-description">
+                    Generate comprehensive printable reports showing all quiz questions with student answers,
+                    visual feedback markers, and detailed explanations.
+                </p>
+                <ul class="feature-list">
+                    <li>All questions displayed</li>
+                    <li>Visual markers (✓, ✗, ▲)</li>
+                    <li>Answer feedback included</li>
+                    <li>B&W print optimized</li>
+                </ul>
+                <div class="feature-badges">
+                    <span class="feature-badge">Canvas Integration</span>
+                </div>
+            </a>
+
+            <!-- Print Report Generator - Slip -->
+            <a href="/print-report?type=slip" class="feature-card">
+                <span class="feature-icon">□</span>
+                <h2 class="feature-title">Retake Slip Report</h2>
+                <p class="feature-description">
+                    Generate focused retake reports showing only incorrect or unanswered questions,
+                    perfect for students who need to review specific problems.
+                </p>
+                <ul class="feature-list">
+                    <li>Incorrect questions only</li>
+                    <li>Compact format</li>
+                    <li>Checkbox for retakes</li>
+                    <li>Quick review</li>
+                </ul>
+                <div class="feature-badges">
+                    <span class="feature-badge badge-recommended">Recommended</span>
+                </div>
+            </a>
+
+            <!-- QTI 1.2 Converter -->
+            <a href="/quiz/import" class="feature-card">
+                <span class="feature-icon">↻</span>
+                <h2 class="feature-title">QTI 1.2 Converter</h2>
+                <p class="feature-description">
+                    Convert custom JSON quiz format to Canvas-compatible QTI 1.2 question banks.
+                    Upload your JSON quiz and import directly into Canvas.
+                </p>
+                <ul class="feature-list">
+                    <li>JSON to QTI 1.2 conversion</li>
+                    <li>Multiple question types</li>
+                    <li>Direct Canvas import</li>
+                    <li>Question bank creation</li>
+                </ul>
+                <div class="feature-badges">
+                    <span class="feature-badge badge-recommended">New!</span>
+                </div>
+            </a>
+
+            <!-- Japanese Writing Worksheet Generator -->
+            <a href="/worksheet" class="feature-card">
+                <span class="feature-icon">口</span>
+                <h2 class="feature-title">Japanese Writing Worksheet</h2>
+                <p class="feature-description">
+                    Generate printable Japanese writing practice sheets with customizable
+                    Genkō yōshi (原稿用紙) style grids.
+                </p>
+                <ul class="feature-list">
+                    <li>A4 print optimized</li>
+                    <li>3 box sizes (1.2cm, 1.0cm, 0.8cm)</li>
+                    <li>Toggleable guide lines</li>
+                    <li>Custom prompts</li>
+                </ul>
+                <div class="feature-badges">
+                    <span class="feature-badge badge-recommended">New!</span>
+                </div>
+            </a>
+        </div>
+
+        <div class="footer">
+            <p>
+                <span class="status-text">● System Active</span> |
+                <a href="https://github.com/anthropics/claude-code" target="_blank">Documentation</a> |
+                Version 2.0
+            </p>
+        </div>
+    </div>
+</body>
+</html>

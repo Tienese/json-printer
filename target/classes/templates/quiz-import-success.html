@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Import Success - QTI Converter</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .success-container {
+            max-width: 700px;
+            text-align: center;
+        }
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border: none;
+        }
+        .success-icon {
+            font-size: 5rem;
+            color: #28a745;
+        }
+    </style>
+</head>
+<body>
+
+<div class="success-container">
+    <div class="success-icon mb-4">
+        ✅
+    </div>
+
+    <div class="card">
+        <div class="card-body p-5">
+            <h2 class="mb-3">QTI Generation Successful!</h2>
+
+            <p class="text-muted mb-4">
+                Your quiz has been converted to QTI 1.2 format and the import process has been initiated.
+            </p>
+
+            <div class="alert alert-success" th:if="${success}">
+                <strong>✓ Success!</strong> <span th:text="${success}"></span>
+            </div>
+
+            <div class="mb-4" th:if="${quiz != null}">
+                <h5 class="mb-3">Quiz Details:</h5>
+                <table class="table table-sm table-bordered">
+                    <tr>
+                        <th width="40%">Title:</th>
+                        <td th:text="${quiz.title}">Quiz Title</td>
+                    </tr>
+                    <tr>
+                        <th>Questions:</th>
+                        <td><span th:text="${quiz.questions.size()}">0</span> questions</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="mb-4" th:if="${importResult != null}">
+                <h5 class="mb-3">Import Statistics:</h5>
+                <table class="table table-sm table-bordered">
+                    <tr>
+                        <th width="40%">Manifest Generated:</th>
+                        <td>
+                            <span th:if="${importResult.manifestGenerated}" class="badge bg-success">✓ Yes</span>
+                            <span th:text="${importResult.manifestSize} + ' bytes'"></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>QTI Content Generated:</th>
+                        <td>
+                            <span th:if="${importResult.qtiContentGenerated}" class="badge bg-success">✓ Yes</span>
+                            <span th:text="${importResult.qtiContentSize} + ' bytes'"></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>ZIP Package Created:</th>
+                        <td>
+                            <span th:if="${importResult.zipCreated}" class="badge bg-success">✓ Yes</span>
+                            <span th:text="${importResult.zipSize} + ' bytes'"></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Canvas Upload:</th>
+                        <td>
+                            <span th:if="${importResult.canvasUploadCompleted}" class="badge bg-success">✓ Completed</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Total Duration:</th>
+                        <td th:text="${importResult.totalDurationMs} + ' ms'">0 ms</td>
+                    </tr>
+                </table>
+            </div>
+
+            <p class="text-muted small">
+                Check Canvas for the imported question bank. It may take a few moments to process.
+            </p>
+
+            <div class="mt-4">
+                <a href="/" class="btn btn-primary me-2">🏠 Home</a>
+                <a href="/quiz/import" class="btn btn-outline-primary">📝 Import Another Quiz</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center mt-4">
+        <small class="text-white opacity-75">
+            QTI Helper v2.0 | Import Complete
+        </small>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

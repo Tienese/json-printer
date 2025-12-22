@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QTI Helper - Course & Quiz Browser</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/bw-landing.css}">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>QTI Helper - Course Browser</h1>
+            <p>Browse your Canvas courses and generate print reports</p>
+            <div class="header-actions">
+                <button id="refreshBtn" class="btn btn-refresh" title="Refresh courses">
+                    <span class="icon">↻</span> Refresh
+                </button>
+                <a href="/quiz/import" class="btn btn-secondary">QTI Converter</a>
+                <a href="/worksheet" class="btn btn-secondary">口 Worksheet</a>
+            </div>
+        </header>
+
+        <!-- Error Display -->
+        <div id="errorAlert" class="alert alert-error" style="display: none;">
+            <span class="alert-icon">▲</span>
+            <span id="errorMessage"></span>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loadingState" class="loading-state" style="display: none;">
+            <div class="spinner"></div>
+            <p>Loading courses from Canvas...</p>
+        </div>
+
+        <!-- Course Grid -->
+        <div id="coursesGrid" class="courses-grid">
+            <!-- Courses will be dynamically loaded here -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <span class="empty-icon">▸</span>
+            <h3>No courses found</h3>
+            <p>Check your Canvas API configuration or try refreshing.</p>
+        </div>
+    </div>
+
+    <!-- Quiz Modal -->
+    <div id="quizModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalCourseName">Course Quizzes</h2>
+                <button class="modal-close" onclick="closeQuizModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="quizLoadingState" class="loading-state" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>Loading quizzes...</p>
+                </div>
+                <div id="quizGrid" class="quiz-grid">
+                    <!-- Quizzes will be loaded here -->
+                </div>
+                <div id="quizEmptyState" class="empty-state" style="display: none;">
+                    <span class="empty-icon">•</span>
+                    <p>No quizzes found in this course</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:src="@{/js/dashboard.js}"></script>
+</body>
+</html>

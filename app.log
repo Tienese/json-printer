@@ -1,0 +1,25 @@
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.5.8)
+
+2025-12-22T23:08:25.924Z  INFO 3673 --- [           main] com.qtihelper.demo.DemoApplication       : Starting DemoApplication v0.0.1-SNAPSHOT using Java 21.0.8 with PID 3673 (/app/target/demo-0.0.1-SNAPSHOT.jar started by jules in /app)
+2025-12-22T23:08:25.927Z  INFO 3673 --- [           main] com.qtihelper.demo.DemoApplication       : No active profile set, falling back to 1 default profile: "default"
+2025-12-22T23:08:27.117Z  INFO 3673 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2025-12-22T23:08:27.143Z  INFO 3673 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-12-22T23:08:27.143Z  INFO 3673 --- [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.49]
+2025-12-22T23:08:27.181Z  INFO 3673 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-12-22T23:08:27.183Z  INFO 3673 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1186 ms
+2025-12-22T23:08:27.576Z  INFO 3673 --- [           main] c.q.demo.service.CanvasQuizFetcher       : Initializing Canvas API client
+2025-12-22T23:08:27.659Z  INFO 3673 --- [           main] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page template: index
+2025-12-22T23:08:28.086Z  INFO 3673 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
+2025-12-22T23:08:28.126Z  INFO 3673 --- [           main] com.qtihelper.demo.DemoApplication       : Started DemoApplication in 2.754 seconds (process running for 3.314)
+2025-12-22T23:12:13.988Z  INFO 3673 --- [nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-12-22T23:12:13.989Z  INFO 3673 --- [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2025-12-22T23:12:13.994Z  INFO 3673 --- [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 5 ms
+2025-12-22T23:12:14.060Z  INFO 3673 --- [nio-8080-exec-1] c.q.d.controller.PrintReportController   : Print report upload form accessed with type: null, courseId: null, quizId: null

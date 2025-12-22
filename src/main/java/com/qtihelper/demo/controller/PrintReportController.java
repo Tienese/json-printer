@@ -407,6 +407,9 @@ public class PrintReportController {
 
             log.info("Retrieved quiz '{}' with {} questions from session", quiz.title(), questions.size());
 
+            // Apply question text updates if any (from the first student as proxy for global updates)
+            List<CanvasQuestionDto> updatedQuestions = applyQuestionEdits(questions, editedData);
+
             // Convert edited data back to StudentSubmission format
             log.info("Converting edited data to StudentSubmission format");
             List<StudentSubmission> updatedSubmissions = editedDataToSubmissions(editedData);
@@ -416,7 +419,7 @@ public class PrintReportController {
             // Regenerate report with edited data
             log.info("Regenerating report with edited data");
             long reportStart = System.currentTimeMillis();
-            PrintReport report = reportGenerator.generateReport(quiz, questions, updatedSubmissions);
+            PrintReport report = reportGenerator.generateReport(quiz, updatedQuestions, updatedSubmissions);
             long reportDuration = System.currentTimeMillis() - reportStart;
             log.info("Report regenerated in {}ms", reportDuration);
 
@@ -424,7 +427,7 @@ public class PrintReportController {
             log.info("Mapping to view model");
             long mappingStart = System.currentTimeMillis();
             QuizPrintViewModel viewModel = viewModelMapper.mapToViewModel(
-                    quiz, questions, updatedSubmissions, report);
+                    quiz, updatedQuestions, updatedSubmissions, report);
             long mappingDuration = System.currentTimeMillis() - mappingStart;
             log.info("View model mapped in {}ms", mappingDuration);
 
@@ -504,5 +507,60 @@ public class PrintReportController {
 
         log.debug("Converted {} student edits to submissions", submissions.size());
         return submissions;
+    }
+
+    /**
+     * Updates the original list of questions with edits from the client.
+     * Uses the first student's edits as the source of truth for global question text/feedback changes.
+     *
+     * @param originalQuestions Original list of CanvasQuestionDto
+     * @param editedData        Edited data from client
+     * @return New list of CanvasQuestionDto with updates applied
+     */
+    private List<CanvasQuestionDto> applyQuestionEdits(List<CanvasQuestionDto> originalQuestions, PrintReportEditDto editedData) {
+        if (editedData.getStudents().isEmpty()) {
+            return originalQuestions;
+        }
+
+        // Use the first student's edits as the reference for question text updates
+        // In a real scenario, we might want to be smarter about this (e.g., check for conflicts),
+        // but for this tool, assuming the user edits the first visible instance is reasonable.
+        PrintReportEditDto.StudentEdit referenceStudent = editedData.getStudents().get(0);
+
+        // Map of Question Index -> Edit Data
+        Map<Integer, PrintReportEditDto.QuestionEdit> editMap = new HashMap<>();
+        for (int i = 0; i < referenceStudent.getQuestions().size(); i++) {
+            editMap.put(i, referenceStudent.getQuestions().get(i));
+        }
+
+        List<CanvasQuestionDto> updatedQuestions = new ArrayList<>();
+
+        for (int i = 0; i < originalQuestions.size(); i++) {
+            CanvasQuestionDto original = originalQuestions.get(i);
+            PrintReportEditDto.QuestionEdit edit = editMap.get(i); // We assume order is preserved: 0, 1, 2...
+
+            if (edit != null) {
+                // Create a new record with updated text/feedback
+                // Note: We only update fields that are exposed in the UI for editing
+                CanvasQuestionDto updated = new CanvasQuestionDto(
+                    original.id(),
+                    original.questionName(),
+                    edit.getQuestionText() != null ? edit.getQuestionText() : original.questionText(), // Update Question Text
+                    original.questionType(),
+                    original.position(),
+                    original.pointsPossible(),
+                    original.correctComments(),
+                    original.incorrectComments(),
+                    edit.getFeedback() != null ? edit.getFeedback() : original.neutralComments(), // Map Feedback to neutralComments
+                    original.answers(), // We don't support editing answer text structure yet, just selection
+                    original.matches()
+                );
+                updatedQuestions.add(updated);
+            } else {
+                updatedQuestions.add(original);
+            }
+        }
+
+        return updatedQuestions;
     }
 }

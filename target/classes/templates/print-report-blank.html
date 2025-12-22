@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title th:text="${quizTitle} + ' - Quiz Worksheet'">Quiz Worksheet</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Serif+JP:wght@300;400;700&display=swap"
+    rel="stylesheet">
+  <style>
+    /* Page Setup */
+    @page {
+      size: A4;
+      margin: 15mm;
+    }
+
+    body {
+      font-family: 'Noto Sans JP', 'Noto Sans', sans-serif;
+      font-size: 10pt;
+      line-height: 1.3;
+      color: #000;
+      background: #fff;
+      margin: 0;
+      padding: 0;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    /* Student Header */
+    .student-header {
+      border: 2px solid #000;
+      padding: 15px;
+      margin-bottom: 25px;
+    }
+
+    .student-header-row {
+      margin-bottom: 10px;
+    }
+
+    .student-header-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .student-header label {
+      display: inline-block;
+      width: 100px;
+      font-weight: 700;
+    }
+
+    .fill-blank {
+      display: inline-block;
+      border-bottom: 2px solid #000;
+      min-width: 350px;
+      height: 20px;
+    }
+
+    /* Quiz Title */
+    .quiz-header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .quiz-title {
+      font-size: 16pt;
+      font-weight: 700;
+      margin-bottom: 5px;
+    }
+
+    .quiz-meta {
+      font-size: 9pt;
+      color: #333;
+    }
+
+    .instructions {
+      font-style: italic;
+      margin-bottom: 20px;
+      padding: 10px;
+      border-left: 3px solid #000;
+      background: #f5f5f5;
+    }
+
+    /* Questions */
+    .q-block {
+      page-break-inside: avoid;
+    }
+
+    .q-header {
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .q-number {
+      display: inline-block;
+      min-width: 30px;
+    }
+
+    .q-text {
+      display: inline;
+    }
+
+    .q-points {
+      float: right;
+      font-weight: 700;
+      color: #333;
+    }
+
+    /* Options */
+    .options-grid {
+      margin-left: 15px;
+      margin-top: 8px;
+    }
+
+    .opt-item {
+      display: inline-block;
+      width: 48%;
+      vertical-align: top;
+      margin-bottom: 8px;
+    }
+
+    .answer-checkbox {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid #000;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+
+    .opt-letter {
+      font-weight: 700;
+    }
+
+    /* Essay/Short Answer */
+    .answer-blank {
+      display: block;
+      border-bottom: 2px solid #000;
+      min-height: 80px;
+      margin-top: 10px;
+    }
+
+    .answer-blank.short {
+      min-height: 30px;
+    }
+
+    /* Matching */
+    .matching-item {
+      margin-left: 15px;
+      margin-bottom: 8px;
+    }
+
+    .matching-blank {
+      display: inline-block;
+      border-bottom: 2px solid #000;
+      min-width: 150px;
+      height: 20px;
+      margin-left: 20px;
+    }
+
+    /* Fill in Blanks */
+    .blank-item {
+      margin-left: 15px;
+      margin-bottom: 8px;
+    }
+
+    .blank-item-blank {
+      display: inline-block;
+      border-bottom: 2px solid #000;
+      min-width: 250px;
+      height: 20px;
+      margin-left: 10px;
+    }
+
+    /* Print Optimization */
+    @media print {
+      .student-header {
+        page-break-after: avoid;
+      }
+
+      .q-block {
+        page-break-inside: avoid;
+      }
+
+      body {
+        -webkit-print-color-adjust: exact;
+      }
+    }
+
+    /* Footer */
+    .print-footer {
+      margin-top: 30px;
+      text-align: center;
+      font-size: 9pt;
+      color: #666;
+      border-top: 1px solid #ccc;
+      padding-top: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <div th:each="student : ${quiz.students}">
+
+    <div class="quiz-header">
+      <div class="quiz-title" th:text="${quizId}">Quiz Id</div>
+      <div class="quiz-meta">
+        <span th:text="${questionCount} + ' Câu'">10 questions</span>
+        <span th:if="${totalPoints}"> | </span>
+        <span th:if="${totalPoints}" th:text="'Điểm tối đa ' +${totalPoints}">50 points total</span>
+      </div>
+    </div>
+
+
+
+    <div th:each="q, qStat : ${student.questions}" class="q-block">
+
+      <div class="q-header">
+        <span class="q-number" th:text="${qStat.index + 1} + '.'">1.</span>
+        <span class="q-text" th:utext="${q.questionText}">Question text</span>
+      </div>
+
+
+      <div th:if="${q.questionType == 'multiple_choice_question' or
+                         q.questionType == 'multiple_answers_question' or
+                         q.questionType == 'true_false_question'}" class="options-grid">
+        <div th:each="opt : ${q.options}" class="opt-item">
+          <span class="opt-letter" th:text="${opt.optionLetter} + '.'">A.</span>
+          <span class="opt-text" th:utext="${opt.optionText}">Option text</span>
+        </div>
+      </div>
+
+      <div th:if="${q.questionType == 'essay_question'}">
+        <div class="answer-blank"></div>
+      </div>
+
+      <div th:if="${q.questionType == 'short_answer_question'}">
+        <div class="answer-blank short"></div>
+      </div>
+
+      <div th:if="${q.questionType == 'matching_question'}">
+        <div th:each="opt : ${q.options}" class="matching-item">
+          <span class="opt-letter" th:text="${opt.optionLetter} + '.'">A.</span>
+          <span th:utext="${opt.optionText}">Match item</span>
+          <span class="matching-blank"></span>
+        </div>
+      </div>
+
+      <div th:if="${q.questionType == 'fill_in_multiple_blanks_question' or
+                         q.questionType == 'multiple_dropdowns_question'}">
+        <div th:each="opt : ${q.options}" class="blank-item">
+          <span th:text="${opt.optionLetter} + ':'">Blank1:</span>
+          <span class="blank-item-blank"></span>
+        </div>
+      </div>
+
+      <div th:if="${q.questionType == 'numerical_question'}">
+        <div style="margin-left: 15px; margin-top: 8px;">
+          Answer: <span class="blank-item-blank" style="min-width: 150px;"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>

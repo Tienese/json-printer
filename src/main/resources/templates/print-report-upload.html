@@ -34,7 +34,7 @@
             <h5 class="mb-0">Generate Print Report</h5>
         </div>
         <div class="card-body">
-            <form method="post" action="/print-report/generate" enctype="multipart/form-data">
+            <form id="generateForm" method="post" action="/print-report/generate" enctype="multipart/form-data">
                 
                 <div class="form-row">
                     <div class="form-group">
@@ -114,12 +114,47 @@
                 </div>
 
                 <div class="text-center mt-20">
-                    <button type="submit" class="btn btn-primary btn-lg">
+                    <button type="submit" id="submitBtn" class="btn btn-primary btn-lg">
                         <span class="btn-icon">▶</span> Generate Report
                     </button>
                 </div>
                 
             </form>
+        </div>
+
+        <!-- Loading Overlay (Hidden by default) -->
+        <div id="loadingOverlay" style="display: none; text-align: center; padding: 20px;">
+            <div class="spinner"></div>
+            <p><strong>Generating Report...</strong></p>
+            <p class="text-muted">Fetching data from Canvas and parsing CSV.<br>This may take a few seconds.</p>
+        </div>
+
+        <script>
+            document.getElementById('generateForm').addEventListener('submit', function(e) {
+                var btn = document.getElementById('submitBtn');
+                var overlay = document.getElementById('loadingOverlay');
+                var formBody = this.querySelector('.form-row').parentNode; // Get the form content container
+
+                // Simple client-side validation for file
+                var fileInput = document.getElementById('csvFile');
+                if (fileInput.files.length > 0) {
+                    var fileName = fileInput.files[0].name;
+                    if (!fileName.toLowerCase().endsWith('.csv')) {
+                        e.preventDefault();
+                        alert('Please upload a valid CSV file.');
+                        return;
+                    }
+                }
+
+                // Show loading state
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner" style="width: 20px; height: 20px; border-width: 2px; display: inline-block; vertical-align: middle; margin-bottom: 0; margin-right: 10px;"></span> Generating...';
+
+                // Optional: Hide form fields and show large spinner
+                // formBody.style.opacity = '0.5';
+                // formBody.style.pointerEvents = 'none';
+            });
+        </script>
         </div>
     </div>
 
