@@ -1,4 +1,4 @@
-import type { HeaderItem, TextItem, MultipleChoiceItem, TrueFalseItem, MatchingItem, ClozeItem, GridItem, VocabItem } from '../types/worksheet';
+import type { HeaderItem, TextItem, MultipleChoiceItem, TrueFalseItem, MatchingItem, ClozeItem, GridItem, VocabItem, WorksheetPage, WorksheetState } from '../types/worksheet';
 
 export const createHeaderItem = (): HeaderItem => ({
   id: crypto.randomUUID(),
@@ -87,4 +87,25 @@ export const createClozeItem = (): ClozeItem => ({
   template: 'The capital of Japan is {{blank}}.',
   answers: ['Tokyo'],
   showPromptNumber: true,
+});
+
+// ===== PAGE & WORKSHEET STATE FACTORIES =====
+
+export const createPage = (): WorksheetPage => ({
+  id: crypto.randomUUID(),
+  items: [],
+});
+
+export const createEmptyWorksheetState = (): WorksheetState => ({
+  pages: [createPage()],
+  currentPageIndex: 0,
+  selectedItem: null,
+  mode: 'teacher',
+  metadata: {
+    title: 'Untitled Worksheet',
+    subject: '',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    version: '2.0',  // v2 = multi-page
+  },
 });

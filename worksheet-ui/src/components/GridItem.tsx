@@ -223,35 +223,33 @@ export function GridItemComponent({ item, isSelected, onUpdate }: GridItemProps)
   const mergedLines = computeMergedLines(item.sections, boxSizeMm);
 
   return (
-    <div className="flex items-start" data-grid-container>
-      {isSelected && (
-        <div
-          ref={descriptionRef}
-          className="w-[60mm] mr-4 p-2 border-b border-dashed border-gray-300 focus:bg-blue-50 outline-none print:hidden text-sm"
-          contentEditable
-          suppressContentEditableWarning
-          onFocus={() => { isEditingDescription.current = true; }}
-          onBlur={handleDescriptionBlur}
-          onPaste={(e) => { e.preventDefault(); handlePaste(e); }}
-          data-placeholder="Describe this grid (optional)"
-        />
-      )}
-
-      <div className="flex-1 print:flex print:flex-col">
-        {/* Prompt number - print only */}
+    <div className="flex flex-col" data-grid-container>
+      {/* Question Number + Description Row */}
+      <div className="flex items-baseline mb-1">
         {(item.showPromptNumber ?? true) && item.promptNumber !== undefined && (
-          <div className="hidden print:inline-block text-xs mr-1 font-medium">
+          <span className="font-bold mr-[5px] text-[11pt] leading-[1]" data-testid="question-number">
             {item.customLabel || `${item.promptNumber}.`}
-          </div>
+          </span>
         )}
-
-        {/* Description - print only */}
-        {item.description && (
+        {isSelected && (
           <div
-            className="hidden print:inline text-sm"
-            dangerouslySetInnerHTML={{ __html: item.description }}
+            ref={descriptionRef}
+            className="flex-1 p-1 border-b border-dashed border-gray-300 focus:bg-blue-50 outline-none print:hidden text-sm min-h-[1.2em]"
+            contentEditable
+            suppressContentEditableWarning
+            onFocus={() => { isEditingDescription.current = true; }}
+            onBlur={handleDescriptionBlur}
+            onPaste={(e) => { e.preventDefault(); handlePaste(e); }}
+            data-placeholder="Describe this grid (optional)"
           />
         )}
+        {!isSelected && item.description && (
+          <span className="text-sm text-gray-600" dangerouslySetInnerHTML={{ __html: item.description }} />
+        )}
+      </div>
+
+      <div className="flex-1 print:flex print:flex-col">
+
 
         {/* Grid Lines */}
         <div className="flex flex-col gap-y-2">

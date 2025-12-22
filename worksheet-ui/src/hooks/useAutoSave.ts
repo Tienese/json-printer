@@ -1,20 +1,24 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
-import type { WorksheetItem, WorksheetMetadata, WorksheetTemplate } from '../types/worksheet';
+import type { WorksheetPage, WorksheetMetadata, WorksheetTemplate } from '../types/worksheet';
 
-const AUTOSAVE_KEY = 'worksheet_autosave_v1';
-const HISTORY_KEY = 'worksheet_history_v1';
+const AUTOSAVE_KEY = 'worksheet_autosave_v2';
+const HISTORY_KEY = 'worksheet_history_v2';
 const MAX_AUTO_SAVES = 10;
-const SAVE_INTERVAL = 2 * 60 * 1000; // 2 minutes
+const SAVE_INTERVAL = 25 * 60 * 1000; // 25 minutes
 
 export interface HistoryEntry {
     timestamp: string;
     template: WorksheetTemplate;
     label?: string;
     type: 'auto' | 'manual';
-    id: string; // Unique ID for keying
+    id: string;
 }
 
-export function useAutoSave(items: WorksheetItem[], metadata: WorksheetMetadata) {
+/**
+ * Multi-page aware autosave hook.
+ * Saves pages array instead of flat items.
+ */
+export function useAutoSave(pages: WorksheetPage[], metadata: WorksheetMetadata) {
     const [history, setHistory] = useState<HistoryEntry[]>(() => {
         try {
             const saved = localStorage.getItem(HISTORY_KEY);
@@ -37,9 +41,11 @@ export function useAutoSave(items: WorksheetItem[], metadata: WorksheetMetadata)
     };
 
     const performSave = useCallback((type: 'auto' | 'manual' = 'auto', label?: string) => {
-        if (items.length === 0 && !metadata.subject) return;
+        // Check if there's content to save
+        const totalItems = pages.reduce((sum, p) => sum + p.items.length, 0);
+        if (totalItems === 0 && !metadata.subject) return;
 
-        const template: WorksheetTemplate = { metadata, items };
+        const template: WorksheetTemplate = { metadata, pages };
         const serialized = JSON.stringify(template);
 
         // For auto-saves, avoid redundant saves
@@ -82,9 +88,9 @@ export function useAutoSave(items: WorksheetItem[], metadata: WorksheetMetadata)
         } catch (err) {
             console.error("Failed to update history:", err);
         }
-    }, [items, metadata]);
+    }, [pages, metadata]);
 
-    // Time-based Trigger
+    // Time-based Trigger (25 min when focused, once on blur)
     useEffect(() => {
         const intervalId = setInterval(() => {
             const isDocumentHidden = document.hidden;
@@ -98,7 +104,7 @@ export function useAutoSave(items: WorksheetItem[], metadata: WorksheetMetadata)
             } else {
                 // Foreground Logic: Always save (if changed)
                 performSave('auto');
-                hasSavedInBackgroundRef.current = false; // Reset background flag
+                hasSavedInBackgroundRef.current = false;
             }
         }, SAVE_INTERVAL);
 

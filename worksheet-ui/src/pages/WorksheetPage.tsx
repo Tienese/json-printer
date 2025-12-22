@@ -81,9 +81,16 @@ interface WorksheetPageProps {
 export function WorksheetPage({ onNavigate }: WorksheetPageProps) {
   const {
     items,
+    pages,
+    currentPageIndex,
+    totalPages,
     selectedItem,
     mode,
     metadata,
+    nextPage,
+    prevPage,
+    addPage,
+    deletePage,
     handleSelectItem,
     updateItem,
     addItem,
@@ -93,9 +100,10 @@ export function WorksheetPage({ onNavigate }: WorksheetPageProps) {
     updateMetadata,
     addVocabTerm,
     addTFQuestion,
+    setAllPages,
   } = useWorksheet([]);
 
-  const { history, renameHistoryEntry, triggerManualSave } = useAutoSave(items, metadata);
+  const { history, renameHistoryEntry, triggerManualSave } = useAutoSave(pages, metadata);
   const [isTimelineOpen, setIsTimelineOpen] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [previewTemplate, setPreviewTemplate] = useState<WorksheetTemplate | null>(null);
@@ -115,7 +123,10 @@ export function WorksheetPage({ onNavigate }: WorksheetPageProps) {
   }, [mode]);
 
   const isPreviewMode = !!previewTemplate;
-  const displayItems = previewTemplate ? previewTemplate.items : items;
+  // For preview, show first page items (simplified); for editing, show current page items
+  const displayItems = previewTemplate
+    ? (previewTemplate.pages?.[0]?.items || [])
+    : items;
   const displayMetadata = previewTemplate ? previewTemplate.metadata : metadata;
 
   const [contextMenu, setContextMenu] = useState<{
@@ -134,13 +145,13 @@ export function WorksheetPage({ onNavigate }: WorksheetPageProps) {
   }, []);
 
   const handleSave = () => {
-    saveWorksheetToFile({ metadata, items });
+    saveWorksheetToFile({ metadata, pages });
   };
 
   const handleLoad = async () => {
     const template = await loadWorksheetFromFile();
     if (template) {
-      setItems(template.items);
+      setAllPages(template.pages);
       updateMetadata(template.metadata);
     }
   };
@@ -214,7 +225,7 @@ export function WorksheetPage({ onNavigate }: WorksheetPageProps) {
 
       {/* Main Content Area */}
       <main
-        className="overflow-auto p-10 bg-app-gray flex flex-col items-center print:p-0 print:m-0 print:w-full print:bg-white print:block print:overflow-visible print:h-auto scroll-smooth outline-none"
+        className="overflow-auto p-10 bg-app-gray flex flex-col items-center print:hidden scroll-smooth outline-none"
         onClick={() => !isPreviewMode && handleSelectItem(null)}
         onKeyDown={(e) => { if (e.key === 'Escape') !isPreviewMode && handleSelectItem(null); }}
         onContextMenu={(e) => {
@@ -244,7 +255,7 @@ export function WorksheetPage({ onNavigate }: WorksheetPageProps) {
               </button>
               <button
                 onClick={() => {
-                  setItems(previewTemplate.items);
+                  setAllPages(previewTemplate.pages);
                   updateMetadata(previewTemplate.metadata);
                   setPreviewTemplate(null);
                 }}
@@ -256,8 +267,9 @@ export function WorksheetPage({ onNavigate }: WorksheetPageProps) {
           </div>
         )}
 
+
         <section
-          className={`relative mb-10 bg-white shadow-[0_20px_50px_rgba(0,0,0,0.15)] p-[1.27cm] box-border w-[210mm] min-h-[297mm] flex flex-col origin-top transition-all duration-300 print:w-full print:shadow-none print:border-none print:m-0 print:p-0 print:transform-none print:overflow-visible print:max-h-none outline-none ${isPreviewMode ? 'ring-4 ring-amber-400 pointer-events-none opacity-80 scale-[0.98]' : ''}`}
+          className={`relative mb-10 bg-white shadow-[0_20px_50px_rgba(0,0,0,0.15)] p-[1.27cm] box-border w-[210mm] min-h-[297mm] flex flex-col origin-top transition-all duration-300 print:hidden outline-none ${isPreviewMode ? 'ring-4 ring-amber-400 pointer-events-none opacity-80 scale-[0.98]' : ''}`}
           onClick={(e) => e.stopPropagation()}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') e.stopPropagation(); }}
           aria-label="Worksheet Editor Content"
@@ -323,6 +335,25 @@ export function WorksheetPage({ onNavigate }: WorksheetPageProps) {
         </section>
       </main>
 
+      {/* Print-Only: Render ALL pages with page breaks - OUTSIDE main */}
+      <div className="hidden print:block print:absolute print:inset-0 print:p-0 print:m-0 print:z-50">
+        {pages.map((page) => (
+          <div key={page.id} className="print-page">
+            {page.items.map((item) => (
+              <div key={item.id} className="mb-[1.5mm]">
+                <WorksheetItemRenderer
+                  item={item}
+                  mode={mode}
+                  isSelected={false}
+                  isPreviewMode={true}
+                  onUpdate={() => { }}
+                />
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+
       {/* Right Sidebar - Properties */}
       <div className="row-span-1 border-l border-gray-200 bg-white print:hidden h-full overflow-hidden flex flex-col">
         <Sidebar
@@ -338,6 +369,12 @@ export function WorksheetPage({ onNavigate }: WorksheetPageProps) {
           onAddTFQuestion={addTFQuestion}
           isOpen={isSidebarOpen}
           onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+          currentPageIndex={currentPageIndex}
+          totalPages={totalPages}
+          onPrevPage={prevPage}
+          onNextPage={nextPage}
+          onAddPage={addPage}
+          onDeletePage={deletePage}
         />
       </div>
 

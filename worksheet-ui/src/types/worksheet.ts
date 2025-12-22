@@ -162,8 +162,18 @@ export interface ClozeItem {
 
 // ===== WORKSHEET STATE =====
 
-export interface WorksheetState {
+/**
+ * A single page in the worksheet.
+ * Each page contains its own items and renders as a separate A4 page when printed.
+ */
+export interface WorksheetPage {
+  id: string;
   items: WorksheetItem[];
+}
+
+export interface WorksheetState {
+  pages: WorksheetPage[];        // Array of pages (each page has its own items)
+  currentPageIndex: number;      // Currently active page (0-indexed)
   selectedItem: WorksheetItem | null;
   mode: ViewMode;
   metadata: WorksheetMetadata;
@@ -181,5 +191,10 @@ export interface WorksheetMetadata {
 
 export interface WorksheetTemplate {
   metadata: WorksheetMetadata;
-  items: WorksheetItem[];
+  pages: WorksheetPage[];        // Templates also use pages array
+}
+
+// Legacy support: convert old flat items to pages
+export function migrateToPages(items: WorksheetItem[]): WorksheetPage[] {
+  return [{ id: crypto.randomUUID(), items }];
 }

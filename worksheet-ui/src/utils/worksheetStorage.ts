@@ -1,5 +1,30 @@
 import type { WorksheetTemplate } from '../types/worksheet';
 
+/**
+ * Normalize a loaded template to ensure it has the pages structure.
+ * Handles legacy files that used flat `items` array.
+ */
+function normalizeTemplate(data: any): WorksheetTemplate {
+  // If already has pages array, use it
+  if (data.pages && Array.isArray(data.pages)) {
+    return data as WorksheetTemplate;
+  }
+
+  // Legacy format: convert items to single page
+  if (data.items && Array.isArray(data.items)) {
+    return {
+      metadata: data.metadata,
+      pages: [{ id: crypto.randomUUID(), items: data.items }]
+    };
+  }
+
+  // Invalid format: return empty template
+  return {
+    metadata: data.metadata || { title: 'Untitled', subject: '', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), version: '2.0' },
+    pages: [{ id: crypto.randomUUID(), items: [] }]
+  };
+}
+
 export const saveWorksheetToFile = (template: WorksheetTemplate): void => {
   const json = JSON.stringify(template, null, 2);
   const blob = new Blob([json], { type: 'application/json' });
@@ -32,10 +57,13 @@ export const loadWorksheetFromFile = (): Promise<WorksheetTemplate> => {
 
       try {
         const text = await file.text();
-        const template = JSON.parse(text) as WorksheetTemplate;
+        const data = JSON.parse(text);
+
+        // Normalize to handle both legacy and new formats
+        const template = normalizeTemplate(data);
 
         // Validate structure
-        if (!template.metadata || !template.items) {
+        if (!template.metadata || !template.pages) {
           throw new Error('Invalid worksheet format');
         }
 
@@ -63,7 +91,9 @@ export const saveToLocalStorage = (template: WorksheetTemplate): boolean => {
 export const loadFromLocalStorage = (): WorksheetTemplate | null => {
   try {
     const json = localStorage.getItem(STORAGE_KEY);
-    return json ? JSON.parse(json) : null;
+    if (!json) return null;
+    const data = JSON.parse(json);
+    return normalizeTemplate(data);
   } catch {
     return null;
   }

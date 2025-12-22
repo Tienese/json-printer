@@ -12,13 +12,20 @@
   @media print {
     @page {
       size: A4;
-      margin: 0.5cm; /* Minimal safe margin for most printers */
+      margin: 0; /* User controls margins via print dialog */
     }
     body {
       @apply bg-white block p-0 m-0;
     }
     #root {
       @apply p-0 m-0;
+    }
+    /* Multi-page printing: force page break before each page except first */
+    .print-page:not(:first-child) {
+      page-break-before: always;
+    }
+    .print-page {
+      @apply w-full min-h-[297mm] p-[1.27cm] box-border;
     }
   }
 
