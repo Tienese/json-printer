@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
     createHeaderItem,
-    createTextItem,
+    createCardItem,
     createGridItem,
     createVocabItem,
     createMultipleChoiceItem,
@@ -19,9 +19,9 @@ describe('worksheetFactory', () => {
         expect(item.id).toBeDefined();
     });
 
-    it('should create a TextItem with default values', () => {
-        const item = createTextItem();
-        expect(item.type).toBe('TEXT');
+    it('should create a CardItem with default values', () => {
+        const item = createCardItem();
+        expect(item.type).toBe('CARD');
         expect(item.content).toBe('');
         expect(item.id).toBeDefined();
     });
@@ -65,8 +65,8 @@ describe('worksheetFactory', () => {
     });
 
     it('should generate unique IDs for items', () => {
-        const item1 = createTextItem();
-        const item2 = createTextItem();
+        const item1 = createCardItem();
+        const item2 = createCardItem();
         expect(item1.id).not.toBe(item2.id);
     });
 });

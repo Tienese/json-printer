@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import type { WorksheetItem, WorksheetMetadata } from "../types/worksheet";
 import { GridItemEditor } from "./editors/GridItemEditor";
 import { HeaderItemEditor } from "./editors/HeaderItemEditor";
-import { TextItemEditor } from "./editors/TextItemEditor";
+import { CardItemEditor } from "./editors/CardItemEditor";
 import { VocabItemEditor } from "./editors/VocabItemEditor";
 import { MultipleChoiceEditor } from "./editors/question-editors/MultipleChoiceEditor";
 import { TrueFalseEditor } from "./editors/question-editors/TrueFalseEditor";
@@ -81,8 +81,8 @@ export function Sidebar({
               return <HeaderItemEditor item={selectedItem} onUpdate={onUpdate} />;
             case 'GRID':
               return <GridItemEditor item={selectedItem} onUpdate={onUpdate} />;
-            case 'TEXT':
-              return <TextItemEditor item={selectedItem} onUpdate={onUpdate} />;
+            case 'CARD':
+              return <CardItemEditor item={selectedItem} onUpdate={onUpdate} />;
             case 'VOCAB':
               return <VocabItemEditor item={selectedItem as any} onUpdate={onUpdate} onAddTerm={onAddVocabTerm} />;
             case 'MULTIPLE_CHOICE':

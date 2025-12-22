@@ -17,8 +17,13 @@ export interface HistoryEntry {
 /**
  * Multi-page aware autosave hook.
  * Saves pages array instead of flat items.
+ * If worksheetId is provided, also saves to server.
  */
-export function useAutoSave(pages: WorksheetPage[], metadata: WorksheetMetadata) {
+export function useAutoSave(
+    pages: WorksheetPage[],
+    metadata: WorksheetMetadata,
+    worksheetId?: number | null
+) {
     const [history, setHistory] = useState<HistoryEntry[]>(() => {
         try {
             const saved = localStorage.getItem(HISTORY_KEY);
@@ -40,7 +45,7 @@ export function useAutoSave(pages: WorksheetPage[], metadata: WorksheetMetadata)
         }
     };
 
-    const performSave = useCallback((type: 'auto' | 'manual' = 'auto', label?: string) => {
+    const performSave = useCallback(async (type: 'auto' | 'manual' = 'auto', label?: string) => {
         // Check if there's content to save
         const totalItems = pages.reduce((sum, p) => sum + p.items.length, 0);
         if (totalItems === 0 && !metadata.subject) return;
@@ -51,9 +56,35 @@ export function useAutoSave(pages: WorksheetPage[], metadata: WorksheetMetadata)
         // For auto-saves, avoid redundant saves
         if (type === 'auto' && serialized === lastSavedRef.current) return;
 
-        // Save current state as the primary autosave
+        // Save current state as the primary autosave (LocalStorage)
         localStorage.setItem(AUTOSAVE_KEY, serialized);
         lastSavedRef.current = serialized;
+
+        // Save to server if worksheetId exists
+        if (worksheetId && type === 'auto') {
+            try {
+                const { worksheetApi } = await import('../api/worksheets');
+                const allItems = pages.flatMap(p => p.items);
+                const metadataJson = JSON.stringify({
+                    gridCount: allItems.filter(i => i.type === 'GRID').length,
+                    vocabCount: allItems.filter(i => i.type === 'VOCAB').length,
+                    textCount: allItems.filter(i => i.type === 'CARD').length,
+                    mcCount: allItems.filter(i => i.type === 'MULTIPLE_CHOICE').length,
+                    tfCount: allItems.filter(i => i.type === 'TRUE_FALSE').length,
+                    matchingCount: allItems.filter(i => i.type === 'MATCHING').length,
+                    clozeCount: allItems.filter(i => i.type === 'CLOZE').length,
+                });
+
+                await worksheetApi.autosave(worksheetId, {
+                    name: metadata.title || 'Untitled Worksheet',
+                    jsonContent: serialized,
+                    metadata: metadataJson,
+                });
+            } catch (error) {
+                console.error('Server autosave failed:', error);
+                // Continue with LocalStorage save even if server fails
+            }
+        }
 
         // Add to History
         try {
@@ -88,7 +119,7 @@ export function useAutoSave(pages: WorksheetPage[], metadata: WorksheetMetadata)
         } catch (err) {
             console.error("Failed to update history:", err);
         }
-    }, [pages, metadata]);
+    }, [pages, metadata, worksheetId]);
 
     // Time-based Trigger (25 min when focused, once on blur)
     useEffect(() => {
@@ -98,12 +129,12 @@ export function useAutoSave(pages: WorksheetPage[], metadata: WorksheetMetadata)
             if (isDocumentHidden) {
                 // Background Logic: Save ONCE
                 if (!hasSavedInBackgroundRef.current) {
-                    performSave('auto');
+                    void performSave('auto');
                     hasSavedInBackgroundRef.current = true;
                 }
             } else {
                 // Foreground Logic: Always save (if changed)
-                performSave('auto');
+                void performSave('auto');
                 hasSavedInBackgroundRef.current = false;
             }
         }, SAVE_INTERVAL);
@@ -121,7 +152,7 @@ export function useAutoSave(pages: WorksheetPage[], metadata: WorksheetMetadata)
     };
 
     const triggerManualSave = () => {
-        performSave('manual', 'Manual Save');
+        void performSave('manual', 'Manual Save');
     };
 
     const getAutosave = (): WorksheetTemplate | null => {

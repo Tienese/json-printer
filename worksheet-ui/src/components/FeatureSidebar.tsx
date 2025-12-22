@@ -17,7 +17,7 @@ const features: Feature[] = [
     {
         name: 'Worksheet Builder',
         icon: '📝',
-        route: ROUTES.WORKSHEET,
+        route: ROUTES.WORKSHEET_DASHBOARD,
         offline: true,
         description: 'Create custom worksheets',
     },

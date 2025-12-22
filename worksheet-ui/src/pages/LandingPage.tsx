@@ -13,7 +13,9 @@ export function LandingPage({ onNavigate }: Readonly<LandingPageProps>) {
 
             {/* Main Content */}
             <div className="flex-1 flex items-center justify-center">
-                <div className="text-center p-8">
+                <div
+                    onClick={() => onNavigate(ROUTES.WORKSHEET_DASHBOARD)}
+                    className="cursor-pointer bg-white border-2 border-black p-8 hover:bg-gray-50 transition-colors group">
                     <h1 className="text-5xl font-black uppercase tracking-tight mb-4">
                         json-printer
                     </h1>

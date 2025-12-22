@@ -1,6 +1,7 @@
 import { useRef, useCallback, type FC, useEffect } from 'react';
 import type { TrueFalseItem, ViewMode } from '../../types/worksheet';
 import { sanitizePaste, sanitizeHTML } from '../../utils/htmlSanitizer';
+import { QuestionNumber } from '../shared/QuestionNumber';
 
 interface Props {
   item: TrueFalseItem;
@@ -235,18 +236,18 @@ export const TrueFalseItemComponent: FC<Props> = ({
       data-item-type="TRUE_FALSE"
     >
       <div className="flex items-start">
-        {item.showPromptNumber && item.promptNumber && (
-          <span className="font-bold mr-[5px] text-[11pt] leading-[1.4] shrink-0 pt-[2px]" data-testid="question-number">
-            {item.promptNumber}.
-          </span>
-        )}
+        <QuestionNumber
+          number={item.promptNumber!}
+          show={item.showPromptNumber && !!item.promptNumber}
+          className="shrink-0 pt-[2px]"
+        />
 
         <div className="flex-1 min-w-0 text-[11pt] leading-[1.4]">
           {/* Main Prompt - Only show for multiple layout */}
           {item.layout === 'multiple' && (
             <div
               ref={promptRef}
-              className="mb-1 outline-none hover:bg-[#eef] focus:bg-[#eef] p-[1px] rounded empty:before:content-['Click_to_add_prompt...'] empty:before:text-gray-400 empty:before:italic"
+              className="mb-1 outline-none hover:bg-[#eef] focus:bg-[#eef] p-[1px] rounded empty:before:content-['Click_to_add_prompt...'] empty:before:text-gray-400 empty:before:italic focus:empty:before:content-['']"
               contentEditable
               suppressContentEditableWarning
               onFocus={handleFocus}

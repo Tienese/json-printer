@@ -27,6 +27,17 @@ public class Worksheet {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private WorksheetType type = WorksheetType.SNAPSHOT;
+
+    @Column
+    private Long parentId; // FK to parent worksheet for autosaves
+
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String metadata; // JSON: {"gridCount":2,"vocabCount":1,...}
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
@@ -45,6 +56,14 @@ public class Worksheet {
     public Worksheet(String name, String jsonContent) {
         this.name = name;
         this.jsonContent = jsonContent;
+    }
+
+    public Worksheet(String name, String jsonContent, WorksheetType type, Long parentId, String metadata) {
+        this.name = name;
+        this.jsonContent = jsonContent;
+        this.type = type;
+        this.parentId = parentId;
+        this.metadata = metadata;
     }
 
     // Getters and Setters
@@ -86,5 +105,29 @@ public class Worksheet {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public WorksheetType getType() {
+        return type;
+    }
+
+    public void setType(WorksheetType type) {
+        this.type = type;
+    }
+
+    public Long getParentId() {
+        return parentId;
+    }
+
+    public void setParentId(Long parentId) {
+        this.parentId = parentId;
+    }
+
+    public String getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(String metadata) {
+        this.metadata = metadata;
     }
 }

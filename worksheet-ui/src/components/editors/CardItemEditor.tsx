@@ -1,15 +1,15 @@
-import type { TextItem } from "../../types/worksheet";
+import type { CardItem } from '../../types/worksheet';
 
-interface TextItemEditorProps {
-  item: TextItem;
-  onUpdate: (item: TextItem) => void;
+interface CardItemEditorProps {
+  item: CardItem;
+  onUpdate: (item: CardItem) => void;
 }
 
-export function TextItemEditor({ item, onUpdate }: TextItemEditorProps) {
+export function CardItemEditor({ item, onUpdate }: CardItemEditorProps) {
   return (
     <div className="space-y-4">
       <div className="prop-group">
-        <h4>Text Styling</h4>
+        <h4>Card Styling</h4>
 
         <div className="mb-4">
           <label className="checkbox-label">
@@ -21,17 +21,42 @@ export function TextItemEditor({ item, onUpdate }: TextItemEditorProps) {
             Show Question Number
           </label>
         </div>
-        
+
+        <div className="mb-4">
+          <label className="prop-label">Language</label>
+          <select
+            className="prop-select"
+            value={item.language || 'VI'}
+            onChange={(e) => onUpdate({ ...item, language: e.target.value as 'VI' | 'EN' | 'JP' })}
+          >
+            <option value="VI">Vietnamese (Tiếng Việt)</option>
+            <option value="EN">English</option>
+            <option value="JP">Japanese (日本語)</option>
+          </select>
+        </div>
+
+        <div className="mb-4">
+          <label className="prop-label">Card Title (optional)</label>
+          <input
+            type="text"
+            className="prop-input"
+            value={item.cardHeader || ''}
+            placeholder="e.g., Ghi chú quan trọng"
+            onChange={(e) => onUpdate({ ...item, cardHeader: e.target.value })}
+          />
+          <small className="text-xs text-gray-500 mt-1 block">
+            Title will appear with underlines and language indicator
+          </small>
+        </div>
+
         <div className="grid grid-cols-2 gap-2">
           <div>
             <label className="prop-label">Font Size</label>
-            <select 
+            <select
               className="prop-select"
               value={item.fontSize || '12pt'}
               onChange={(e) => onUpdate({ ...item, fontSize: e.target.value })}
             >
-              <option value="8pt">8pt</option>
-              <option value="9pt">9pt</option>
               <option value="10pt">10pt</option>
               <option value="11pt">11pt</option>
               <option value="12pt">12pt</option>
@@ -40,10 +65,9 @@ export function TextItemEditor({ item, onUpdate }: TextItemEditorProps) {
               <option value="18pt">18pt</option>
             </select>
           </div>
-          
           <div>
             <label className="prop-label">Font Weight</label>
-            <select 
+            <select
               className="prop-select"
               value={item.fontWeight || 'normal'}
               onChange={(e) => onUpdate({ ...item, fontWeight: e.target.value as 'normal' | 'bold' })}
@@ -54,13 +78,13 @@ export function TextItemEditor({ item, onUpdate }: TextItemEditorProps) {
           </div>
         </div>
 
-        <div className="mt-2">
-          <label className="prop-label">Alignment</label>
+        <div className="mt-4">
+          <label className="prop-label">Text Alignment</label>
           <div className="flex border border-gray-300 rounded overflow-hidden">
             {(['left', 'center', 'right', 'justify'] as const).map((align) => (
               <button
                 key={align}
-                className={`flex-1 py-1 text-xs capitalize ${item.textAlign === align || (!item.textAlign && align === 'left') ? 'bg-primary-blue text-white' : 'bg-white text-gray-700 hover:bg-gray-100'}`}
+                className={`flex-1 py-1 text-xs capitalize ${item.textAlign === align || (!item.textAlign && align === 'left') ? 'bg-black text-white' : 'bg-white text-gray-700'}`}
                 onClick={() => onUpdate({ ...item, textAlign: align })}
               >
                 {align}
@@ -68,13 +92,10 @@ export function TextItemEditor({ item, onUpdate }: TextItemEditorProps) {
             ))}
           </div>
         </div>
-      </div>
 
-      <div className="prop-group">
-        <h4>Spacing (mm)</h4>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-2 mt-4">
           <div>
-            <label className="prop-label">Top Margin</label>
+            <label className="prop-label">Top Margin (mm)</label>
             <input
               type="text"
               className="prop-input"
@@ -84,7 +105,7 @@ export function TextItemEditor({ item, onUpdate }: TextItemEditorProps) {
             />
           </div>
           <div>
-            <label className="prop-label">Bottom Margin</label>
+            <label className="prop-label">Bottom Margin (mm)</label>
             <input
               type="text"
               className="prop-input"

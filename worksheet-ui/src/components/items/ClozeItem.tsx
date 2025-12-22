@@ -1,5 +1,6 @@
 import { type FC } from 'react';
 import type { ClozeItem, ViewMode } from '../../types/worksheet';
+import { QuestionNumber } from '../shared/QuestionNumber';
 
 interface Props {
   item: ClozeItem;
@@ -20,11 +21,10 @@ export const ClozeItemComponent: FC<Props> = ({
       data-testid={`cloze-item-${item.id}`}
       data-item-type="CLOZE"
     >
-      {item.showPromptNumber && item.promptNumber && (
-        <span className="font-bold mr-[5px] text-[11pt] leading-[1.4]" data-testid="question-number">
-          {item.promptNumber}.
-        </span>
-      )}
+      <QuestionNumber
+        number={item.promptNumber!}
+        show={item.showPromptNumber && !!item.promptNumber}
+      />
 
       <div className="flex-1 text-[11pt] leading-[1.4]" data-testid="cloze-template">
         {parts.map((part, partIndex) => {

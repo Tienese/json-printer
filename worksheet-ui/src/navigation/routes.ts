@@ -10,7 +10,8 @@ export const ROUTES = {
   QUIZ_IMPORT: 'quiz-import',
   QUIZ_EDITOR: 'quiz/editor',
   QUIZ_SUCCESS: 'quiz/success',
-  WORKSHEET: 'worksheet',
+  WORKSHEET_DASHBOARD: 'worksheet',
+  WORKSHEET_EDIT: 'worksheet/edit',
   ANALYTICS: 'analytics',
 } as const;
 

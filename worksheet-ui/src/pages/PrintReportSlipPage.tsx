@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { ROUTES } from '../navigation/routes';
 import type { QuizPrintViewModel } from '../types/printReport';
+import { Spinner } from '../components/ui';
+import { triggerBrowserPrint } from '../utils/print';
 
 interface PrintReportSlipPageProps {
   onNavigate: (route: string) => void;
@@ -34,7 +36,7 @@ export function PrintReportSlipPage({ onNavigate }: PrintReportSlipPageProps) {
       target: { testid: "print-btn", label: "Print Slips", state: "enabled" },
       payload: {}
     }));
-    window.print();
+    triggerBrowserPrint();
   };
 
   if (error) {
@@ -52,8 +54,7 @@ export function PrintReportSlipPage({ onNavigate }: PrintReportSlipPageProps) {
   if (!reportData) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-white">
-        <div className="w-16 h-16 border-8 border-gray-200 border-t-black rounded-full animate-spin mb-6"></div>
-        <p className="font-black uppercase tracking-widest">Generating Slips...</p>
+        <Spinner text="Generating Slips..." />
       </div>
     );
   }

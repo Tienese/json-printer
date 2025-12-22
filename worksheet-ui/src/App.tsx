@@ -2,6 +2,7 @@ import './styles/tailwind.css';
 import { useNavigation } from './navigation/useNavigation';
 import { ROUTES } from './navigation/routes';
 import { WorksheetPage } from './pages/WorksheetPage';
+import { WorksheetDashboardPage } from './pages/WorksheetDashboardPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { PrintReportViewPage } from './pages/PrintReportViewPage';
 import { PrintReportSlipPage } from './pages/PrintReportSlipPage';
@@ -20,7 +21,7 @@ import { ErrorBoundary } from './components/ErrorBoundary';
  * Navigation state managed by useNavigation hook
  */
 function App() {
-  const { route, navigate } = useNavigation();
+  const { route, params, navigate } = useNavigation();
 
   const renderPage = () => {
     switch (route) {
@@ -28,9 +29,12 @@ function App() {
       case ROUTES.HOME:
         return <LandingPage onNavigate={navigate} />;
 
-      // All other pages - no sidebar
-      case ROUTES.WORKSHEET:
-        return <WorksheetPage onNavigate={navigate} />;
+      // Worksheet routes
+      case ROUTES.WORKSHEET_DASHBOARD:
+        return <WorksheetDashboardPage onNavigate={navigate} />;
+
+      case ROUTES.WORKSHEET_EDIT:
+        return <WorksheetPage worksheetId={params.id} onNavigate={navigate} />;
 
       case ROUTES.PRINT_REPORT_VIEW:
         return <PrintReportViewPage onNavigate={navigate} />;

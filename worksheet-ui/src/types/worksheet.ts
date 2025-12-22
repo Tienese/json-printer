@@ -1,7 +1,7 @@
 // ===== BASE TYPES =====
 export type WorksheetItem =
   | HeaderItem
-  | TextItem
+  | CardItem
   | GridItem
   | VocabItem
   | MultipleChoiceItem
@@ -26,9 +26,9 @@ export interface HeaderItem {
   customLabel?: string;
 }
 
-export interface TextItem {
+export interface CardItem {
   id: string;
-  type: 'TEXT';
+  type: 'CARD';
   content: string;
   fontSize?: string;
   textAlign?: 'left' | 'center' | 'right' | 'justify';
@@ -38,6 +38,13 @@ export interface TextItem {
   showPromptNumber?: boolean;
   promptNumber?: number;
   customLabel?: string;
+
+  // Card-specific styling (B&W print-friendly)
+  showBorder?: boolean;
+  borderStyle?: 'solid' | 'double' | 'dashed';
+  cardHeader?: string;
+  cardStyle?: 'note' | 'info' | 'warning';
+  language?: 'VI' | 'EN' | 'JP';  // Default: VI (Vietnamese)
 }
 
 export interface GridItem {

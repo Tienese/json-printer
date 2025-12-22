@@ -1,4 +1,4 @@
-import type { HeaderItem, TextItem, MultipleChoiceItem, TrueFalseItem, MatchingItem, ClozeItem, GridItem, VocabItem, WorksheetPage, WorksheetState } from '../types/worksheet';
+import type { HeaderItem, CardItem, MultipleChoiceItem, TrueFalseItem, MatchingItem, ClozeItem, GridItem, VocabItem, WorksheetPage, WorksheetState } from '../types/worksheet';
 
 export const createHeaderItem = (): HeaderItem => ({
   id: crypto.randomUUID(),
@@ -8,11 +8,13 @@ export const createHeaderItem = (): HeaderItem => ({
   showDate: true,
 });
 
-export const createTextItem = (): TextItem => ({
+export const createCardItem = (): CardItem => ({
   id: crypto.randomUUID(),
-  type: 'TEXT',
+  type: 'CARD',
   content: '',
   showPromptNumber: true,
+  showBorder: false,
+  language: 'VI', // Default to Vietnamese
 });
 
 export const createGridItem = (): GridItem => ({

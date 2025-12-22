@@ -8,6 +8,8 @@ import {
   TrueFalseRenderer,
   ShortAnswerRenderer
 } from '../components/QuestionRenderers';
+import { Spinner } from '../components/ui';
+import { triggerBrowserPrint } from '../utils/print';
 
 interface PrintReportViewPageProps {
   onNavigate: (route: string) => void;
@@ -42,7 +44,7 @@ export function PrintReportViewPage({ onNavigate }: PrintReportViewPageProps) {
       target: { testid: "print-btn", label: "Print", state: "enabled" },
       payload: {}
     }));
-    window.print();
+    triggerBrowserPrint();
   };
 
   const toggleEditMode = () => {
@@ -71,8 +73,7 @@ export function PrintReportViewPage({ onNavigate }: PrintReportViewPageProps) {
   if (!reportData) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-white">
-        <div className="w-16 h-16 border-8 border-gray-200 border-t-black rounded-full animate-spin mb-6"></div>
-        <p className="font-black uppercase tracking-widest">Rendering Dossier...</p>
+        <Spinner text="Rendering Dossier..." />
       </div>
     );
   }

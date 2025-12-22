@@ -4,6 +4,7 @@ import type { GridItem, GridSection } from '../types/worksheet';
 import { sanitizePaste, sanitizeHTML } from '../utils/htmlSanitizer';
 import { focusGridBox, focusGridBoxFromEvent } from '../utils/gridFocus';
 import { useGridSections } from '../hooks/useGridSections';
+import { QuestionNumber } from './shared/QuestionNumber';
 
 // Compute merged lines for print optimization
 function computeMergedLines(sections: GridSection[], boxSizeMm: number): GridSection[][] {
@@ -230,11 +231,12 @@ export function GridItemComponent({ item, isSelected, onUpdate }: GridItemProps)
     <div className="flex flex-col" data-grid-container>
       {/* Question Number + Description Row */}
       <div className="flex items-baseline mb-1">
-        {(item.showPromptNumber ?? true) && item.promptNumber !== undefined && (
-          <span className="font-bold mr-[5px] text-[11pt] leading-[1]" data-testid="question-number">
-            {item.customLabel || `${item.promptNumber}.`}
-          </span>
-        )}
+        <QuestionNumber
+          number={item.promptNumber!}
+          customLabel={item.customLabel}
+          show={(item.showPromptNumber ?? true) && item.promptNumber !== undefined}
+          className="leading-[1]"
+        />
         {isSelected && (
           <div
             ref={descriptionRef}

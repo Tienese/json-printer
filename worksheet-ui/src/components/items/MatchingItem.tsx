@@ -1,6 +1,7 @@
 import { useMemo, useRef, useCallback, Fragment, type FC, useEffect } from 'react';
 import type { MatchingItem, ViewMode } from '../../types/worksheet';
 import { sanitizePaste, sanitizeHTML } from '../../utils/htmlSanitizer';
+import { QuestionNumber } from '../shared/QuestionNumber';
 
 interface Props {
   item: MatchingItem;
@@ -161,14 +162,15 @@ export const MatchingItemComponent: FC<Props> = ({
       data-testid={`matching-item-${item.id}`}
       data-item-type="MATCHING"
     >
-      {item.showPromptNumber && item.promptNumber && (
-        <span className="font-bold mr-[5px] text-[11pt] leading-[1.4]">{item.promptNumber}.</span>
-      )}
+      <QuestionNumber
+        number={item.promptNumber!}
+        show={item.showPromptNumber && !!item.promptNumber}
+      />
 
       <div className="flex-1">
         <div
           ref={promptRef}
-          className="mb-[2mm] text-[11pt] leading-[1.4] outline-none hover:bg-[#eef] focus:bg-[#eef] p-[1px] rounded"
+          className="mb-[2mm] text-[11pt] leading-[1.4] outline-none hover:bg-[#eef] focus:bg-[#eef] p-[1px] rounded empty:before:content-['Click_to_add_instructions...'] empty:before:text-gray-400 empty:before:italic focus:empty:before:content-['']"
           contentEditable
           suppressContentEditableWarning
           onFocus={handleFocus}

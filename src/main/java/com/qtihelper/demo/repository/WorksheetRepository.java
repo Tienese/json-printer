@@ -17,8 +17,15 @@ public interface WorksheetRepository extends JpaRepository<Worksheet, Long> {
      */
     List<Worksheet> findAllByOrderByUpdatedAtDesc();
 
-    /**
-     * Find worksheets by name (case-insensitive search).
-     */
     List<Worksheet> findByNameContainingIgnoreCase(String name);
+
+    /**
+     * Find worksheets by type (SNAPSHOT, AUTOSAVE, TEMPLATE).
+     */
+    List<Worksheet> findByTypeOrderByUpdatedAtDesc(com.qtihelper.demo.entity.WorksheetType type);
+
+    /**
+     * Find all autosaves for a specific parent worksheet.
+     */
+    List<Worksheet> findByParentIdOrderByUpdatedAtDesc(Long parentId);
 }

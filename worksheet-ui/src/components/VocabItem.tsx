@@ -2,6 +2,7 @@ import { useRef, useCallback, useEffect } from 'react';
 import type { VocabItem } from '../types/worksheet';
 import { sanitizePaste, sanitizeHTML } from '../utils/htmlSanitizer';
 import { CharacterInput } from './CharacterInput';
+import { QuestionNumber } from './shared/QuestionNumber';
 
 interface VocabItemProps {
   item: VocabItem;
@@ -97,11 +98,10 @@ export function VocabItemComponent({ item, onUpdate }: VocabItemProps) {
 
   return (
     <div className="flex items-baseline">
-      {item.showPromptNumber && item.promptNumber && (
-        <span className="font-bold mr-[5px] text-[11pt] leading-[1.4]" data-testid="question-number">
-          {item.promptNumber}.
-        </span>
-      )}
+      <QuestionNumber
+        number={item.promptNumber!}
+        show={item.showPromptNumber && !!item.promptNumber}
+      />
       <div className="flex-1">
         <div
           ref={descriptionRef}
@@ -159,7 +159,7 @@ export function VocabItemComponent({ item, onUpdate }: VocabItemProps) {
 
                   {isGridType ? (
                     // Grid layout: [bullet] [grid] [term] [dashline]
-                    <div className={`flex ${globalGridLayout === 'below' ? 'flex-col' : 'flex-row items-center'} gap-2 flex-1`}>
+                    <div className={`flex ${globalGridLayout === 'below' ? 'flex-col' : 'flex-row items-baseline'} gap-2 flex-1`}>
                       {/* Grid boxes first */}
                       <div className="flex flex-col">
                         <div className="flex">
@@ -172,7 +172,7 @@ export function VocabItemComponent({ item, onUpdate }: VocabItemProps) {
                                 />
                               )}
                               <div
-                                className="box-border border border-black -mr-px bg-white flex items-center justify-center font-sans leading-none cursor-text outline-none relative"
+                                className="box-border border border-black -mr-px -mb-px bg-white flex items-center justify-center font-sans leading-none cursor-text outline-none relative print:border-black"
                                 style={{
                                   width: `${boxSizeMm}mm`,
                                   height: `${boxSizeMm}mm`,

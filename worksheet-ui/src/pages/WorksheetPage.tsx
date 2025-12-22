@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import type { WorksheetItem, ViewMode, WorksheetTemplate } from '../types/worksheet';
 import { HeaderItemComponent } from '../components/HeaderItem';
 import { GridItemComponent } from '../components/GridItem';
-import { TextItemComponent } from '../components/TextItem';
+import { CardItemComponent } from '../components/CardItem';
 import { VocabItemComponent } from '../components/VocabItem';
 import { MultipleChoiceItemComponent } from '../components/items/MultipleChoiceItem';
 import { TrueFalseItemComponent } from '../components/items/TrueFalseItem';
@@ -14,7 +14,7 @@ import { SaveLoadToolbar } from '../components/items/SaveLoadToolbar';
 import { ModeToggle } from '../components/items/ModeToggle';
 
 import { saveWorksheetToFile, loadWorksheetFromFile } from '../utils/worksheetStorage';
-import { createMultipleChoiceItem, createTrueFalseItem, createMatchingItem, createClozeItem, createTextItem, createGridItem, createVocabItem } from '../utils/worksheetFactory';
+import { createMultipleChoiceItem, createTrueFalseItem, createMatchingItem, createClozeItem, createCardItem, createGridItem, createVocabItem } from '../utils/worksheetFactory';
 import { useAutoSave } from '../hooks/useAutoSave';
 import { TimelineSidebar } from '../components/TimelineSidebar';
 import { Navbar } from '../components/Navbar';
@@ -24,7 +24,7 @@ import { aiLog } from '../utils/aiLogger';
 // Helper to create items based on type
 const createItemByType = (type: string): WorksheetItem => {
   switch (type) {
-    case 'TEXT': return createTextItem();
+    case 'CARD': return createCardItem();
     case 'GRID': return createGridItem();
     case 'VOCAB': return createVocabItem();
     case 'MULTIPLE_CHOICE': return createMultipleChoiceItem();
@@ -56,8 +56,8 @@ function WorksheetItemRenderer({
   switch (item.type) {
     case 'HEADER':
       return <HeaderItemComponent key={item.id} item={item as any} onUpdate={updateHandler} />;
-    case 'TEXT':
-      return <TextItemComponent key={item.id} item={item as any} onUpdate={updateHandler} />;
+    case 'CARD':
+      return <CardItemComponent key={item.id} item={item as any} onUpdate={updateHandler} />;
     case 'GRID':
       return <GridItemComponent key={item.id} item={item as any} isSelected={isSelected} onUpdate={updateHandler} />;
     case 'VOCAB':
@@ -75,11 +75,13 @@ function WorksheetItemRenderer({
   }
 }
 
+
 interface WorksheetPageProps {
   readonly onNavigate?: (route: string) => void;
+  readonly worksheetId?: string;
 }
 
-export function WorksheetPage({ onNavigate }: WorksheetPageProps) {
+export function WorksheetPage({ onNavigate, worksheetId }: WorksheetPageProps) {
   const {
     items,
     pages,
@@ -104,10 +106,35 @@ export function WorksheetPage({ onNavigate }: WorksheetPageProps) {
     setAllPages,
   } = useWorksheet([]);
 
-  const { history, renameHistoryEntry, triggerManualSave } = useAutoSave(pages, metadata);
+  const [currentWorksheetId, setCurrentWorksheetId] = useState<number | null>(
+    worksheetId ? Number(worksheetId) : null
+  );
+  const { history, renameHistoryEntry, triggerManualSave } = useAutoSave(pages, metadata, currentWorksheetId);
   const [isTimelineOpen, setIsTimelineOpen] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [previewTemplate, setPreviewTemplate] = useState<WorksheetTemplate | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Load worksheet from server if ID is provided
+  useEffect(() => {
+    async function loadWorksheet() {
+      if (!worksheetId) return;
+
+      try {
+        const { worksheetApi } = await import('../api/worksheets');
+        const worksheet = await worksheetApi.get(Number(worksheetId));
+        const template: WorksheetTemplate = JSON.parse(worksheet.jsonContent);
+
+        setAllPages(template.pages);
+        updateMetadata(template.metadata);
+      } catch (error) {
+        console.error('Failed to load worksheet:', error);
+      }
+    }
+
+    loadWorksheet();
+  }, [worksheetId, setAllPages, updateMetadata]);
+
 
   // AI Debug: Log page mount
   useEffect(() => {
@@ -157,6 +184,52 @@ export function WorksheetPage({ onNavigate }: WorksheetPageProps) {
     }
   };
 
+  const handleSaveToCloud = async () => {
+    setIsSaving(true);
+    try {
+      const { worksheetApi } = await import('../api/worksheets');
+      const template = { metadata, pages };
+      const jsonContent = JSON.stringify(template);
+
+      // Calculate metadata counts
+      const allItems = pages.flatMap(p => p.items);
+      const metadataJson = JSON.stringify({
+        gridCount: allItems.filter(i => i.type === 'GRID').length,
+        vocabCount: allItems.filter(i => i.type === 'VOCAB').length,
+        textCount: allItems.filter(i => i.type === 'CARD').length,
+        mcCount: allItems.filter(i => i.type === 'MULTIPLE_CHOICE').length,
+        tfCount: allItems.filter(i => i.type === 'TRUE_FALSE').length,
+        matchingCount: allItems.filter(i => i.type === 'MATCHING').length,
+        clozeCount: allItems.filter(i => i.type === 'CLOZE').length,
+      });
+
+      if (currentWorksheetId) {
+        // Update existing worksheet
+        await worksheetApi.update(currentWorksheetId, {
+          name: metadata.title || 'Untitled Worksheet',
+          jsonContent,
+          metadata: metadataJson,
+        });
+      } else {
+        // Create new worksheet
+        const saved = await worksheetApi.create({
+          name: metadata.title || 'Untitled Worksheet',
+          jsonContent,
+          type: 'SNAPSHOT',
+          metadata: metadataJson,
+        });
+        setCurrentWorksheetId(saved.id);
+      }
+
+      alert('Worksheet saved successfully!');
+    } catch (error) {
+      console.error('Failed to save worksheet:', error);
+      alert('Failed to save worksheet. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const handleContextMenu = (e: React.MouseEvent, type: 'ADD' | 'DELETE', item?: WorksheetItem) => {
     e.preventDefault();
     setContextMenu({
@@ -184,7 +257,7 @@ export function WorksheetPage({ onNavigate }: WorksheetPageProps) {
               <div className="h-6 w-px bg-gray-200"></div>
               <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
                 {[
-                  { label: 'Text', type: 'TEXT' },
+                  { label: 'Card', type: 'CARD' },
                   { label: 'Grid', type: 'GRID' },
                   { label: 'Vocab', type: 'VOCAB' },
                   { label: 'MC', type: 'MULTIPLE_CHOICE' },
@@ -205,6 +278,8 @@ export function WorksheetPage({ onNavigate }: WorksheetPageProps) {
                 onSave={handleSave}
                 onLoad={handleLoad}
                 onSnapshot={triggerManualSave}
+                onSaveToCloud={handleSaveToCloud}
+                isSaving={isSaving}
               />
               <div className="h-6 w-px bg-gray-200"></div>
               <ModeToggle mode={mode} onToggle={toggleMode} />
@@ -390,7 +465,7 @@ export function WorksheetPage({ onNavigate }: WorksheetPageProps) {
               <>
                 <div className="px-4 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Add Element</div>
                 {[
-                  { label: 'Text Block', type: 'TEXT', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 7V4h16v3M9 20h6M12 4v16" /></svg> },
+                  { label: 'Card Block', type: 'CARD', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 7V4h16v3M9 20h6M12 4v16" /></svg> },
                   { label: 'Writing Grid', type: 'GRID', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect width="18" height="18" x="3" y="3" rx="2" /><path d="M3 9h18M3 15h18M9 3v18M15 3v18" /></svg> },
                   { label: 'Vocabulary', type: 'VOCAB', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z" /></svg> },
                   { label: 'Multiple Choice', type: 'MULTIPLE_CHOICE', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="m9 12 2 2 4-4" /></svg> },

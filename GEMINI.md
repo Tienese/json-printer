@@ -134,6 +134,42 @@ cd src/main/frontend && npm run dev
 
 ---
 
+## 🖨️ Print Design Rules (CRITICAL)
+
+All printable pages MUST follow these strict guidelines:
+
+### 🚫 No Colors in Print
+- **Black and white ONLY** — color is useless for printed worksheets
+- **Never render background colors** in `@media print`
+- Use `print:bg-white` on all printable elements
+
+### ✏️ Visual Hierarchy Without Color
+Use these techniques instead of colors:
+- **Border styles:** solid, dashed, double, thick/thin
+- **Text indicators:** `[NOTE]`, `[INFO]`, `[!]`, `[Q1]`, `[A]`/`[B]`/`[C]`
+- **ASCII/Unicode:** `▸`, `•`, `○`, `▪`, `★`, `→`, box-drawing chars
+- **Font weight:** bold for emphasis, normal for content
+- **Spacing/indentation:** visual grouping
+
+### 📐 Vertical Space Optimization
+- **Minimize gaps:** Use smallest practical margins/padding
+- **Goal:** Maximize usable printing area vertically
+- **Compact layouts:** Avoid excessive whitespace between items
+- **Print-break awareness:** Use `break-inside-avoid` strategically
+
+### ✅ Print CSS Pattern
+```css
+@media print {
+  .printable-item {
+    background: white !important;
+    color: black !important;
+    border-color: black !important;
+  }
+}
+```
+
+---
+
 ## 🎨 UI Component Standards
 
 ### Navbar Component

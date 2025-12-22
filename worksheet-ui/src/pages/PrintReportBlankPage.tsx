@@ -3,6 +3,8 @@ import { ROUTES } from '../navigation/routes';
 import { useNavigation } from '../navigation/useNavigation';
 import { getBlankQuiz } from '../api/printReport';
 import type { QuizPrintViewModel } from '../types/printReport';
+import { Spinner } from '../components/ui';
+import { triggerBrowserPrint } from '../utils/print';
 
 interface PrintReportBlankPageProps {
   onNavigate: (route: string) => void;
@@ -61,14 +63,13 @@ export function PrintReportBlankPage({ onNavigate }: PrintReportBlankPageProps) 
       target: { testid: "print-btn", label: "Print Worksheet", state: "enabled" },
       payload: {}
     }));
-    window.print();
+    triggerBrowserPrint();
   };
 
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-white">
-        <div className="w-16 h-16 border-8 border-gray-200 border-t-black rounded-full animate-spin mb-6"></div>
-        <p className="font-black uppercase tracking-widest text-black">Formatting Worksheet...</p>
+        <Spinner text="Formatting Worksheet..." />
       </div>
     );
   }

@@ -181,7 +181,7 @@ export function DashboardPage({ onNavigate }: DashboardPageProps) {
             <button className="h-10 px-4 font-bold border-2 border-black" onClick={() => onNavigate(ROUTES.QUIZ_IMPORT)}>
               QTI Converter
             </button>
-            <button className="h-10 px-4 font-bold border-2 border-black" onClick={() => onNavigate(ROUTES.WORKSHEET)}>
+            <button className="h-10 px-4 font-bold border-2 border-black" onClick={() => onNavigate(ROUTES.WORKSHEET_DASHBOARD)}>
               Worksheet
             </button>
           </>

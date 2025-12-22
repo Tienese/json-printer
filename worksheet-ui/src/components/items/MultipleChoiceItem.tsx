@@ -1,6 +1,7 @@
 import { useRef, useCallback, type FC, useEffect } from 'react';
 import type { MultipleChoiceItem, ViewMode } from '../../types/worksheet';
 import { sanitizePaste, sanitizeHTML } from '../../utils/htmlSanitizer';
+import { QuestionNumber } from '../shared/QuestionNumber';
 
 interface Props {
   item: MultipleChoiceItem;
@@ -74,16 +75,15 @@ export const MultipleChoiceItemComponent: FC<Props> = ({
       data-testid={`mc-item-${item.id}`}
       data-item-type="MULTIPLE_CHOICE"
     >
-      {item.showPromptNumber && item.promptNumber && (
-        <span className="font-bold mr-[5px] text-[11pt] leading-[1.4]" data-testid="question-number">
-          {item.promptNumber}.
-        </span>
-      )}
+      <QuestionNumber
+        number={item.promptNumber!}
+        show={item.showPromptNumber && !!item.promptNumber}
+      />
 
       <div className="flex-1">
         <div
           ref={promptRef}
-          className="mb-[1mm] text-[11pt] leading-[1.4] outline-none hover:bg-[#eef] focus:bg-[#eef] p-[1px] rounded"
+          className="mb-[1mm] text-[11pt] leading-[1.4] outline-none hover:bg-[#eef] focus:bg-[#eef] p-[1px] rounded empty:before:content-['Click_to_add_question...'] empty:before:text-gray-400 empty:before:italic focus:empty:before:content-['']"
           contentEditable
           suppressContentEditableWarning
           onFocus={() => { isEditingPrompt.current = true; }}

@@ -1,6 +1,8 @@
 import { useState, useRef } from 'react';
 import { ROUTES } from '../navigation/routes';
 import { Navbar } from '../components/Navbar';
+import { Spinner } from '../components/ui';
+import { triggerBrowserPrint } from '../utils/print';
 
 interface AnalyticsPageProps {
     onNavigate: (route: string) => void;
@@ -112,7 +114,7 @@ export function AnalyticsPage({ onNavigate }: AnalyticsPageProps) {
     };
 
     const handlePrint = () => {
-        window.print();
+        triggerBrowserPrint();
     };
 
     const calculateDiscriminationIndex = (q: QuestionStatistics): number => {
@@ -154,10 +156,7 @@ export function AnalyticsPage({ onNavigate }: AnalyticsPageProps) {
                 {/* Content */}
                 <div className="max-w-[21cm] mx-auto my-8 p-8 bg-white shadow-lg print:shadow-none print:m-0 print:max-w-none">
                     {loading && (
-                        <div className="flex flex-col items-center justify-center min-h-[400px]">
-                            <div className="w-16 h-16 border-8 border-gray-200 border-t-black rounded-full animate-spin mb-6"></div>
-                            <p className="font-black uppercase tracking-widest">Computing Statistics...</p>
-                        </div>
+                        <Spinner text="Computing Statistics..." />
                     )}
 
                     {error && (
