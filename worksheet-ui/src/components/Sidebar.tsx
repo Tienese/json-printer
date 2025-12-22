@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import type { SidebarProps } from "../types/sidebarTypes";
-import type { WorksheetItem, WorksheetMetadata } from "../types/worksheet";
 import { GridItemEditor } from "./editors/GridItemEditor";
 import { HeaderItemEditor } from "./editors/HeaderItemEditor";
 import { CardItemEditor } from "./editors/CardItemEditor";

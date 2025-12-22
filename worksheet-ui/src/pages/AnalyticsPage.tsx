@@ -4,7 +4,7 @@ import { Navbar } from '../components/Navbar';
 import { Spinner } from '../components/ui';
 import { triggerBrowserPrint } from '../utils/print';
 import { calculateDiscriminationIndex, getDifficultyLabel, getDiscriminationLabel } from '../utils/analyticsUtils';
-import type { QuizStatistics, SubmissionStatistics, QuestionStatistics } from '../types/analysis';
+import type { QuizStatistics } from '../types/analysis';
 
 
 interface AnalyticsPageProps {
