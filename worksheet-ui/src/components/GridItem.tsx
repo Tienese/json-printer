@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { CharacterInput } from './CharacterInput';
 import type { GridItem, GridSection } from '../types/worksheet';
 import { sanitizePaste, sanitizeHTML } from '../utils/htmlSanitizer';
@@ -220,7 +220,11 @@ export function GridItemComponent({ item, isSelected, onUpdate }: GridItemProps)
   const getBoxSizeValue = (size: string) => parseInt(size) || 10;
   const boxSizeMm = getBoxSizeValue(item.boxSize);
   const furiganaHeightMm = item.showFurigana ? Math.floor(boxSizeMm * 0.4) : 0;
-  const mergedLines = computeMergedLines(item.sections, boxSizeMm);
+  const mergedLines = useMemo(
+    () => computeMergedLines(item.sections, boxSizeMm),
+    [item.sections, boxSizeMm]
+  );
+
 
   return (
     <div className="flex flex-col" data-grid-container>

@@ -113,33 +113,3 @@ export function stripAllTags(html: string): string {
   div.innerHTML = html;
   return div.textContent || '';
 }
-
-/**
- * Checks if HTML contains only allowed tags
- *
- * @param html - HTML string to validate
- * @returns True if all tags are allowed, false otherwise
- */
-export function isValidHTML(html: string): boolean {
-  const div = document.createElement('div');
-  div.innerHTML = html;
-
-  const hasInvalidTags = (node: Node): boolean => {
-    if (node.nodeType === Node.ELEMENT_NODE) {
-      const element = node as Element;
-      if (!ALLOWED_TAGS.includes(element.tagName)) {
-        return true;
-      }
-
-      // Check children
-      for (let i = 0; i < element.childNodes.length; i++) {
-        if (hasInvalidTags(element.childNodes[i])) {
-          return true;
-        }
-      }
-    }
-    return false;
-  };
-
-  return !hasInvalidTags(div);
-}

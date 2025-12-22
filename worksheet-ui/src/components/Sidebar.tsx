@@ -4,10 +4,11 @@ import { GridItemEditor } from "./editors/GridItemEditor";
 import { HeaderItemEditor } from "./editors/HeaderItemEditor";
 import { TextItemEditor } from "./editors/TextItemEditor";
 import { VocabItemEditor } from "./editors/VocabItemEditor";
-import { MultipleChoiceEditor } from "./editors/new/MultipleChoiceEditor";
-import { TrueFalseEditor } from "./editors/new/TrueFalseEditor";
-import { MatchingEditor } from "./editors/new/MatchingEditor";
-import { ClozeEditor } from "./editors/new/ClozeEditor";
+import { MultipleChoiceEditor } from "./editors/question-editors/MultipleChoiceEditor";
+import { TrueFalseEditor } from "./editors/question-editors/TrueFalseEditor";
+import { MatchingEditor } from "./editors/question-editors/MatchingEditor";
+import { ClozeEditor } from "./editors/question-editors/ClozeEditor";
+
 import { LayersPanel } from "./LayersPanel";
 
 interface SidebarProps {

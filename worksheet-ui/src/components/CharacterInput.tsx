@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, memo } from 'react';
 
 interface CharacterInputProps {
   value: string;
@@ -10,7 +10,7 @@ interface CharacterInputProps {
   selectOnFocus?: boolean;
 }
 
-export function CharacterInput({
+export const CharacterInput = memo(function CharacterInput({
   value,
   onCommit,
   onMultiCommit,
@@ -131,4 +131,5 @@ export function CharacterInput({
     // NO maxLength - allow IME to work freely
     />
   );
-}
+});
+
