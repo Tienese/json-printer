@@ -26,11 +26,11 @@ export const ClozeEditor: FC<Props> = ({ item, onUpdate }) => {
     let newAnswers = [...localAnswers];
 
     if (blankCount > newAnswers.length) {
-        // Add blanks
-        newAnswers = [...newAnswers, ...Array(blankCount - newAnswers.length).fill('')];
+      // Add blanks
+      newAnswers = [...newAnswers, ...Array(blankCount - newAnswers.length).fill('')];
     } else if (blankCount < newAnswers.length) {
-        // Trim answers
-        newAnswers = newAnswers.slice(0, blankCount);
+      // Trim answers
+      newAnswers = newAnswers.slice(0, blankCount);
     }
 
     setLocalAnswers(newAnswers);
@@ -53,11 +53,10 @@ export const ClozeEditor: FC<Props> = ({ item, onUpdate }) => {
         {['2cm', '4cm', '6cm', '8cm'].map((width) => (
           <button
             key={width}
-            className={`flex-1 py-1 text-xs ${
-              (item.blankWidth || '4cm') === width
+            className={`flex-1 py-1 text-xs ${(item.blankWidth || '4cm') === width
                 ? 'bg-primary-blue text-white'
                 : 'bg-white text-gray-700 hover:bg-gray-100'
-            }`}
+              }`}
             onClick={() => onUpdate({ ...item, blankWidth: width })}
           >
             {width}
@@ -66,7 +65,7 @@ export const ClozeEditor: FC<Props> = ({ item, onUpdate }) => {
       </div>
 
       <label className="prop-label">Template</label>
-      <div className="help-text" style={{ fontSize: '10px', color: '#666', marginBottom: '5px' }}>
+      <div className="text-[10px] text-muted mb-[5px]">
         Use <code>{`{{blank}}`}</code> to insert a blank space.
       </div>
       <textarea
@@ -81,8 +80,8 @@ export const ClozeEditor: FC<Props> = ({ item, onUpdate }) => {
       <label className="prop-label">Answers ({localAnswers.length})</label>
       <div className="fib-answers-list">
         {localAnswers.map((answer, index) => (
-          <div key={index} className="answer-row" style={{ marginBottom: '5px' }}>
-            <label style={{ fontSize: '11px' }}>Blank {index + 1}:</label>
+          <div key={index} className="mb-[5px]">
+            <label className="text-[11px]">Blank {index + 1}:</label>
             <input
               className="prop-input"
               value={answer}
@@ -94,7 +93,7 @@ export const ClozeEditor: FC<Props> = ({ item, onUpdate }) => {
         ))}
       </div>
 
-      <label className="prop-label checkbox-label" style={{ marginTop: '10px' }}>
+      <label className="prop-label checkbox-label mt-[10px]">
         <input
           type="checkbox"
           checked={item.showPromptNumber}

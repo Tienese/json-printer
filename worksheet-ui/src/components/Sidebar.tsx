@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import type { SidebarProps } from "../types/sidebarTypes";
 import type { WorksheetItem, WorksheetMetadata } from "../types/worksheet";
 import { GridItemEditor } from "./editors/GridItemEditor";
 import { HeaderItemEditor } from "./editors/HeaderItemEditor";
@@ -11,48 +12,19 @@ import { ClozeEditor } from "./editors/question-editors/ClozeEditor";
 
 import { LayersPanel } from "./LayersPanel";
 
-interface SidebarProps {
-  items: WorksheetItem[];
-  selectedItem: WorksheetItem | null;
-  onSelectItem: (item: WorksheetItem | null) => void;
-  onUpdate: (item: WorksheetItem) => void;
-  onDelete: (item: WorksheetItem) => void;
-  onReorderItems: (newItems: WorksheetItem[]) => void;
-  metadata: WorksheetMetadata;
-  onUpdateMetadata: (metadata: WorksheetMetadata) => void;
-  onAddVocabTerm: (itemId: string, term: any) => void;
-  onAddTFQuestion: (itemId: string, question: any) => void;
-  isOpen: boolean;
-  onToggle: () => void;
-  // Page navigation
-  currentPageIndex: number;
-  totalPages: number;
-  onPrevPage: () => void;
-  onNextPage: () => void;
-  onAddPage: () => void;
-  onDeletePage: () => void;
-}
-
 export function Sidebar({
-  items,
-  selectedItem,
-  onSelectItem,
-  onUpdate,
-  onDelete,
-  onReorderItems,
-  metadata,
-  onUpdateMetadata,
+  itemsState,
+  metadataState,
+  pageState,
   onAddVocabTerm,
   onAddTFQuestion,
   isOpen,
-  onToggle,
-  currentPageIndex,
-  totalPages,
-  onPrevPage,
-  onNextPage,
-  onAddPage,
-  onDeletePage
+  onToggle
 }: SidebarProps) {
+  // Destructure grouped props for easier use
+  const { items, selectedItem, onSelectItem, onUpdate, onDelete, onReorderItems } = itemsState;
+  const { metadata, onUpdateMetadata } = metadataState;
+  const { currentPageIndex, totalPages, onPrevPage, onNextPage, onAddPage, onDeletePage } = pageState;
   const [activeTab, setActiveTab] = useState<'layers' | 'properties'>('layers');
 
   // Auto-switch tabs based on selection

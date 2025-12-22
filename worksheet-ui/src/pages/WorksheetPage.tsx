@@ -433,24 +433,30 @@ export function WorksheetPage({ onNavigate, worksheetId }: WorksheetPageProps) {
       {/* Right Sidebar - Properties */}
       <div className="row-span-1 border-l border-gray-200 bg-white print:hidden h-full overflow-hidden flex flex-col">
         <Sidebar
-          items={displayItems}
-          selectedItem={selectedItem}
-          onSelectItem={handleSelectItem}
-          onUpdate={updateItem}
-          onDelete={deleteItem}
-          onReorderItems={setItems}
-          metadata={displayMetadata}
-          onUpdateMetadata={updateMetadata}
+          itemsState={{
+            items: displayItems,
+            selectedItem,
+            onSelectItem: handleSelectItem,
+            onUpdate: updateItem,
+            onDelete: deleteItem,
+            onReorderItems: setItems
+          }}
+          metadataState={{
+            metadata: displayMetadata,
+            onUpdateMetadata: updateMetadata
+          }}
+          pageState={{
+            currentPageIndex,
+            totalPages,
+            onPrevPage: prevPage,
+            onNextPage: nextPage,
+            onAddPage: addPage,
+            onDeletePage: deletePage
+          }}
           onAddVocabTerm={addVocabTerm}
           onAddTFQuestion={addTFQuestion}
           isOpen={isSidebarOpen}
           onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
-          currentPageIndex={currentPageIndex}
-          totalPages={totalPages}
-          onPrevPage={prevPage}
-          onNextPage={nextPage}
-          onAddPage={addPage}
-          onDeletePage={deletePage}
         />
       </div>
 

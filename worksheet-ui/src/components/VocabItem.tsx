@@ -105,7 +105,7 @@ export function VocabItemComponent({ item, onUpdate }: VocabItemProps) {
       <div className="flex-1">
         <div
           ref={descriptionRef}
-          className="mb-[2mm] text-[11pt] leading-[1.4] outline-none hover:bg-[#eef] focus:bg-[#eef] p-[2px] rounded empty:before:content-['Click_to_add_description...'] empty:before:text-gray-400 empty:before:italic focus:empty:before:content-['']"
+          className="mb-[2mm] text-[11pt] leading-[1.4] outline-none hover:bg-focus-bg focus:bg-focus-bg p-[2px] rounded empty:before:content-['Click_to_add_description...'] empty:before:text-gray-400 empty:before:italic focus:empty:before:content-['']"
           contentEditable
           suppressContentEditableWarning
           onFocus={() => { isEditingDescription.current = true; }}
@@ -113,11 +113,11 @@ export function VocabItemComponent({ item, onUpdate }: VocabItemProps) {
           onPaste={handlePaste}
         />
         <div
-          className="grid gap-0 pt-0"
+          className="grid gap-0 pt-0 text-[var(--vocab-font-size)]"
           style={{
             gridTemplateColumns: `repeat(${item.columns}, 1fr)`,
-            fontSize: `${item.fontSize}pt`,
-          }}
+            '--vocab-font-size': `${item.fontSize}pt`,
+          } as React.CSSProperties}
         >
           {(() => {
             // Build per-style counters
@@ -164,20 +164,20 @@ export function VocabItemComponent({ item, onUpdate }: VocabItemProps) {
                       <div className="flex flex-col">
                         <div className="flex">
                           {Array.from({ length: boxCount }).map((_, boxIdx) => (
-                            <div key={boxIdx} className="flex flex-col relative" style={{ width: `${boxSizeMm}mm` }}>
+                            <div key={boxIdx} className="flex flex-col relative w-[var(--box-size)]"
+                              style={{ '--box-size': `${boxSizeMm}mm` } as React.CSSProperties}>
                               {globalShowFurigana && (
                                 <input
-                                  className="text-center text-[8pt] border-none outline-none leading-none text-gray-600 bg-transparent m-0 p-0"
-                                  style={{ height: `${furiganaHeightMm}mm`, width: '100%' }}
+                                  className="w-full h-[var(--furigana-height)] text-center text-[8pt] border-none outline-none leading-none text-gray-600 bg-transparent m-0 p-0"
+                                  style={{ '--furigana-height': `${furiganaHeightMm}mm` } as React.CSSProperties}
                                 />
                               )}
                               <div
-                                className="box-border border border-black -mr-px -mb-px bg-white flex items-center justify-center font-sans leading-none cursor-text outline-none relative print:border-black"
+                                className="w-[var(--box-size)] h-[var(--box-size)] text-[var(--box-font-size)] box-border border border-black -mr-px -mb-px bg-white flex items-center justify-center font-sans leading-none cursor-text outline-none relative print:border-black"
                                 style={{
-                                  width: `${boxSizeMm}mm`,
-                                  height: `${boxSizeMm}mm`,
-                                  fontSize: `${boxSizeMm * 0.75}mm`
-                                }}
+                                  '--box-size': `${boxSizeMm}mm`,
+                                  '--box-font-size': `${boxSizeMm * 0.75}mm`
+                                } as React.CSSProperties}
                               >
                                 <div className="relative z-10 w-full h-full flex items-center justify-center">
                                   <CharacterInput value="" onCommit={() => { }} />
@@ -192,7 +192,7 @@ export function VocabItemComponent({ item, onUpdate }: VocabItemProps) {
                       {showTerm && (
                         <div
                           ref={(el) => { termRefs.current[index] = el; }}
-                          className="px-[5px] py-[2px] whitespace-nowrap shrink-0 hover:bg-[#eef] focus-within:bg-[#eef] outline-none min-w-[5mm]"
+                          className="px-[5px] py-[2px] whitespace-nowrap shrink-0 hover:bg-focus-bg focus-within:bg-focus-bg outline-none min-w-[5mm]"
                           contentEditable
                           suppressContentEditableWarning
                           onFocus={() => { editingTermIndex.current = index; }}
@@ -213,7 +213,7 @@ export function VocabItemComponent({ item, onUpdate }: VocabItemProps) {
                       {showTerm && (
                         <div
                           ref={(el) => { termRefs.current[index] = el; }}
-                          className="mr-2 px-[5px] py-[2px] whitespace-nowrap shrink-0 hover:bg-[#eef] focus-within:bg-[#eef] outline-none min-w-[5mm]"
+                          className="mr-2 px-[5px] py-[2px] whitespace-nowrap shrink-0 hover:bg-focus-bg focus-within:bg-focus-bg outline-none min-w-[5mm]"
                           contentEditable
                           suppressContentEditableWarning
                           onFocus={() => { editingTermIndex.current = index; }}

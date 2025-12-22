@@ -11,6 +11,10 @@ export default {
         'sidebar-bg': '#f8f9fa',
         'primary-blue': '#4a90d9',
         'selected-bg': '#e8f1fb',
+        // Semantic tokens for editor interactions
+        'focus-bg': '#eef',        // editor focus/hover highlight
+        'correct': '#2e7d32',      // correct answer indicator (teacher mode)
+        'muted': '#666',           // secondary/muted text
       },
       fontFamily: {
         sans: ['"Noto Sans"', '"Noto Sans JP"', 'sans-serif'],

@@ -54,7 +54,7 @@ export const MatchingEditor: FC<Props> = ({ item, onUpdate }) => {
         ))}
       </div>
 
-      <label className="prop-label checkbox-label" style={{ marginTop: '15px' }}>
+      <label className="prop-label checkbox-label mt-[15px]">
         <input
           type="checkbox"
           checked={item.showPromptNumber}

@@ -3,44 +3,12 @@ import { ROUTES } from '../navigation/routes';
 import { Navbar } from '../components/Navbar';
 import { Spinner } from '../components/ui';
 import { triggerBrowserPrint } from '../utils/print';
+import { calculateDiscriminationIndex, getDifficultyLabel, getDiscriminationLabel } from '../utils/analyticsUtils';
+import type { QuizStatistics, SubmissionStatistics, QuestionStatistics } from '../types/analysis';
+
 
 interface AnalyticsPageProps {
     onNavigate: (route: string) => void;
-}
-
-interface QuizStatistics {
-    quizId: number;
-    quizTitle: string;
-    generatedAt: string;
-    submissionStatistics: SubmissionStatistics;
-    questionStatistics: Record<number, QuestionStatistics>;
-}
-
-interface SubmissionStatistics {
-    uniqueCount: number;
-    scoreAverage: number;
-    scoreHigh: number;
-    scoreLow: number;
-    scoreStdev: number;
-    scores: Record<number, number>;
-    correctCountAverage: number;
-    incorrectCountAverage: number;
-    durationAverage: number | null;
-}
-
-interface QuestionStatistics {
-    questionNumber: number;
-    questionType: string;
-    responses: number;
-    correctStudentCount: number;
-    incorrectStudentCount: number;
-    difficultyIndex: number;
-    variance: number;
-    stdev: number;
-    topStudentCount: number;
-    bottomStudentCount: number;
-    correctTopStudentCount: number;
-    correctBottomStudentCount: number;
 }
 
 type AnalyticsMode = 'online' | 'offline';
@@ -117,25 +85,6 @@ export function AnalyticsPage({ onNavigate }: AnalyticsPageProps) {
         triggerBrowserPrint();
     };
 
-    const calculateDiscriminationIndex = (q: QuestionStatistics): number => {
-        if (q.topStudentCount === 0 || q.bottomStudentCount === 0) return 0;
-        const topRatio = q.correctTopStudentCount / q.topStudentCount;
-        const bottomRatio = q.correctBottomStudentCount / q.bottomStudentCount;
-        return topRatio - bottomRatio;
-    };
-
-    const getDifficultyLabel = (index: number): string => {
-        if (index < 0.3) return 'Hard';
-        if (index < 0.7) return 'Medium';
-        return 'Easy';
-    };
-
-    const getDiscriminationLabel = (index: number): string => {
-        if (index < 0) return 'Poor';
-        if (index < 0.2) return 'Weak';
-        if (index < 0.4) return 'Good';
-        return 'Excellent';
-    };
 
     return (
         <div className="flex flex-col h-screen bg-gray-100">
