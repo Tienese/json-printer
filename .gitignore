@@ -1,0 +1,26 @@
+target/
+worksheet-ui/node_modules/
+**/node_modules/
+**/*.class
+*.jar
+*.war
+.idea/
+*.iml
+.vscode/
+.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Build Artifacts
+worksheet-ui/dist/
+src/main/resources/static/assets/
+src/main/resources/static/index.html
