@@ -1,132 +1,123 @@
 package com.qtihelper.demo.service;
 
 import com.qtihelper.demo.config.CanvasProperties;
-import com.qtihelper.demo.dto.canvas.CanvasCourseDto;
-import com.qtihelper.demo.dto.canvas.CanvasQuestionDto;
-import com.qtihelper.demo.dto.canvas.CanvasQuizDto;
-import com.qtihelper.demo.dto.canvas.CanvasQuizSummaryDto;
+import com.qtihelper.demo.dto.canvas.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class CanvasQuizFetcher {
 
     private static final Logger log = LoggerFactory.getLogger(CanvasQuizFetcher.class);
-    private final RestClient restClient;
 
     public CanvasQuizFetcher(CanvasProperties props, RestClient.Builder builder) {
-        log.info("Initializing Canvas API client");
-        log.debug("Canvas URL: {}", props.url());
-        log.debug("Canvas token: {}****", props.token() != null && props.token().length() > 4
-                ? props.token().substring(0, 4)
-                : "****");
-
-        this.restClient = builder
-                .baseUrl(props.url())
-                .defaultHeader("Authorization", "Bearer " + props.token())
-                .build();
+        log.info("Initializing MOCK Canvas API client");
     }
 
     public CanvasQuizDto getQuiz(String courseId, String quizId) {
-        log.info("Fetching quiz {}/{} from Canvas", courseId, quizId);
-        log.debug("Canvas API URL: /api/v1/courses/{}/quizzes/{}", courseId, quizId);
-
-        try {
-            CanvasQuizDto quiz = restClient.get()
-                    .uri("/api/v1/courses/{courseId}/quizzes/{quizId}", courseId, quizId)
-                    .retrieve()
-                    .body(CanvasQuizDto.class);
-
-            log.info("Successfully fetched quiz: {}", quiz != null ? quiz.title() : "null");
-            log.debug("Quiz details - ID: {}, Title: {}", quiz != null ? quiz.id() : "null",
-                    quiz != null ? quiz.title() : "null");
-            return quiz;
-        } catch (Exception e) {
-            log.error("Failed to fetch quiz {}/{} from Canvas: {}", courseId, quizId, e.getMessage(), e);
-            throw new RuntimeException("Failed to fetch quiz from Canvas API", e);
-        }
+        log.info("Fetching MOCK quiz {}/{}", courseId, quizId);
+        return new CanvasQuizDto(
+                Long.parseLong(quizId),
+                "Mock Quiz for Design Review",
+                "<p>This is a mock quiz description.</p>",
+                5
+        );
     }
 
     public List<CanvasQuestionDto> getQuizQuestions(String courseId, String quizId) {
-        log.info("Fetching questions for quiz {}/{}", courseId, quizId);
-        log.debug("Canvas API URL: /api/v1/courses/{}/quizzes/{}/questions?per_page=100", courseId, quizId);
+        log.info("Fetching MOCK questions for quiz {}/{}", courseId, quizId);
+        List<CanvasQuestionDto> questions = new ArrayList<>();
 
-        try {
-            List<CanvasQuestionDto> questions = restClient.get()
-                    .uri("/api/v1/courses/{courseId}/quizzes/{quizId}/questions?per_page=100",
-                            courseId, quizId)
-                    .retrieve()
-                    .body(new ParameterizedTypeReference<List<CanvasQuestionDto>>() {
-                    });
+        // Question 1: Multiple Choice (Correct)
+        questions.add(new CanvasQuestionDto(
+                1L,
+                "Question 1",
+                "<p>What is the capital of France?</p>",
+                "multiple_choice_question",
+                1,
+                1.0,
+                "<p>Correct!</p>",
+                "<p>Incorrect.</p>",
+                "<p>General feedback.</p>",
+                List.of(
+                        new CanvasAnswerDto(1L, "London", "", "", 0, null),
+                        new CanvasAnswerDto(2L, "Paris", "", "", 100, null),
+                        new CanvasAnswerDto(3L, "Berlin", "", "", 0, null),
+                        new CanvasAnswerDto(4L, "Madrid", "", "", 0, null)
+                ),
+                null
+        ));
 
-            int questionCount = questions != null ? questions.size() : 0;
-            log.info("Successfully fetched {} questions", questionCount);
+        // Question 2: Multiple Choice (Incorrect)
+        questions.add(new CanvasQuestionDto(
+                2L,
+                "Question 2",
+                "<p>Which planet is known as the Red Planet?</p>",
+                "multiple_choice_question",
+                2,
+                1.0,
+                "<p>Yes, Mars is red.</p>",
+                "<p>No, try again.</p>",
+                null,
+                List.of(
+                        new CanvasAnswerDto(5L, "Venus", "", "", 0, null),
+                        new CanvasAnswerDto(6L, "Mars", "", "", 100, null),
+                        new CanvasAnswerDto(7L, "Jupiter", "", "", 0, null)
+                ),
+                null
+        ));
 
-            if (questions != null && !questions.isEmpty()) {
-                log.debug("Question types: {}", questions.stream()
-                        .map(CanvasQuestionDto::questionType)
-                        .distinct()
-                        .toList());
-            }
+        // Question 3: True/False (Correct)
+        questions.add(new CanvasQuestionDto(
+                3L,
+                "Question 3",
+                "<p>The sun rises in the east.</p>",
+                "true_false_question",
+                3,
+                1.0,
+                null,
+                null,
+                null,
+                List.of(
+                        new CanvasAnswerDto(8L, "True", "", "", 100, null),
+                        new CanvasAnswerDto(9L, "False", "", "", 0, null)
+                ),
+                null
+        ));
 
-            return questions != null ? questions : List.of();
-        } catch (Exception e) {
-            log.error("Failed to fetch questions for quiz {}/{}: {}", courseId, quizId, e.getMessage(), e);
-            throw new RuntimeException("Failed to fetch quiz questions from Canvas API", e);
-        }
+        // Question 4: Multiple Answers
+        questions.add(new CanvasQuestionDto(
+                4L,
+                "Question 4",
+                "<p>Select all prime numbers.</p>",
+                "multiple_answers_question",
+                4,
+                1.0,
+                null,
+                null,
+                null,
+                List.of(
+                        new CanvasAnswerDto(10L, "2", "", "", 100, null),
+                        new CanvasAnswerDto(11L, "3", "", "", 100, null),
+                        new CanvasAnswerDto(12L, "4", "", "", 0, null),
+                        new CanvasAnswerDto(13L, "5", "", "", 100, null)
+                ),
+                null
+        ));
+
+        return questions;
     }
 
-    /**
-     * Fetch all active courses for the authenticated user.
-     *
-     * @return List of courses where user is enrolled
-     */
     public List<CanvasCourseDto> getCourses() {
-        log.info("Fetching courses from Canvas");
-
-        try {
-            List<CanvasCourseDto> courses = restClient.get()
-                .uri("/api/v1/courses?enrollment_state=active&per_page=100")
-                .retrieve()
-                .body(new ParameterizedTypeReference<List<CanvasCourseDto>>() {});
-
-            int courseCount = courses != null ? courses.size() : 0;
-            log.info("Successfully fetched {} courses", courseCount);
-
-            return courses != null ? courses : List.of();
-        } catch (Exception e) {
-            log.error("Failed to fetch courses: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to fetch courses from Canvas API", e);
-        }
+        return List.of();
     }
 
-    /**
-     * Fetch all quizzes for a specific course.
-     *
-     * @param courseId Canvas course ID
-     * @return List of quizzes in the course
-     */
     public List<CanvasQuizSummaryDto> getQuizzes(String courseId) {
-        log.info("Fetching quizzes for course {}", courseId);
-
-        try {
-            List<CanvasQuizSummaryDto> quizzes = restClient.get()
-                .uri("/api/v1/courses/{courseId}/quizzes?per_page=100", courseId)
-                .retrieve()
-                .body(new ParameterizedTypeReference<List<CanvasQuizSummaryDto>>() {});
-
-            int quizCount = quizzes != null ? quizzes.size() : 0;
-            log.info("Successfully fetched {} quizzes for course {}", quizCount, courseId);
-
-            return quizzes != null ? quizzes : List.of();
-        } catch (Exception e) {
-            log.error("Failed to fetch quizzes for course {}: {}", courseId, e.getMessage(), e);
-            throw new RuntimeException("Failed to fetch quizzes from Canvas API", e);
-        }
+        return List.of();
     }
 }

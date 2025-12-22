@@ -1,0 +1,25 @@
+{
+  "groups": [
+    {
+      "name": "app.canvas",
+      "type": "com.qtihelper.demo.config.CanvasProperties",
+      "sourceType": "com.qtihelper.demo.config.CanvasProperties"
+    }
+  ],
+  "properties": [
+    {
+      "name": "app.canvas.token",
+      "type": "java.lang.String",
+      "sourceType": "com.qtihelper.demo.config.CanvasProperties"
+    },
+    {
+      "name": "app.canvas.url",
+      "type": "java.lang.String",
+      "sourceType": "com.qtihelper.demo.config.CanvasProperties"
+    }
+  ],
+  "hints": [],
+  "ignored": {
+    "properties": []
+  }
+}

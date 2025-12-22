@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<html xmlns:th="http://www.thymeleaf.org" lang="ja">
 
 <head>
     <meta charset="UTF-8">
     <title th:text="${quizzes[0].quizTitle} + ' - Feedback Slips'">Quiz Feedback Slip</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 
     <style>
         /* ===== 1. PAGE SETUP (Synced with Original) ===== */
@@ -14,7 +14,7 @@
         }
 
         body {
-            font-family: 'Noto Sans', sans-serif;
+            font-family: 'Noto Sans JP', 'Noto Sans', sans-serif;
             font-size: 10pt; /* Slight bump for readability */
             line-height: 1.3;
             color: #000;
@@ -24,7 +24,7 @@
         /* ===== 2. SLIP CONTAINER (The Stacking Logic) ===== */
         .student-wrapper {
             /* Logic: Allow stacking, but don't split a student in half */
-            page-break-inside: avoid; 
+            page-break-inside: avoid;
             margin-bottom: 25px;
         }
 
@@ -111,7 +111,7 @@
             text-decoration: line-through; /* Visual cue for wrong */
             color: #000;
         }
-        
+
         .correct-answer-label {
             font-weight: bold;
             text-transform: uppercase;
@@ -142,7 +142,7 @@
         <div th:each="student : ${quiz.students}" class="student-wrapper">
 
             <div class="feedback-slip">
-                
+
                 <div class="slip-header">
                     <div class="header-left">
                         <div class="student-name" th:text="${student.studentName}">JOHN DOE</div>
@@ -171,7 +171,7 @@
                     <tbody>
                         <tr th:each="question : ${student.questions}"
                             th:if="${question.answerStatus.name() != 'CORRECT'}">
-                            
+
                             <td class="col-q" th:text="${question.questionNumber}">1</td>
 
                             <td class="col-ans">

@@ -1,0 +1,299 @@
+[INFO] Scanning for projects...
+[INFO]
+[INFO] -------------------------< com.qtihelper:demo >-------------------------
+[INFO] Building demo 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO]
+[INFO] >>> spring-boot:3.5.8:run (default-cli) > test-compile @ demo >>>
+[INFO]
+[INFO] --- resources:3.3.1:resources (default-resources) @ demo ---
+[INFO] Copying 1 resource from src/main/resources to target/classes
+[INFO] Copying 22 resources from src/main/resources to target/classes
+[INFO]
+[INFO] --- compiler:3.14.1:compile (default-compile) @ demo ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 45 source files with javac [debug parameters release 21] to target/classes
+[INFO] Annotation processing is enabled because one or more processors were found
+  on the class path. A future release of javac may disable annotation processing
+  unless at least one processor is specified by name (-processor), or a search
+  path is specified (--processor-path, --processor-module-path), or annotation
+  processing is enabled explicitly (-proc:only, -proc:full).
+  Use -Xlint:-options to suppress this message.
+  Use -proc:none to disable annotation processing.
+[INFO] /app/src/main/java/com/qtihelper/demo/controller/PrintReportController.java: /app/src/main/java/com/qtihelper/demo/controller/PrintReportController.java uses unchecked or unsafe operations.
+[INFO] /app/src/main/java/com/qtihelper/demo/controller/PrintReportController.java: Recompile with -Xlint:unchecked for details.
+[INFO]
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ demo ---
+[INFO] skip non existing resourceDirectory /app/src/test/resources
+[INFO]
+[INFO] --- compiler:3.14.1:testCompile (default-testCompile) @ demo ---
+[INFO] No sources to compile
+[INFO]
+[INFO] <<< spring-boot:3.5.8:run (default-cli) < test-compile @ demo <<<
+[INFO]
+[INFO]
+[INFO] --- spring-boot:3.5.8:run (default-cli) @ demo ---
+[INFO] Attaching agents: []
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.5.8)
+
+2025-12-22T23:10:45.711Z  INFO 8228 --- [  restartedMain] com.qtihelper.demo.DemoApplication       : Starting DemoApplication using Java 21.0.8 with PID 8228 (/app/target/classes started by jules in /app)
+2025-12-22T23:10:45.714Z DEBUG 8228 --- [  restartedMain] com.qtihelper.demo.DemoApplication       : Running with Spring Boot v3.5.8, Spring v6.2.14
+2025-12-22T23:10:45.715Z  INFO 8228 --- [  restartedMain] com.qtihelper.demo.DemoApplication       : No active profile set, falling back to 1 default profile: "default"
+2025-12-22T23:10:45.771Z  INFO 8228 --- [  restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2025-12-22T23:10:45.772Z  INFO 8228 --- [  restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2025-12-22T23:10:47.258Z  INFO 8228 --- [  restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2025-12-22T23:10:47.288Z  INFO 8228 --- [  restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-12-22T23:10:47.288Z  INFO 8228 --- [  restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.49]
+2025-12-22T23:10:47.350Z  INFO 8228 --- [  restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-12-22T23:10:47.352Z  INFO 8228 --- [  restartedMain] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1578 ms
+2025-12-22T23:10:47.814Z  INFO 8228 --- [  restartedMain] c.q.demo.service.CanvasQuizFetcher       : Initializing MOCK Canvas API client
+2025-12-22T23:10:47.942Z  INFO 8228 --- [  restartedMain] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page template: index
+2025-12-22T23:10:48.365Z  INFO 8228 --- [  restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
+2025-12-22T23:10:48.404Z  INFO 8228 --- [  restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
+2025-12-22T23:10:48.417Z  INFO 8228 --- [  restartedMain] com.qtihelper.demo.DemoApplication       : Started DemoApplication in 3.193 seconds (process running for 3.78)
+2025-12-22T23:11:14.299Z  INFO 8228 --- [nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-12-22T23:11:14.299Z  INFO 8228 --- [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2025-12-22T23:11:14.300Z  INFO 8228 --- [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+2025-12-22T23:11:14.345Z  INFO 8228 --- [nio-8080-exec-1] c.q.d.controller.PrintReportController   : Print report upload form accessed with type: null, courseId: null, quizId: null
+2025-12-22T23:11:16.054Z  INFO 8228 --- [nio-8080-exec-2] c.q.d.controller.PrintReportController   : === Starting print report generation ===
+2025-12-22T23:11:16.055Z  INFO 8228 --- [nio-8080-exec-2] c.q.d.controller.PrintReportController   : Course ID: 101, Quiz ID: 1001, Report Type: slip, CSV File: student_answer.csv (820 bytes)
+2025-12-22T23:11:16.055Z DEBUG 8228 --- [nio-8080-exec-2] c.q.d.controller.PrintReportController   : Validating input parameters
+2025-12-22T23:11:16.056Z DEBUG 8228 --- [nio-8080-exec-2] c.q.d.controller.PrintReportController   : File content type: text/csv, filename: student_answer.csv
+2025-12-22T23:11:16.056Z  INFO 8228 --- [nio-8080-exec-2] c.q.d.controller.PrintReportController   : Input validation passed
+2025-12-22T23:11:16.056Z  INFO 8228 --- [nio-8080-exec-2] c.q.d.controller.PrintReportController   : Step 1/5: Fetching quiz from Canvas...
+2025-12-22T23:11:16.057Z  INFO 8228 --- [nio-8080-exec-2] c.q.demo.service.CanvasQuizFetcher       : Fetching MOCK quiz 101/1001
+2025-12-22T23:11:16.058Z  INFO 8228 --- [nio-8080-exec-2] c.q.d.controller.PrintReportController   : Step 1/5: Successfully fetched quiz 'Mock Quiz for Design Review' in 1ms
+2025-12-22T23:11:16.058Z  INFO 8228 --- [nio-8080-exec-2] c.q.d.controller.PrintReportController   : Step 2/5: Fetching quiz questions...
+2025-12-22T23:11:16.059Z  INFO 8228 --- [nio-8080-exec-2] c.q.demo.service.CanvasQuizFetcher       : Fetching MOCK questions for quiz 101/1001
+2025-12-22T23:11:16.060Z  INFO 8228 --- [nio-8080-exec-2] c.q.d.controller.PrintReportController   : Step 2/5: Successfully fetched 4 questions in 1ms
+2025-12-22T23:11:16.062Z DEBUG 8228 --- [nio-8080-exec-2] c.q.d.controller.PrintReportController   : Stored quiz and questions data in session for editing
+2025-12-22T23:11:16.062Z  INFO 8228 --- [nio-8080-exec-2] c.q.d.controller.PrintReportController   : Step 3/5: Parsing CSV submissions...
+2025-12-22T23:11:16.062Z  INFO 8228 --- [nio-8080-exec-2] c.q.demo.service.CsvSubmissionParser     : Starting CSV parsing for file: student_answer.csv (size: 820 bytes)
+2025-12-22T23:11:16.078Z  INFO 8228 --- [nio-8080-exec-2] c.q.demo.service.CsvSubmissionParser     : CSV contains 37 columns
+2025-12-22T23:11:16.079Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.CsvSubmissionParser     : CSV Headers: [Quiz Name, Class, Student First Name, Student Last Name, Student ID, Export Timestamp, #1 Student Response, #2 Student Response, #3 Student Response, #4 Student Response, #5 Student Response, #6 Student Response, #7 Student Response, #8 Student Response, #9 Student Response, #10 Student Response, #11 Student Response, #12 Student Response, #13 Student Response, #14 Student Response, #15 Student Response, #16 Student Response, #17 Student Response, #18 Student Response, #19 Student Response, #20 Student Response, #21 Student Response, #22 Student Response, #23 Student Response, #24 Student Response, #25 Student Response, #26 Student Response, #27 Student Response, #28 Student Response, #29 Student Response, #30 Student Response, #31 Student Response]
+2025-12-22T23:11:16.082Z  INFO 8228 --- [nio-8080-exec-2] c.q.demo.service.CsvSubmissionParser     : Found 31 question response columns in CSV
+2025-12-22T23:11:16.083Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.CsvSubmissionParser     : Processing record #1 (line 1)
+2025-12-22T23:11:16.084Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.CsvSubmissionParser     : Student info - Name: Abc Smith, ID: 1
+2025-12-22T23:11:16.085Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.CsvSubmissionParser     : Q1: A
+2025-12-22T23:11:16.085Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.CsvSubmissionParser     : Q2: B
+2025-12-22T23:11:16.085Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.CsvSubmissionParser     : Q3: C
+2025-12-22T23:11:16.085Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.CsvSubmissionParser     : Q4: D
+2025-12-22T23:11:16.086Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.CsvSubmissionParser     : Q5: A
+2025-12-22T23:11:16.086Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.CsvSubmissionParser     : Q6: B
+2025-12-22T23:11:16.087Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.CsvSubmissionParser     : Q7: C
+2025-12-22T23:11:16.087Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.CsvSubmissionParser     : Q8: D
+2025-12-22T23:11:16.087Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.CsvSubmissionParser     : Q9: A
+2025-12-22T23:11:16.087Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.CsvSubmissionParser     : Q10: B
+2025-12-22T23:11:16.087Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.CsvSubmissionParser     : Q11: C
+2025-12-22T23:11:16.088Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.CsvSubmissionParser     : Q12: D
+2025-12-22T23:11:16.088Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.CsvSubmissionParser     : Q13: A
+2025-12-22T23:11:16.088Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.CsvSubmissionParser     : Q14: B
+2025-12-22T23:11:16.088Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.CsvSubmissionParser     : Q15: C
+2025-12-22T23:11:16.089Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.CsvSubmissionParser     : Q16: D
+2025-12-22T23:11:16.089Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.CsvSubmissionParser     : Q17: A
+2025-12-22T23:11:16.089Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.CsvSubmissionParser     : Q18: B
+2025-12-22T23:11:16.089Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.CsvSubmissionParser     : Q19: C
+2025-12-22T23:11:16.089Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.CsvSubmissionParser     : Q20: D
+2025-12-22T23:11:16.089Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.CsvSubmissionParser     : Q21: A
+2025-12-22T23:11:16.089Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.CsvSubmissionParser     : Q22: B
+2025-12-22T23:11:16.089Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.CsvSubmissionParser     : Q23: C
+2025-12-22T23:11:16.089Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.CsvSubmissionParser     : Q24: D
+2025-12-22T23:11:16.089Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.CsvSubmissionParser     : Q25: A
+2025-12-22T23:11:16.089Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.CsvSubmissionParser     : Q26: B
+2025-12-22T23:11:16.090Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.CsvSubmissionParser     : Q27: C
+2025-12-22T23:11:16.090Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.CsvSubmissionParser     : Q28: D
+2025-12-22T23:11:16.090Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.CsvSubmissionParser     : Q29: A
+2025-12-22T23:11:16.090Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.CsvSubmissionParser     : Q30: B
+2025-12-22T23:11:16.091Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.CsvSubmissionParser     : Q31: C
+2025-12-22T23:11:16.091Z  INFO 8228 --- [nio-8080-exec-2] c.q.demo.service.CsvSubmissionParser     : Parsed student: Abc Smith (ID: 1) with 31 responses
+2025-12-22T23:11:16.091Z  INFO 8228 --- [nio-8080-exec-2] c.q.demo.service.CsvSubmissionParser     : Successfully parsed 1 student submissions from CSV
+2025-12-22T23:11:16.091Z  INFO 8228 --- [nio-8080-exec-2] c.q.d.controller.PrintReportController   : Step 3/5: Successfully parsed 1 student submissions in 29ms
+2025-12-22T23:11:16.092Z  INFO 8228 --- [nio-8080-exec-2] c.q.d.controller.PrintReportController   : Step 4/5: Generating print report...
+2025-12-22T23:11:16.092Z  INFO 8228 --- [nio-8080-exec-2] c.q.demo.service.PrintReportGenerator    : Starting report generation for quiz: Mock Quiz for Design Review
+2025-12-22T23:11:16.092Z  INFO 8228 --- [nio-8080-exec-2] c.q.demo.service.PrintReportGenerator    : Processing 1 students and 4 questions
+2025-12-22T23:11:16.093Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.PrintReportGenerator    : Questions sorted by position: [Q1(multiple_choice_question), Q2(multiple_choice_question), Q3(true_false_question), Q4(multiple_answers_question)]
+2025-12-22T23:11:16.094Z  INFO 8228 --- [nio-8080-exec-2] c.q.demo.service.PrintReportGenerator    : Processing student 1/1: Abc Smith (ID: 1)
+2025-12-22T23:11:16.094Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.PrintReportGenerator    : Evaluating question 1 (type: multiple_choice_question)
+2025-12-22T23:11:16.094Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.PrintReportGenerator    : Student answer for Q1: A
+2025-12-22T23:11:16.094Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.PrintReportGenerator    : Evaluating answer for question type: multiple_choice_question
+2025-12-22T23:11:16.095Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.PrintReportGenerator    : Processing as multiple choice/true-false
+2025-12-22T23:11:16.097Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.PrintReportGenerator    : Correct answers: [Paris]
+2025-12-22T23:11:16.097Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.PrintReportGenerator    : Matching by letter: A -> index 0
+2025-12-22T23:11:16.097Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.PrintReportGenerator    : Selected answer 'London' is INCORRECT
+2025-12-22T23:11:16.098Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.PrintReportGenerator    : Q1 evaluation: INCORRECT
+2025-12-22T23:11:16.098Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.PrintReportGenerator    : Evaluating question 2 (type: multiple_choice_question)
+2025-12-22T23:11:16.098Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.PrintReportGenerator    : Student answer for Q2: B
+2025-12-22T23:11:16.098Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.PrintReportGenerator    : Evaluating answer for question type: multiple_choice_question
+2025-12-22T23:11:16.098Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.PrintReportGenerator    : Processing as multiple choice/true-false
+2025-12-22T23:11:16.098Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.PrintReportGenerator    : Correct answers: [Mars]
+2025-12-22T23:11:16.098Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.PrintReportGenerator    : Matching by letter: B -> index 1
+2025-12-22T23:11:16.098Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.PrintReportGenerator    : Selected answer 'Mars' is CORRECT
+2025-12-22T23:11:16.099Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.PrintReportGenerator    : Q2 evaluation: CORRECT
+2025-12-22T23:11:16.099Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.PrintReportGenerator    : Evaluating question 3 (type: true_false_question)
+2025-12-22T23:11:16.099Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.PrintReportGenerator    : Student answer for Q3: C
+2025-12-22T23:11:16.099Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.PrintReportGenerator    : Evaluating answer for question type: true_false_question
+2025-12-22T23:11:16.099Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.PrintReportGenerator    : Processing as multiple choice/true-false
+2025-12-22T23:11:16.099Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.PrintReportGenerator    : Correct answers: [True]
+2025-12-22T23:11:16.099Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.PrintReportGenerator    : Matching by letter: C -> index 2
+2025-12-22T23:11:16.099Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.PrintReportGenerator    : Q3 evaluation: INCORRECT
+2025-12-22T23:11:16.099Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.PrintReportGenerator    : Evaluating question 4 (type: multiple_answers_question)
+2025-12-22T23:11:16.099Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.PrintReportGenerator    : Student answer for Q4: D
+2025-12-22T23:11:16.099Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.PrintReportGenerator    : Evaluating answer for question type: multiple_answers_question
+2025-12-22T23:11:16.099Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.PrintReportGenerator    : Processing as multiple answers
+2025-12-22T23:11:16.101Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.PrintReportGenerator    : Correct answers: [2, 3, 5]
+2025-12-22T23:11:16.101Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.PrintReportGenerator    : Parsing 1 student answers from: 'D'
+2025-12-22T23:11:16.101Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.PrintReportGenerator    : Converted letter 'D' to answer: '5'
+2025-12-22T23:11:16.101Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.PrintReportGenerator    : Student selected 1 answers: [5]
+2025-12-22T23:11:16.101Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.PrintReportGenerator    : Multiple answers evaluation: INCORRECT (expected 3 answers, got 1)
+2025-12-22T23:11:16.102Z DEBUG 8228 --- [nio-8080-exec-2] c.q.demo.service.PrintReportGenerator    : Q4 evaluation: INCORRECT
+2025-12-22T23:11:16.102Z  INFO 8228 --- [nio-8080-exec-2] c.q.demo.service.PrintReportGenerator    : Student 1 score: 1/4 correct (4 answered)
+2025-12-22T23:11:16.102Z  INFO 8228 --- [nio-8080-exec-2] c.q.demo.service.PrintReportGenerator    : Successfully generated report for 1 students with 4 questions each
+2025-12-22T23:11:16.102Z  INFO 8228 --- [nio-8080-exec-2] c.q.d.controller.PrintReportController   : Step 4/5: Successfully generated report in 10ms
+2025-12-22T23:11:16.102Z  INFO 8228 --- [nio-8080-exec-2] c.q.d.controller.PrintReportController   : Step 5/5: Mapping to ViewModel for template rendering...
+2025-12-22T23:11:16.102Z  INFO 8228 --- [nio-8080-exec-2] c.q.d.service.QuizPrintViewModelMapper   : Starting ViewModel mapping for quiz: Mock Quiz for Design Review
+2025-12-22T23:11:16.102Z DEBUG 8228 --- [nio-8080-exec-2] c.q.d.service.QuizPrintViewModelMapper   : Mapping 1 students with 4 questions
+2025-12-22T23:11:16.102Z DEBUG 8228 --- [nio-8080-exec-2] c.q.d.service.QuizPrintViewModelMapper   : Mapping student: Abc Smith (ID: 1)
+2025-12-22T23:11:16.103Z DEBUG 8228 --- [nio-8080-exec-2] c.q.d.service.QuizPrintViewModelMapper   : Mapping question 1 (type: multiple_choice_question)
+2025-12-22T23:11:16.104Z DEBUG 8228 --- [nio-8080-exec-2] c.q.d.service.QuizPrintViewModelMapper   : Question 1 status: INCORRECT
+2025-12-22T23:11:16.104Z DEBUG 8228 --- [nio-8080-exec-2] c.q.d.service.QuizPrintViewModelMapper   : Question 1 has 4 options
+2025-12-22T23:11:16.105Z DEBUG 8228 --- [nio-8080-exec-2] c.q.d.service.QuizPrintViewModelMapper   : Mapping question 2 (type: multiple_choice_question)
+2025-12-22T23:11:16.105Z DEBUG 8228 --- [nio-8080-exec-2] c.q.d.service.QuizPrintViewModelMapper   : Question 2 status: CORRECT
+2025-12-22T23:11:16.105Z DEBUG 8228 --- [nio-8080-exec-2] c.q.d.service.QuizPrintViewModelMapper   : Question 2 has 3 options
+2025-12-22T23:11:16.105Z DEBUG 8228 --- [nio-8080-exec-2] c.q.d.service.QuizPrintViewModelMapper   : Mapping question 3 (type: true_false_question)
+2025-12-22T23:11:16.105Z DEBUG 8228 --- [nio-8080-exec-2] c.q.d.service.QuizPrintViewModelMapper   : Question 3 status: INCORRECT
+2025-12-22T23:11:16.106Z DEBUG 8228 --- [nio-8080-exec-2] c.q.d.service.QuizPrintViewModelMapper   : Question 3 has 2 options
+2025-12-22T23:11:16.107Z DEBUG 8228 --- [nio-8080-exec-2] c.q.d.service.QuizPrintViewModelMapper   : Mapping question 4 (type: multiple_answers_question)
+2025-12-22T23:11:16.107Z DEBUG 8228 --- [nio-8080-exec-2] c.q.d.service.QuizPrintViewModelMapper   : Question 4 status: INCORRECT
+2025-12-22T23:11:16.108Z DEBUG 8228 --- [nio-8080-exec-2] c.q.d.service.QuizPrintViewModelMapper   : Question 4 has 4 options
+2025-12-22T23:11:16.108Z DEBUG 8228 --- [nio-8080-exec-2] c.q.d.service.QuizPrintViewModelMapper   : Mapped 4 questions for student 1 (3 incorrect/unanswered)
+2025-12-22T23:11:16.108Z  INFO 8228 --- [nio-8080-exec-2] c.q.d.service.QuizPrintViewModelMapper   : ViewModel mapping completed successfully
+2025-12-22T23:11:16.108Z  INFO 8228 --- [nio-8080-exec-2] c.q.d.controller.PrintReportController   : Step 5/5: Successfully mapped to ViewModel in 6ms
+2025-12-22T23:11:16.108Z  INFO 8228 --- [nio-8080-exec-2] c.q.d.controller.PrintReportController   : Rendering print-report-slip view
+2025-12-22T23:11:16.108Z  INFO 8228 --- [nio-8080-exec-2] c.q.d.controller.PrintReportController   : === Print report generation completed successfully in 54ms ===
+2025-12-22T23:11:16.108Z  INFO 8228 --- [nio-8080-exec-2] c.q.d.controller.PrintReportController   : Performance breakdown: Quiz=1ms, Questions=1ms, CSV=29ms, Report=10ms, Mapping=6ms
+2025-12-22T23:21:58.632Z  INFO 8228 --- [nio-8080-exec-6] c.q.d.controller.PrintReportController   : Print report upload form accessed with type: null, courseId: null, quizId: null
+2025-12-22T23:22:01.459Z  INFO 8228 --- [nio-8080-exec-7] c.q.d.controller.PrintReportController   : === Starting print report generation ===
+2025-12-22T23:22:01.460Z  INFO 8228 --- [nio-8080-exec-7] c.q.d.controller.PrintReportController   : Course ID: 101, Quiz ID: 1001, Report Type: slip, CSV File: student_answer.csv (820 bytes)
+2025-12-22T23:22:01.460Z DEBUG 8228 --- [nio-8080-exec-7] c.q.d.controller.PrintReportController   : Validating input parameters
+2025-12-22T23:22:01.460Z DEBUG 8228 --- [nio-8080-exec-7] c.q.d.controller.PrintReportController   : File content type: text/csv, filename: student_answer.csv
+2025-12-22T23:22:01.460Z  INFO 8228 --- [nio-8080-exec-7] c.q.d.controller.PrintReportController   : Input validation passed
+2025-12-22T23:22:01.460Z  INFO 8228 --- [nio-8080-exec-7] c.q.d.controller.PrintReportController   : Step 1/5: Fetching quiz from Canvas...
+2025-12-22T23:22:01.460Z  INFO 8228 --- [nio-8080-exec-7] c.q.demo.service.CanvasQuizFetcher       : Fetching MOCK quiz 101/1001
+2025-12-22T23:22:01.460Z  INFO 8228 --- [nio-8080-exec-7] c.q.d.controller.PrintReportController   : Step 1/5: Successfully fetched quiz 'Mock Quiz for Design Review' in 0ms
+2025-12-22T23:22:01.460Z  INFO 8228 --- [nio-8080-exec-7] c.q.d.controller.PrintReportController   : Step 2/5: Fetching quiz questions...
+2025-12-22T23:22:01.460Z  INFO 8228 --- [nio-8080-exec-7] c.q.demo.service.CanvasQuizFetcher       : Fetching MOCK questions for quiz 101/1001
+2025-12-22T23:22:01.460Z  INFO 8228 --- [nio-8080-exec-7] c.q.d.controller.PrintReportController   : Step 2/5: Successfully fetched 4 questions in 0ms
+2025-12-22T23:22:01.462Z DEBUG 8228 --- [nio-8080-exec-7] c.q.d.controller.PrintReportController   : Stored quiz and questions data in session for editing
+2025-12-22T23:22:01.462Z  INFO 8228 --- [nio-8080-exec-7] c.q.d.controller.PrintReportController   : Step 3/5: Parsing CSV submissions...
+2025-12-22T23:22:01.462Z  INFO 8228 --- [nio-8080-exec-7] c.q.demo.service.CsvSubmissionParser     : Starting CSV parsing for file: student_answer.csv (size: 820 bytes)
+2025-12-22T23:22:01.467Z  INFO 8228 --- [nio-8080-exec-7] c.q.demo.service.CsvSubmissionParser     : CSV contains 37 columns
+2025-12-22T23:22:01.467Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.CsvSubmissionParser     : CSV Headers: [Quiz Name, Class, Student First Name, Student Last Name, Student ID, Export Timestamp, #1 Student Response, #2 Student Response, #3 Student Response, #4 Student Response, #5 Student Response, #6 Student Response, #7 Student Response, #8 Student Response, #9 Student Response, #10 Student Response, #11 Student Response, #12 Student Response, #13 Student Response, #14 Student Response, #15 Student Response, #16 Student Response, #17 Student Response, #18 Student Response, #19 Student Response, #20 Student Response, #21 Student Response, #22 Student Response, #23 Student Response, #24 Student Response, #25 Student Response, #26 Student Response, #27 Student Response, #28 Student Response, #29 Student Response, #30 Student Response, #31 Student Response]
+2025-12-22T23:22:01.468Z  INFO 8228 --- [nio-8080-exec-7] c.q.demo.service.CsvSubmissionParser     : Found 31 question response columns in CSV
+2025-12-22T23:22:01.469Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.CsvSubmissionParser     : Processing record #1 (line 1)
+2025-12-22T23:22:01.469Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.CsvSubmissionParser     : Student info - Name: Abc Smith, ID: 1
+2025-12-22T23:22:01.469Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.CsvSubmissionParser     : Q1: A
+2025-12-22T23:22:01.469Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.CsvSubmissionParser     : Q2: B
+2025-12-22T23:22:01.469Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.CsvSubmissionParser     : Q3: C
+2025-12-22T23:22:01.469Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.CsvSubmissionParser     : Q4: D
+2025-12-22T23:22:01.469Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.CsvSubmissionParser     : Q5: A
+2025-12-22T23:22:01.469Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.CsvSubmissionParser     : Q6: B
+2025-12-22T23:22:01.469Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.CsvSubmissionParser     : Q7: C
+2025-12-22T23:22:01.469Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.CsvSubmissionParser     : Q8: D
+2025-12-22T23:22:01.469Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.CsvSubmissionParser     : Q9: A
+2025-12-22T23:22:01.469Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.CsvSubmissionParser     : Q10: B
+2025-12-22T23:22:01.469Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.CsvSubmissionParser     : Q11: C
+2025-12-22T23:22:01.470Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.CsvSubmissionParser     : Q12: D
+2025-12-22T23:22:01.470Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.CsvSubmissionParser     : Q13: A
+2025-12-22T23:22:01.470Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.CsvSubmissionParser     : Q14: B
+2025-12-22T23:22:01.470Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.CsvSubmissionParser     : Q15: C
+2025-12-22T23:22:01.470Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.CsvSubmissionParser     : Q16: D
+2025-12-22T23:22:01.470Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.CsvSubmissionParser     : Q17: A
+2025-12-22T23:22:01.470Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.CsvSubmissionParser     : Q18: B
+2025-12-22T23:22:01.470Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.CsvSubmissionParser     : Q19: C
+2025-12-22T23:22:01.470Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.CsvSubmissionParser     : Q20: D
+2025-12-22T23:22:01.470Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.CsvSubmissionParser     : Q21: A
+2025-12-22T23:22:01.470Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.CsvSubmissionParser     : Q22: B
+2025-12-22T23:22:01.470Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.CsvSubmissionParser     : Q23: C
+2025-12-22T23:22:01.470Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.CsvSubmissionParser     : Q24: D
+2025-12-22T23:22:01.470Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.CsvSubmissionParser     : Q25: A
+2025-12-22T23:22:01.470Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.CsvSubmissionParser     : Q26: B
+2025-12-22T23:22:01.470Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.CsvSubmissionParser     : Q27: C
+2025-12-22T23:22:01.470Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.CsvSubmissionParser     : Q28: D
+2025-12-22T23:22:01.470Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.CsvSubmissionParser     : Q29: A
+2025-12-22T23:22:01.470Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.CsvSubmissionParser     : Q30: B
+2025-12-22T23:22:01.470Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.CsvSubmissionParser     : Q31: C
+2025-12-22T23:22:01.474Z  INFO 8228 --- [nio-8080-exec-7] c.q.demo.service.CsvSubmissionParser     : Parsed student: Abc Smith (ID: 1) with 31 responses
+2025-12-22T23:22:01.475Z  INFO 8228 --- [nio-8080-exec-7] c.q.demo.service.CsvSubmissionParser     : Successfully parsed 1 student submissions from CSV
+2025-12-22T23:22:01.475Z  INFO 8228 --- [nio-8080-exec-7] c.q.d.controller.PrintReportController   : Step 3/5: Successfully parsed 1 student submissions in 13ms
+2025-12-22T23:22:01.475Z  INFO 8228 --- [nio-8080-exec-7] c.q.d.controller.PrintReportController   : Step 4/5: Generating print report...
+2025-12-22T23:22:01.475Z  INFO 8228 --- [nio-8080-exec-7] c.q.demo.service.PrintReportGenerator    : Starting report generation for quiz: Mock Quiz for Design Review
+2025-12-22T23:22:01.475Z  INFO 8228 --- [nio-8080-exec-7] c.q.demo.service.PrintReportGenerator    : Processing 1 students and 4 questions
+2025-12-22T23:22:01.476Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.PrintReportGenerator    : Questions sorted by position: [Q1(multiple_choice_question), Q2(multiple_choice_question), Q3(true_false_question), Q4(multiple_answers_question)]
+2025-12-22T23:22:01.476Z  INFO 8228 --- [nio-8080-exec-7] c.q.demo.service.PrintReportGenerator    : Processing student 1/1: Abc Smith (ID: 1)
+2025-12-22T23:22:01.476Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.PrintReportGenerator    : Evaluating question 1 (type: multiple_choice_question)
+2025-12-22T23:22:01.476Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.PrintReportGenerator    : Student answer for Q1: A
+2025-12-22T23:22:01.476Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.PrintReportGenerator    : Evaluating answer for question type: multiple_choice_question
+2025-12-22T23:22:01.476Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.PrintReportGenerator    : Processing as multiple choice/true-false
+2025-12-22T23:22:01.477Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.PrintReportGenerator    : Correct answers: [Paris]
+2025-12-22T23:22:01.479Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.PrintReportGenerator    : Matching by letter: A -> index 0
+2025-12-22T23:22:01.479Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.PrintReportGenerator    : Selected answer 'London' is INCORRECT
+2025-12-22T23:22:01.480Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.PrintReportGenerator    : Q1 evaluation: INCORRECT
+2025-12-22T23:22:01.480Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.PrintReportGenerator    : Evaluating question 2 (type: multiple_choice_question)
+2025-12-22T23:22:01.480Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.PrintReportGenerator    : Student answer for Q2: B
+2025-12-22T23:22:01.480Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.PrintReportGenerator    : Evaluating answer for question type: multiple_choice_question
+2025-12-22T23:22:01.480Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.PrintReportGenerator    : Processing as multiple choice/true-false
+2025-12-22T23:22:01.480Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.PrintReportGenerator    : Correct answers: [Mars]
+2025-12-22T23:22:01.480Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.PrintReportGenerator    : Matching by letter: B -> index 1
+2025-12-22T23:22:01.480Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.PrintReportGenerator    : Selected answer 'Mars' is CORRECT
+2025-12-22T23:22:01.480Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.PrintReportGenerator    : Q2 evaluation: CORRECT
+2025-12-22T23:22:01.480Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.PrintReportGenerator    : Evaluating question 3 (type: true_false_question)
+2025-12-22T23:22:01.480Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.PrintReportGenerator    : Student answer for Q3: C
+2025-12-22T23:22:01.480Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.PrintReportGenerator    : Evaluating answer for question type: true_false_question
+2025-12-22T23:22:01.480Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.PrintReportGenerator    : Processing as multiple choice/true-false
+2025-12-22T23:22:01.480Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.PrintReportGenerator    : Correct answers: [True]
+2025-12-22T23:22:01.480Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.PrintReportGenerator    : Matching by letter: C -> index 2
+2025-12-22T23:22:01.480Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.PrintReportGenerator    : Q3 evaluation: INCORRECT
+2025-12-22T23:22:01.480Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.PrintReportGenerator    : Evaluating question 4 (type: multiple_answers_question)
+2025-12-22T23:22:01.480Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.PrintReportGenerator    : Student answer for Q4: D
+2025-12-22T23:22:01.480Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.PrintReportGenerator    : Evaluating answer for question type: multiple_answers_question
+2025-12-22T23:22:01.480Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.PrintReportGenerator    : Processing as multiple answers
+2025-12-22T23:22:01.480Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.PrintReportGenerator    : Correct answers: [2, 3, 5]
+2025-12-22T23:22:01.480Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.PrintReportGenerator    : Parsing 1 student answers from: 'D'
+2025-12-22T23:22:01.481Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.PrintReportGenerator    : Converted letter 'D' to answer: '5'
+2025-12-22T23:22:01.481Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.PrintReportGenerator    : Student selected 1 answers: [5]
+2025-12-22T23:22:01.481Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.PrintReportGenerator    : Multiple answers evaluation: INCORRECT (expected 3 answers, got 1)
+2025-12-22T23:22:01.481Z DEBUG 8228 --- [nio-8080-exec-7] c.q.demo.service.PrintReportGenerator    : Q4 evaluation: INCORRECT
+2025-12-22T23:22:01.481Z  INFO 8228 --- [nio-8080-exec-7] c.q.demo.service.PrintReportGenerator    : Student 1 score: 1/4 correct (4 answered)
+2025-12-22T23:22:01.481Z  INFO 8228 --- [nio-8080-exec-7] c.q.demo.service.PrintReportGenerator    : Successfully generated report for 1 students with 4 questions each
+2025-12-22T23:22:01.481Z  INFO 8228 --- [nio-8080-exec-7] c.q.d.controller.PrintReportController   : Step 4/5: Successfully generated report in 6ms
+2025-12-22T23:22:01.481Z  INFO 8228 --- [nio-8080-exec-7] c.q.d.controller.PrintReportController   : Step 5/5: Mapping to ViewModel for template rendering...
+2025-12-22T23:22:01.481Z  INFO 8228 --- [nio-8080-exec-7] c.q.d.service.QuizPrintViewModelMapper   : Starting ViewModel mapping for quiz: Mock Quiz for Design Review
+2025-12-22T23:22:01.482Z DEBUG 8228 --- [nio-8080-exec-7] c.q.d.service.QuizPrintViewModelMapper   : Mapping 1 students with 4 questions
+2025-12-22T23:22:01.482Z DEBUG 8228 --- [nio-8080-exec-7] c.q.d.service.QuizPrintViewModelMapper   : Mapping student: Abc Smith (ID: 1)
+2025-12-22T23:22:01.482Z DEBUG 8228 --- [nio-8080-exec-7] c.q.d.service.QuizPrintViewModelMapper   : Mapping question 1 (type: multiple_choice_question)
+2025-12-22T23:22:01.482Z DEBUG 8228 --- [nio-8080-exec-7] c.q.d.service.QuizPrintViewModelMapper   : Question 1 status: INCORRECT
+2025-12-22T23:22:01.483Z DEBUG 8228 --- [nio-8080-exec-7] c.q.d.service.QuizPrintViewModelMapper   : Question 1 has 4 options
+2025-12-22T23:22:01.483Z DEBUG 8228 --- [nio-8080-exec-7] c.q.d.service.QuizPrintViewModelMapper   : Mapping question 2 (type: multiple_choice_question)
+2025-12-22T23:22:01.483Z DEBUG 8228 --- [nio-8080-exec-7] c.q.d.service.QuizPrintViewModelMapper   : Question 2 status: CORRECT
+2025-12-22T23:22:01.483Z DEBUG 8228 --- [nio-8080-exec-7] c.q.d.service.QuizPrintViewModelMapper   : Question 2 has 3 options
+2025-12-22T23:22:01.483Z DEBUG 8228 --- [nio-8080-exec-7] c.q.d.service.QuizPrintViewModelMapper   : Mapping question 3 (type: true_false_question)
+2025-12-22T23:22:01.483Z DEBUG 8228 --- [nio-8080-exec-7] c.q.d.service.QuizPrintViewModelMapper   : Question 3 status: INCORRECT
+2025-12-22T23:22:01.484Z DEBUG 8228 --- [nio-8080-exec-7] c.q.d.service.QuizPrintViewModelMapper   : Question 3 has 2 options
+2025-12-22T23:22:01.484Z DEBUG 8228 --- [nio-8080-exec-7] c.q.d.service.QuizPrintViewModelMapper   : Mapping question 4 (type: multiple_answers_question)
+2025-12-22T23:22:01.484Z DEBUG 8228 --- [nio-8080-exec-7] c.q.d.service.QuizPrintViewModelMapper   : Question 4 status: INCORRECT
+2025-12-22T23:22:01.485Z DEBUG 8228 --- [nio-8080-exec-7] c.q.d.service.QuizPrintViewModelMapper   : Question 4 has 4 options
+2025-12-22T23:22:01.485Z DEBUG 8228 --- [nio-8080-exec-7] c.q.d.service.QuizPrintViewModelMapper   : Mapped 4 questions for student 1 (3 incorrect/unanswered)
+2025-12-22T23:22:01.485Z  INFO 8228 --- [nio-8080-exec-7] c.q.d.service.QuizPrintViewModelMapper   : ViewModel mapping completed successfully
+2025-12-22T23:22:01.485Z  INFO 8228 --- [nio-8080-exec-7] c.q.d.controller.PrintReportController   : Step 5/5: Successfully mapped to ViewModel in 4ms
+2025-12-22T23:22:01.485Z  INFO 8228 --- [nio-8080-exec-7] c.q.d.controller.PrintReportController   : Rendering print-report-slip view
+2025-12-22T23:22:01.485Z  INFO 8228 --- [nio-8080-exec-7] c.q.d.controller.PrintReportController   : === Print report generation completed successfully in 26ms ===
+2025-12-22T23:22:01.485Z  INFO 8228 --- [nio-8080-exec-7] c.q.d.controller.PrintReportController   : Performance breakdown: Quiz=0ms, Questions=0ms, CSV=13ms, Report=6ms, Mapping=4ms
