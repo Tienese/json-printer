@@ -18,7 +18,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Service to map PrintReport data to QuizPrintViewModel for optimized template
@@ -33,6 +35,15 @@ import java.util.List;
 public class QuizPrintViewModelMapper {
 
     private static final Logger log = LoggerFactory.getLogger(QuizPrintViewModelMapper.class);
+
+    /**
+     * Cache for stripped HTML text to avoid redundant regex operations.
+     */
+    private record TextCache(
+        Map<Long, String> questionTexts,
+        Map<Long, String> answerTexts,
+        Map<Long, String> answerComments
+    ) {}
 
     /**
      * Maps PrintReport and Canvas data to QuizPrintViewModel.
@@ -51,6 +62,9 @@ public class QuizPrintViewModelMapper {
         log.info("Starting ViewModel mapping for quiz: {}", quiz.title());
         log.debug("Mapping {} students with {} questions", submissions.size(), questions.size());
 
+        // Pre-compute stripped HTML for all questions and answers
+        TextCache cache = buildTextCache(questions);
+
         QuizPrintViewModel viewModel = new QuizPrintViewModel();
         viewModel.setQuizTitle(quiz.title());
         viewModel.setQuizId(quiz.id());
@@ -58,7 +72,7 @@ public class QuizPrintViewModelMapper {
 
         // Map each student report
         for (PrintReport.StudentReport studentReport : report.getStudentReports()) {
-            StudentQuizView studentView = mapStudent(studentReport);
+            StudentQuizView studentView = mapStudent(studentReport, cache);
             viewModel.getStudents().add(studentView);
         }
 
@@ -66,10 +80,35 @@ public class QuizPrintViewModelMapper {
         return viewModel;
     }
 
+    private TextCache buildTextCache(List<CanvasQuestionDto> questions) {
+        Map<Long, String> questionTexts = new HashMap<>();
+        Map<Long, String> answerTexts = new HashMap<>();
+        Map<Long, String> answerComments = new HashMap<>();
+
+        for (CanvasQuestionDto question : questions) {
+            if (question.id() != null) {
+                questionTexts.put(question.id(), HtmlUtils.stripHtml(question.questionText()));
+            }
+
+            if (question.answers() != null) {
+                for (CanvasAnswerDto answer : question.answers()) {
+                    if (answer.id() != null) {
+                        answerTexts.put(answer.id(), HtmlUtils.stripHtml(answer.text()));
+                        if (answer.comments() != null) {
+                            answerComments.put(answer.id(), HtmlUtils.stripHtml(answer.comments()));
+                        }
+                    }
+                }
+            }
+        }
+
+        return new TextCache(questionTexts, answerTexts, answerComments);
+    }
+
     /**
      * Maps a single student's report to StudentQuizView.
      */
-    private StudentQuizView mapStudent(PrintReport.StudentReport studentReport) {
+    private StudentQuizView mapStudent(PrintReport.StudentReport studentReport, TextCache cache) {
         StudentSubmission student = studentReport.getStudent();
         log.debug("Mapping student: {} {} (ID: {})",
                 student.getFirstName(), student.getLastName(), student.getStudentId());
@@ -83,7 +122,7 @@ public class QuizPrintViewModelMapper {
         // Map each question result
         int questionNum = 1;
         for (PrintReport.QuestionResult result : studentReport.getQuestionResults()) {
-            QuestionView questionView = mapQuestion(result, questionNum);
+            QuestionView questionView = mapQuestion(result, questionNum, cache);
             studentView.getQuestions().add(questionView);
 
             // Collect incorrect or unanswered question numbers
@@ -104,14 +143,20 @@ public class QuizPrintViewModelMapper {
     /**
      * Maps a single question result to QuestionView.
      */
-    private QuestionView mapQuestion(PrintReport.QuestionResult result, int questionNumber) {
+    private QuestionView mapQuestion(PrintReport.QuestionResult result, int questionNumber, TextCache cache) {
         CanvasQuestionDto question = result.getQuestion();
 
         log.debug("Mapping question {} (type: {})", questionNumber, question.questionType());
 
         QuestionView questionView = new QuestionView();
         questionView.setQuestionNumber(questionNumber);
-        questionView.setQuestionText(HtmlUtils.stripHtml(question.questionText()));
+
+        // Use cached question text if available
+        String text = (question.id() != null && cache.questionTexts().containsKey(question.id()))
+                ? cache.questionTexts().get(question.id())
+                : HtmlUtils.stripHtml(question.questionText());
+        questionView.setQuestionText(text);
+
         questionView.setPointsPossible(question.pointsPossible() != null ? question.pointsPossible() : 0.0);
         questionView.setQuestionType(question.questionType());
 
@@ -129,7 +174,7 @@ public class QuizPrintViewModelMapper {
         // Map answer options if they exist
         if (question.answers() != null && !question.answers().isEmpty()) {
             questionView.setHasOptions(true);
-            List<OptionView> options = mapOptions(question, result);
+            List<OptionView> options = mapOptions(question, result, cache);
             questionView.setOptions(options);
             log.debug("Question {} has {} options", questionNumber, options.size());
         } else {
@@ -143,7 +188,7 @@ public class QuizPrintViewModelMapper {
     /**
      * Maps answer options to OptionView list with visual markers.
      */
-    private List<OptionView> mapOptions(CanvasQuestionDto question, PrintReport.QuestionResult result) {
+    private List<OptionView> mapOptions(CanvasQuestionDto question, PrintReport.QuestionResult result, TextCache cache) {
         List<OptionView> options = new ArrayList<>();
 
         int index = 0;
@@ -153,8 +198,11 @@ public class QuizPrintViewModelMapper {
             // Assign option letter (A, B, C, D, ...)
             optionView.setOptionLetter(String.valueOf((char) ('A' + index)));
 
-            // Strip HTML from option text
-            optionView.setOptionText(HtmlUtils.stripHtml(answer.text()));
+            // Use cached option text if available
+            String text = (answer.id() != null && cache.answerTexts().containsKey(answer.id()))
+                    ? cache.answerTexts().get(answer.id())
+                    : HtmlUtils.stripHtml(answer.text());
+            optionView.setOptionText(text);
 
             // Determine if this option is correct
             optionView.setCorrect(answer.isCorrect());
@@ -168,8 +216,14 @@ public class QuizPrintViewModelMapper {
             String marker = computeVisualMarker(optionView.isCorrect(), isStudentAnswer, result.isCorrect());
             optionView.setVisualMarker(marker);
 
-            // Set comment text (strip HTML if present)
-            optionView.setCommentText(answer.comments() != null ? HtmlUtils.stripHtml(answer.comments()) : null);
+            // Set comment text (use cached if available)
+            String comments = null;
+            if (answer.comments() != null) {
+                comments = (answer.id() != null && cache.answerComments().containsKey(answer.id()))
+                        ? cache.answerComments().get(answer.id())
+                        : HtmlUtils.stripHtml(answer.comments());
+            }
+            optionView.setCommentText(comments);
 
             options.add(optionView);
             index++;
