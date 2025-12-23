@@ -144,7 +144,7 @@ export function SettingsPage({ onNavigate }: SettingsPageProps) {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen theme-elevated">
             <Navbar
                 onBack={() => onNavigate?.(ROUTES.HOME)}
                 actions={
@@ -190,8 +190,8 @@ export function SettingsPage({ onNavigate }: SettingsPageProps) {
                 <div className="max-w-4xl mx-auto p-6">
                     {/* Header */}
                     <div className="mb-6">
-                        <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-                        <p className="text-gray-500 text-sm mt-1">Configure worksheet builder defaults</p>
+                        <h1 className="text-2xl font-bold theme-text">Settings</h1>
+                        <p className="theme-text-secondary text-sm mt-1">Configure worksheet builder defaults</p>
                     </div>
 
                     {/* Search */}
@@ -213,11 +213,11 @@ export function SettingsPage({ onNavigate }: SettingsPageProps) {
                     {/* Settings Groups */}
                     <div className="space-y-6">
                         {Array.from(filteredGrouped.entries()).map(([category, categorySettings]) => (
-                            <div key={category} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                                <div className="px-5 py-3 bg-gray-50 border-b border-gray-200">
-                                    <h2 className="text-sm font-semibold text-gray-700">{category}</h2>
+                            <div key={category} className="theme-card overflow-hidden">
+                                <div className="theme-card-header">
+                                    <h2 className="text-sm font-semibold theme-text">{category}</h2>
                                 </div>
-                                <div className="divide-y divide-gray-100">
+                                <div className="divide-y divide-[var(--color-border)]">
                                     {categorySettings.map(setting => (
                                         <div key={setting.key} className="px-5 py-4 flex items-center justify-between gap-4">
                                             <div className="flex-1 min-w-0">

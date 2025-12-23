@@ -3,22 +3,32 @@
 @tailwind utilities;
 
 /* ============================================
-   SHARED STYLES (both frontend + print)
+   THEME SYSTEM: "1 Style Rule Them All"
+   
+   Two modes:
+   1. SCREEN MODE: Supports light/dark theme
+   2. PRINT MODE: Always light, B&W only
+   ============================================ */
+
+/* ============================================
+   BASE STYLES (Theme-aware)
    ============================================ */
 @layer base {
-  body {
-    @apply bg-app-gray font-sans h-screen grid grid-rows-1 m-0;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-
-  /* Dark Mode - CodeRabbit inspired */
-  .dark body,
-  body.dark {
-    @apply bg-dark-bg text-dark-text;
+  :root {
+    /* Light Mode Variables */
+    --color-bg: #525659;
+    --color-surface: #ffffff;
+    --color-elevated: #f8f9fa;
+    --color-text: #1a1a1a;
+    --color-text-secondary: #666666;
+    --color-text-muted: #999999;
+    --color-accent: #4a90d9;
+    --color-border: #e5e7eb;
+    --color-border-strong: #d1d5db;
   }
 
   .dark {
+    /* Dark Mode Variables (CodeRabbit-inspired) */
     --color-bg: #0e0b0b;
     --color-surface: #141111;
     --color-elevated: #1a1614;
@@ -27,118 +37,279 @@
     --color-text-muted: #6e6a67;
     --color-accent: #ff570a;
     --color-border: rgba(230, 225, 222, 0.1);
+    --color-border-strong: #3f3f46;
   }
 
-  /* Rich Text Printing */
-  b, strong { @apply font-bold; }
-  i, em { @apply italic; }
-  u { @apply underline; }
+  body {
+    @apply font-sans h-screen m-0;
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Rich Text */
+  b,
+  strong {
+    @apply font-bold;
+  }
+
+  i,
+  em {
+    @apply italic;
+  }
+
+  u {
+    @apply underline;
+  }
 }
 
 /* ============================================
    PRINT STYLES (@media print)
-   BLACK & WHITE ONLY — NO COLORS
+   BLACK & WHITE ONLY — NO DARK MODE
    ============================================ */
 @media print {
   @page {
     size: A4;
-    margin: 0; /* User controls margins via print dialog */
+    margin: 0;
   }
+
+  /* Force light mode for printing */
+  :root,
+  .dark {
+    --color-bg: #ffffff;
+    --color-surface: #ffffff;
+    --color-text: #000000;
+    --color-text-secondary: #333333;
+    --color-border: #000000;
+  }
+
   body {
-    @apply bg-white block p-0 m-0;
+    @apply bg-white text-black block p-0 m-0;
   }
+
   #root {
     @apply p-0 m-0;
   }
-  /* Multi-page printing: force page break before each page except first */
+
   .print-page:not(:first-child) {
     page-break-before: always;
   }
+
   .print-page {
     @apply w-full min-h-[297mm] p-[1.27cm] box-border;
+  }
+
+  /* Hide all non-printable elements */
+  .no-print,
+  .print\\:hidden {
+    display: none !important;
   }
 }
 
 /* ============================================
-   FRONTEND STYLES (interactive pages only)
-   ONLY applies when NOT printing
+   REUSABLE THEME-AWARE COMPONENT CLASSES
+   "1 Style Rule Them All"
    ============================================ */
 @layer components {
-  .toolbar-btn {
-    @apply flex items-center justify-center gap-1.5 bg-white border border-gray-300 text-gray-700 cursor-pointer text-xs font-semibold px-3 h-8 rounded hover:bg-gray-50 hover:border-gray-400 hover:text-black transition-all duration-200 shadow-sm min-w-0 whitespace-nowrap;
+
+  /* === SURFACES === */
+  .theme-bg {
+    background-color: var(--color-bg);
   }
 
-  .toolbar-btn:active {
-    @apply bg-gray-100 shadow-inner;
+  .theme-surface {
+    background-color: var(--color-surface);
+    color: var(--color-text);
   }
 
-  /* Generic Button */
+  .theme-elevated {
+    background-color: var(--color-elevated);
+    color: var(--color-text);
+  }
+
+  /* === TEXT === */
+  .theme-text {
+    color: var(--color-text);
+  }
+
+  .theme-text-secondary {
+    color: var(--color-text-secondary);
+  }
+
+  .theme-text-muted {
+    color: var(--color-text-muted);
+  }
+
+  .theme-accent {
+    color: var(--color-accent);
+  }
+
+  /* === BORDERS === */
+  .theme-border {
+    border-color: var(--color-border);
+  }
+
+  .theme-border-strong {
+    border-color: var(--color-border-strong);
+  }
+
+  /* === BUTTONS === */
   .btn {
-    @apply px-5 py-2.5 border border-black bg-white text-black text-base font-medium cursor-pointer transition-all duration-200 no-underline inline-flex items-center gap-2 font-sans hover:border-2 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply px-5 py-2.5 border text-base font-medium cursor-pointer transition-all duration-200 no-underline inline-flex items-center gap-2 font-sans;
+    background-color: var(--color-surface);
+    color: var(--color-text);
+    border-color: var(--color-border-strong);
+  }
+
+  .btn:hover {
+    background-color: var(--color-elevated);
+  }
+
+  .btn:focus {
+    @apply outline-none ring-2 ring-offset-2;
+    ring-color: var(--color-accent);
+  }
+
+  .btn:disabled {
+    @apply opacity-50 cursor-not-allowed;
   }
 
   .btn-primary {
-    @apply bg-black text-white hover:bg-gray-800;
+    background-color: var(--color-accent);
+    @apply text-white border-transparent;
   }
 
-  .btn-secondary {
-    @apply bg-white text-black;
+  .btn-primary:hover {
+    @apply opacity-90;
   }
 
-  .btn-refresh .icon {
-    @apply inline-block transition-transform duration-500;
+  /* === TOOLBAR === */
+  .toolbar-btn {
+    @apply flex items-center justify-center gap-1.5 cursor-pointer text-xs font-semibold px-3 h-8 rounded transition-all duration-200 shadow-sm min-w-0 whitespace-nowrap;
+    background-color: var(--color-surface);
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border);
   }
 
-  .btn-refresh.refreshing .icon {
-    @apply animate-spin;
+  .toolbar-btn:hover {
+    background-color: var(--color-elevated);
+    color: var(--color-text);
+    border-color: var(--color-border-strong);
   }
 
-  /* Alert */
+  .toolbar-btn:active {
+    background-color: var(--color-border);
+  }
+
+  /* === INPUTS === */
+  .prop-input,
+  .prop-select {
+    @apply w-full p-[6px] rounded-[4px] box-border text-[13px] transition-all;
+    background-color: var(--color-surface);
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
+  }
+
+  .prop-input:focus,
+  .prop-select:focus {
+    border-color: var(--color-accent);
+    @apply outline-none ring-1;
+    ring-color: var(--color-accent);
+  }
+
+  /* === CARDS === */
+  .theme-card {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    @apply rounded-xl;
+  }
+
+  .theme-card-header {
+    background-color: var(--color-elevated);
+    border-bottom: 1px solid var(--color-border);
+    @apply px-4 py-3;
+  }
+
+  /* === ALERTS === */
   .alert {
-    @apply p-[15px_20px] border border-black mb-5 flex items-center gap-2.5;
+    @apply p-[15px_20px] mb-5 flex items-center gap-2.5;
+    background-color: var(--color-elevated);
+    border: 1px solid var(--color-border-strong);
   }
 
-  .alert-error {
-    @apply border-2 border-black bg-gray-50;
+  /* === SIDEBAR === */
+  .theme-sidebar {
+    background-color: var(--color-surface);
+    border-color: var(--color-border);
   }
 
-  /* Property Editor Styles */
+  /* === PROPERTY EDITOR === */
   .prop-group {
     @apply mb-[15px];
   }
 
   .prop-group h4 {
-    @apply m-0 mb-[8px] text-[14px] text-gray-800 border-b border-gray-300 pb-[5px] font-semibold uppercase tracking-wider;
+    @apply m-0 mb-[8px] text-[14px] pb-[5px] font-semibold uppercase tracking-wider;
+    color: var(--color-text);
+    border-bottom: 1px solid var(--color-border);
   }
 
   .prop-label {
-    @apply block mb-[4px] text-[12px] text-gray-600 font-medium;
+    @apply block mb-[4px] text-[12px] font-medium;
+    color: var(--color-text-secondary);
   }
 
-  .prop-input, .prop-select {
-    @apply w-full p-[6px] border border-gray-300 rounded-[4px] box-border text-[13px] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none transition-all;
-  }
-
+  /* === ACTION BUTTONS === */
   .btn-remove {
-    @apply p-1 px-2 bg-red-50 text-red-600 border border-red-200 rounded hover:bg-red-100 transition-colors disabled:opacity-30 disabled:cursor-not-allowed;
+    @apply p-1 px-2 rounded transition-colors;
+    background-color: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+  }
+
+  .btn-remove:hover {
+    background-color: rgba(239, 68, 68, 0.2);
   }
 
   .btn-add {
-    @apply w-full mt-2 p-2 bg-blue-50 text-blue-600 border border-blue-200 rounded font-medium hover:bg-blue-100 transition-colors;
+    @apply w-full mt-2 p-2 rounded font-medium transition-colors;
+    background-color: rgba(59, 130, 246, 0.1);
+    color: var(--color-accent);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+  }
+
+  .btn-add:hover {
+    background-color: rgba(59, 130, 246, 0.2);
   }
 
   .checkbox-label {
-    @apply flex items-center gap-2 cursor-pointer text-[13px] text-gray-700 mt-2;
+    @apply flex items-center gap-2 cursor-pointer text-[13px] mt-2;
+    color: var(--color-text-secondary);
   }
 
-  /* Grid Box Input - CRITICAL FIX */
+  /* === GRID INPUT (for worksheets) === */
   .char-input {
     @apply w-full h-full text-center bg-transparent border-none outline-none p-0 m-0 leading-none font-serif text-black;
-    /* Ensure input takes up space but doesn't overflow or have background */
   }
-  
-  /* Remove default input styles specifically */
+
   .char-input:focus {
     @apply outline-none ring-0;
+  }
+}
+
+/* ============================================
+   PRINTABLE AREA — ALWAYS LIGHT
+   Applied to worksheet content areas
+   ============================================ */
+@layer components {
+  .print-area {
+    @apply bg-white text-black;
+    /* Force light mode regardless of theme */
+  }
+
+  .print-area * {
+    /* Ensure all children inherit light-mode colors */
+    color: inherit;
   }
 }

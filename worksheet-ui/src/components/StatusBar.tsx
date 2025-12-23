@@ -26,13 +26,13 @@ export function StatusBar({
     const handleZoomReset = () => onZoomChange(1);
 
     return (
-        <div className="col-span-3 h-8 bg-white border-t border-gray-200 flex items-center justify-between px-4 text-xs text-gray-600 print:hidden">
+        <div className="col-span-3 h-8 theme-surface border-t theme-border flex items-center justify-between px-4 text-xs theme-text-secondary print:hidden">
             {/* Left: Metadata */}
             <div className="flex items-center gap-4">
                 <span>📄 {totalPages} page{totalPages !== 1 ? 's' : ''}</span>
-                <span className="text-gray-300">•</span>
+                <span className="theme-text-muted">•</span>
                 <span>📦 {totalItems} item{totalItems !== 1 ? 's' : ''}</span>
-                <span className="text-gray-300">•</span>
+                <span className="theme-text-muted">•</span>
                 <span>Page {currentPageIndex + 1}/{totalPages}</span>
             </div>
 
@@ -40,21 +40,21 @@ export function StatusBar({
             <div className="flex items-center gap-1">
                 <button
                     onClick={handleZoomOut}
-                    className="w-6 h-6 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded"
+                    className="w-6 h-6 flex items-center justify-center theme-text-secondary hover:bg-[var(--color-elevated)] rounded"
                     title="Zoom Out (50% min)"
                 >
                     −
                 </button>
                 <button
                     onClick={handleZoomReset}
-                    className="px-2 h-6 text-xs font-mono hover:bg-gray-100 rounded"
+                    className="px-2 h-6 text-xs font-mono hover:bg-[var(--color-elevated)] rounded"
                     title="Reset to 100%"
                 >
                     {Math.round(zoom * 100)}%
                 </button>
                 <button
                     onClick={handleZoomIn}
-                    className="w-6 h-6 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded"
+                    className="w-6 h-6 flex items-center justify-center theme-text-secondary hover:bg-[var(--color-elevated)] rounded"
                     title="Zoom In (200% max)"
                 >
                     +

@@ -93,13 +93,13 @@ export function Sidebar({
   ];
 
   return (
-    <div className={`shrink-0 bg-sidebar-bg border-l border-gray-200 flex flex-col h-full relative transition-all duration-300 print:hidden ${isOpen ? 'w-[300px]' : 'w-[40px] items-center'}`}>
+    <div className={`shrink-0 theme-surface border-l theme-border flex flex-col h-full relative transition-all duration-300 print:hidden ${isOpen ? 'w-[300px]' : 'w-[40px] items-center'}`}>
       {/* Sidebar Title Bar / Collapse Toggle */}
-      <div className="flex items-center justify-between p-3 border-b border-gray-200 h-[45px] w-full">
-        {isOpen && <h2 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Sidebar</h2>}
+      <div className="flex items-center justify-between p-3 border-b theme-border h-[45px] w-full">
+        {isOpen && <h2 className="text-xs font-bold theme-text-muted uppercase tracking-wider">Sidebar</h2>}
         <button
           onClick={onToggle}
-          className="p-1 hover:bg-gray-200 rounded text-gray-500"
+          className="p-1 hover:bg-[var(--color-elevated)] rounded theme-text-secondary"
           title={isOpen ? "Collapse Sidebar" : "Expand Sidebar"}
         >
           {isOpen ? (
@@ -113,13 +113,13 @@ export function Sidebar({
       {isOpen && (
         <>
           {/* Tabs Navigation - 4 tabs */}
-          <div className="flex border-b border-gray-200 w-full">
+          <div className="flex border-b theme-border w-full">
             {tabs.map(tab => (
               <button
                 key={tab.id}
                 className={`flex-1 py-2.5 text-xs font-medium transition-colors ${activeTab === tab.id
-                  ? 'text-primary-blue border-b-2 border-primary-blue bg-blue-50/30'
-                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                  ? 'theme-accent border-b-2 border-[var(--color-accent)] bg-[var(--color-accent)]/10'
+                  : 'theme-text-secondary hover:theme-text hover:bg-[var(--color-elevated)]'
                   }`}
                 onClick={() => setActiveTab(tab.id)}
                 title={tab.label}

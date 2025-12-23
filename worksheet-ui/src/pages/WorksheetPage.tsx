@@ -280,7 +280,7 @@ export function WorksheetPage({ onNavigate, worksheetId }: WorksheetPageProps) {
 
 
   return (
-    <div className={`grid grid-rows-[auto_1fr_auto] h-screen w-full bg-app-gray overflow-hidden print:bg-white print:h-auto print:overflow-visible print:block ${isLeftSidebarOpen ? 'grid-cols-[300px_1fr_auto]' : 'grid-cols-[40px_1fr_auto]'}`}>
+    <div className={`grid grid-rows-[auto_1fr_auto] h-screen w-full theme-bg overflow-hidden print:bg-white print:h-auto print:overflow-visible print:block ${isLeftSidebarOpen ? 'grid-cols-[300px_1fr_auto]' : 'grid-cols-[40px_1fr_auto]'}`}>
       {/* Top Menu Bar */}
       <div className="col-span-3 print:hidden">
         <Navbar
