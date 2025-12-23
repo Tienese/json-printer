@@ -102,6 +102,13 @@
 			<groupId>org.hibernate.orm</groupId>
 			<artifactId>hibernate-community-dialects</artifactId>
 		</dependency>
+
+		<!-- Kuromoji Japanese Tokenizer (Lucene) for vocabulary analysis -->
+		<dependency>
+			<groupId>org.apache.lucene</groupId>
+			<artifactId>lucene-analysis-kuromoji</artifactId>
+			<version>9.12.1</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<plugins>

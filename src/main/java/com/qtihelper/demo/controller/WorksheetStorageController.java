@@ -1,8 +1,14 @@
 package com.qtihelper.demo.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.qtihelper.demo.dto.VocabAnalysisResult;
 import com.qtihelper.demo.entity.Worksheet;
 import com.qtihelper.demo.entity.WorksheetType;
 import com.qtihelper.demo.repository.WorksheetRepository;
+import com.qtihelper.demo.service.WorksheetAnalysisService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,11 +21,20 @@ import java.util.List;
 @RequestMapping("/api/worksheets")
 public class WorksheetStorageController {
 
+    private static final Logger log = LoggerFactory.getLogger(WorksheetStorageController.class);
+
     private final WorksheetRepository worksheetRepository;
+    private final WorksheetAnalysisService analysisService;
+    private final ObjectMapper objectMapper;
     private static final int MAX_AUTOSAVES = 10;
 
-    public WorksheetStorageController(WorksheetRepository worksheetRepository) {
+    public WorksheetStorageController(
+            WorksheetRepository worksheetRepository,
+            WorksheetAnalysisService analysisService,
+            ObjectMapper objectMapper) {
         this.worksheetRepository = worksheetRepository;
+        this.analysisService = analysisService;
+        this.objectMapper = objectMapper;
     }
 
     /**
@@ -147,5 +162,68 @@ public class WorksheetStorageController {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.notFound().build();
+    }
+
+    // ===== VOCABULARY ANALYSIS ENDPOINTS =====
+
+    /**
+     * Analyze worksheet vocabulary coverage against target lesson(s).
+     * POST /api/worksheets/{id}/analyze
+     *
+     * Request body: { "lessonIds": [1, 2, 3] }
+     * Response: VocabAnalysisResult JSON with coverage stats and missing words
+     */
+    @PostMapping("/{id}/analyze")
+    public ResponseEntity<VocabAnalysisResult> analyzeWorksheet(
+            @PathVariable Long id,
+            @RequestBody AnalyzeRequest request) {
+
+        log.info("Analyzing worksheet {} for lessons: {}", id, request.lessonIds());
+
+        return worksheetRepository.findById(id)
+                .map(worksheet -> {
+                    // Run analysis
+                    VocabAnalysisResult result = analysisService.analyze(
+                            worksheet.getJsonContent(),
+                            request.lessonIds());
+
+                    // Cache result in metadata
+                    String updatedMetadata = cacheAnalysisResult(worksheet.getMetadata(), result);
+                    worksheet.setMetadata(updatedMetadata);
+                    worksheetRepository.save(worksheet);
+
+                    log.info("Analysis complete for worksheet {}: {}% coverage",
+                            id, result.coveragePercent());
+
+                    return ResponseEntity.ok(result);
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    /**
+     * Request body for analyze endpoint.
+     */
+    public record AnalyzeRequest(List<Integer> lessonIds) {
+    }
+
+    /**
+     * Cache analysis result in worksheet metadata JSON.
+     */
+    private String cacheAnalysisResult(String existingMetadata, VocabAnalysisResult result) {
+        try {
+            // Parse existing metadata or create new object
+            var metadataNode = existingMetadata != null && !existingMetadata.isBlank()
+                    ? objectMapper.readTree(existingMetadata)
+                    : objectMapper.createObjectNode();
+
+            // Add analysis cache
+            var objectNode = (com.fasterxml.jackson.databind.node.ObjectNode) metadataNode;
+            objectNode.set("analysisCache", objectMapper.valueToTree(result));
+
+            return objectMapper.writeValueAsString(objectNode);
+        } catch (JsonProcessingException e) {
+            log.error("Failed to cache analysis result: {}", e.getMessage());
+            return existingMetadata;
+        }
     }
 }
