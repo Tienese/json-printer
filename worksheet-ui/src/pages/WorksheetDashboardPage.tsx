@@ -71,12 +71,12 @@ export function WorksheetDashboardPage({ onNavigate }: WorksheetDashboardPagePro
     const canGoNext = page < totalPages - 1;
 
     return (
-        <div className="min-h-screen bg-white">
+        <div className="min-h-screen theme-surface">
             <Navbar
                 onBack={() => onNavigate(ROUTES.HOME)}
                 actions={
                     <button
-                        className="h-10 px-4 font-bold border-2 border-black"
+                        className="h-10 px-4 font-bold border-2 theme-border-strong theme-text"
                         onClick={loadData}
                         disabled={loading}
                     >
@@ -87,13 +87,13 @@ export function WorksheetDashboardPage({ onNavigate }: WorksheetDashboardPagePro
 
             <div className="max-w-[1400px] mx-auto p-10">
                 {/* Header */}
-                <div className="text-center mb-12 py-10 border-b-2 border-black">
-                    <h1 className="text-4xl font-bold text-black mb-4">My Worksheets</h1>
-                    <p className="text-xl text-gray-800 italic">Create, manage, and organize your worksheets</p>
+                <div className="text-center mb-12 py-10 border-b-2 theme-border-strong">
+                    <h1 className="text-4xl font-bold theme-text mb-4">My Worksheets</h1>
+                    <p className="text-xl theme-text-secondary italic">Create, manage, and organize your worksheets</p>
                 </div>
 
                 {error && (
-                    <div className="mb-8 p-4 border-2 border-red-600 bg-red-50 text-red-600 font-bold">
+                    <div className="mb-8 p-4 border-2 border-red-600 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 font-bold">
                         <span className="text-2xl mr-3">⚠</span>
                         {error}
                     </div>
@@ -101,18 +101,18 @@ export function WorksheetDashboardPage({ onNavigate }: WorksheetDashboardPagePro
 
                 {/* Quick Start Section */}
                 <section className="mb-12">
-                    <h2 className="text-2xl font-black text-black mb-6 flex items-center gap-3">
+                    <h2 className="text-2xl font-black theme-text mb-6 flex items-center gap-3">
                         <span>✦</span> Quick Start
                     </h2>
                     <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-6">
                         {/* Blank Worksheet */}
                         <button
                             onClick={createBlankWorksheet}
-                            className="p-8 border-2 border-dashed border-gray-300 hover:border-black hover:bg-gray-50 transition-colors text-left group"
+                            className="p-8 border-2 border-dashed theme-border-strong hover:border-[var(--color-accent)] hover:bg-[var(--color-elevated)] transition-colors text-left group"
                         >
-                            <div className="text-6xl mb-4 text-gray-300 group-hover:text-black transition-colors">+</div>
-                            <h3 className="text-xl font-bold text-black mb-2">Blank Worksheet</h3>
-                            <p className="text-sm text-gray-600">Start from scratch</p>
+                            <div className="text-6xl mb-4 theme-text-muted group-hover:theme-accent transition-colors">+</div>
+                            <h3 className="text-xl font-bold theme-text mb-2">Blank Worksheet</h3>
+                            <p className="text-sm theme-text-secondary">Start from scratch</p>
                         </button>
 
                         {/* Templates */}
@@ -120,11 +120,11 @@ export function WorksheetDashboardPage({ onNavigate }: WorksheetDashboardPagePro
                             <button
                                 key={template.id}
                                 onClick={() => openWorksheet(template.id)}
-                                className="p-8 border-2 border-black bg-gray-50 hover:bg-gray-100 transition-colors text-left"
+                                className="p-8 border-2 theme-border-strong theme-elevated hover:bg-[var(--color-border)] transition-colors text-left"
                             >
                                 <div className="text-4xl mb-4">📄</div>
-                                <h3 className="text-xl font-bold text-black mb-2">{template.name}</h3>
-                                <p className="text-sm text-gray-600">Template</p>
+                                <h3 className="text-xl font-bold theme-text mb-2">{template.name}</h3>
+                                <p className="text-sm theme-text-secondary">Template</p>
                             </button>
                         ))}
                     </div>
@@ -132,27 +132,27 @@ export function WorksheetDashboardPage({ onNavigate }: WorksheetDashboardPagePro
 
                 {/* Recent Files */}
                 <section>
-                    <h2 className="text-2xl font-black text-black mb-6 flex items-center gap-3">
+                    <h2 className="text-2xl font-black theme-text mb-6 flex items-center gap-3">
                         <span>◆</span> Recent Files
                     </h2>
 
                     {loading && (
                         <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-6">
                             {[1, 2, 3, 4, 5, 6].map((i) => (
-                                <div key={i} className="border-2 border-gray-200 p-6 animate-pulse">
-                                    <div className="h-6 w-32 bg-gray-200 mb-4"></div>
-                                    <div className="h-4 w-24 bg-gray-200 mb-2"></div>
-                                    <div className="h-4 w-20 bg-gray-200"></div>
+                                <div key={i} className="border-2 theme-border p-6 animate-pulse">
+                                    <div className="h-6 w-32 theme-elevated mb-4"></div>
+                                    <div className="h-4 w-24 theme-elevated mb-2"></div>
+                                    <div className="h-4 w-20 theme-elevated"></div>
                                 </div>
                             ))}
                         </div>
                     )}
 
                     {!loading && worksheets.length === 0 && (
-                        <div className="text-center py-32 border-2 border-dashed border-gray-200">
-                            <span className="text-6xl block mb-6 text-gray-300">∅</span>
-                            <h3 className="text-2xl font-bold text-black mb-2">No worksheets yet</h3>
-                            <p className="text-gray-600">Create your first worksheet to get started</p>
+                        <div className="text-center py-32 border-2 border-dashed theme-border">
+                            <span className="text-6xl block mb-6 theme-text-muted">∅</span>
+                            <h3 className="text-2xl font-bold theme-text mb-2">No worksheets yet</h3>
+                            <p className="theme-text-secondary">Create your first worksheet to get started</p>
                         </div>
                     )}
 
@@ -165,14 +165,14 @@ export function WorksheetDashboardPage({ onNavigate }: WorksheetDashboardPagePro
                                         <button
                                             key={worksheet.id}
                                             onClick={() => openWorksheet(worksheet.id)}
-                                            className="border-2 border-black p-6 hover:bg-gray-50 transition-colors text-left"
+                                            className="border-2 theme-border-strong p-6 hover:bg-[var(--color-elevated)] transition-colors text-left"
                                         >
-                                            <h3 className="text-lg font-bold text-black mb-3 line-clamp-2">
+                                            <h3 className="text-lg font-bold theme-text mb-3 line-clamp-2">
                                                 {worksheet.name}
                                             </h3>
 
                                             {metadata && (
-                                                <div className="mb-3 text-sm text-gray-600 flex flex-wrap gap-x-4 gap-y-1">
+                                                <div className="mb-3 text-sm theme-text-secondary flex flex-wrap gap-x-4 gap-y-1">
                                                     {metadata.gridCount > 0 && <span>▪ {metadata.gridCount} Grid</span>}
                                                     {metadata.vocabCount > 0 && <span>▪ {metadata.vocabCount} Vocab</span>}
                                                     {metadata.textCount > 0 && <span>▪ {metadata.textCount} Text</span>}
@@ -183,7 +183,7 @@ export function WorksheetDashboardPage({ onNavigate }: WorksheetDashboardPagePro
                                                 </div>
                                             )}
 
-                                            <div className="text-xs text-gray-500 font-bold uppercase tracking-wider">
+                                            <div className="text-xs theme-text-muted font-bold uppercase tracking-wider">
                                                 {formatDate(worksheet.updatedAt)}
                                             </div>
                                         </button>
@@ -197,17 +197,17 @@ export function WorksheetDashboardPage({ onNavigate }: WorksheetDashboardPagePro
                                     <button
                                         onClick={() => setPage(p => p - 1)}
                                         disabled={!canGoPrev}
-                                        className="px-4 py-2 border-2 border-black font-bold disabled:opacity-30 disabled:cursor-not-allowed"
+                                        className="px-4 py-2 border-2 theme-border-strong font-bold disabled:opacity-30 disabled:cursor-not-allowed theme-text"
                                     >
                                         ‹ Prev
                                     </button>
-                                    <span className="text-sm font-bold">
+                                    <span className="text-sm font-bold theme-text">
                                         Page {page + 1} of {totalPages}
                                     </span>
                                     <button
                                         onClick={() => setPage(p => p + 1)}
                                         disabled={!canGoNext}
-                                        className="px-4 py-2 border-2 border-black font-bold disabled:opacity-30 disabled:cursor-not-allowed"
+                                        className="px-4 py-2 border-2 theme-border-strong font-bold disabled:opacity-30 disabled:cursor-not-allowed theme-text"
                                     >
                                         Next ›
                                     </button>
@@ -220,3 +220,4 @@ export function WorksheetDashboardPage({ onNavigate }: WorksheetDashboardPagePro
         </div>
     );
 }
+

@@ -7,7 +7,7 @@ interface LandingPageProps {
 
 export function LandingPage({ onNavigate }: Readonly<LandingPageProps>) {
     return (
-        <div className="flex h-screen bg-gray-50">
+        <div className="flex h-screen theme-elevated">
             {/* Sidebar */}
             <FeatureSidebar currentRoute={ROUTES.HOME} onNavigate={onNavigate} />
 
@@ -16,7 +16,7 @@ export function LandingPage({ onNavigate }: Readonly<LandingPageProps>) {
                 {/* Settings Button - Top Right */}
                 <button
                     onClick={() => onNavigate(ROUTES.SETTINGS)}
-                    className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                    className="absolute top-4 right-4 p-2 theme-text-muted hover:theme-text hover:bg-[var(--color-surface)] rounded-lg transition-colors"
                     title="Settings"
                 >
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -27,14 +27,14 @@ export function LandingPage({ onNavigate }: Readonly<LandingPageProps>) {
 
                 <div
                     onClick={() => onNavigate(ROUTES.WORKSHEET_DASHBOARD)}
-                    className="cursor-pointer bg-white border-2 border-black p-8 hover:bg-gray-50 transition-colors group">
-                    <h1 className="text-5xl font-black uppercase tracking-tight mb-4">
+                    className="cursor-pointer theme-surface border-2 theme-border-strong p-8 hover:bg-[var(--color-elevated)] transition-colors group">
+                    <h1 className="text-5xl font-black uppercase tracking-tight mb-4 theme-text">
                         json-printer
                     </h1>
-                    <p className="text-gray-500 text-lg mb-8">
+                    <p className="theme-text-secondary text-lg mb-8">
                         Select a feature from the sidebar to get started
                     </p>
-                    <div className="text-[10px] text-gray-400 font-bold tracking-widest">
+                    <div className="text-[10px] theme-text-muted font-bold tracking-widest">
                         OFFLINE-READY • LOCAL-FIRST • CANVAS-COMPATIBLE
                     </div>
                 </div>
@@ -42,3 +42,4 @@ export function LandingPage({ onNavigate }: Readonly<LandingPageProps>) {
         </div>
     );
 }
+

@@ -10,7 +10,7 @@ export function Navbar({ onBack, actions }: NavbarProps) {
     const { isDark, toggleTheme } = useTheme();
 
     return (
-        <div className="border-b border-gray-200 dark:border-dark-border bg-white dark:bg-dark-surface shadow-sm z-30 flex items-center justify-between px-4 py-2 print:hidden h-[60px]">
+        <div className="border-b theme-border theme-surface shadow-sm z-30 flex items-center justify-between px-4 py-2 print:hidden h-[60px]">
             <div className="flex items-center gap-6">
                 {onBack && (
                     <button
@@ -18,16 +18,16 @@ export function Navbar({ onBack, actions }: NavbarProps) {
                         onClick={onBack}
                         aria-label="Go to Home"
                     >
-                        <div className="bg-primary-blue dark:bg-dark-accent p-1.5 rounded-lg">
+                        <div className="bg-[var(--color-accent)] p-1.5 rounded-lg">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="m15 18-6-6 6-6" />
                             </svg>
                         </div>
-                        <span className="font-bold text-lg text-gray-800 dark:text-dark-text tracking-tight">JSON Printer</span>
+                        <span className="font-bold text-lg theme-text tracking-tight">JSON Printer</span>
                     </button>
                 )}
                 {!onBack && (
-                    <span className="font-bold text-lg text-gray-800 dark:text-dark-text tracking-tight">JSON Printer</span>
+                    <span className="font-bold text-lg theme-text tracking-tight">JSON Printer</span>
                 )}
             </div>
 
@@ -35,7 +35,7 @@ export function Navbar({ onBack, actions }: NavbarProps) {
                 {/* Theme Toggle */}
                 <button
                     onClick={toggleTheme}
-                    className="p-2 rounded-lg bg-gray-100 dark:bg-dark-elevated hover:bg-gray-200 dark:hover:bg-dark-border-strong text-gray-600 dark:text-dark-text-secondary transition-colors"
+                    className="p-2 rounded-lg theme-elevated hover:bg-[var(--color-border)] theme-text-secondary transition-colors"
                     title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
                 >
                     {isDark ? (
@@ -55,4 +55,5 @@ export function Navbar({ onBack, actions }: NavbarProps) {
         </div>
     );
 }
+
 

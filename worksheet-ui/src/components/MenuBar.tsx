@@ -62,11 +62,11 @@ export function MenuBar({
 
     const menuButtonClass = (menu: MenuType) =>
         `px-3 py-1.5 text-sm font-medium rounded ${openMenu === menu
-            ? 'bg-gray-200 text-gray-900'
-            : 'text-gray-700 hover:bg-gray-100'
+            ? 'bg-[var(--color-elevated)] theme-text'
+            : 'theme-text-secondary hover:bg-[var(--color-border)]'
         }`;
 
-    const menuItemClass = "w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 flex items-center gap-3";
+    const menuItemClass = "w-full text-left px-4 py-2 text-sm theme-text hover:bg-[var(--color-accent)]/10 hover:text-[var(--color-accent)] flex items-center gap-3";
 
     return (
         <div ref={menuRef} className="flex items-center gap-1 print:hidden">
@@ -79,7 +79,7 @@ export function MenuBar({
                     Save ▾
                 </button>
                 {openMenu === 'save' && (
-                    <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl py-1 min-w-[200px] z-50">
+                    <div className="absolute right-0 top-full mt-1 theme-surface border theme-border rounded-lg shadow-xl py-1 min-w-[200px] z-50">
                         <button className={menuItemClass} onClick={() => { onSaveToCloud(); setOpenMenu(null); }} disabled={isSaving}>
                             <span>☁</span>
                             {isSaving ? 'Saving...' : 'Save to Cloud'}
@@ -93,14 +93,14 @@ export function MenuBar({
                             Load from File
                         </button>
 
-                        <div className="border-t border-gray-100 my-1" />
+                        <div className="border-t theme-border my-1" />
 
                         <button className={menuItemClass} onClick={() => { onSnapshot(); setOpenMenu(null); }}>
                             <span>📸</span>
                             Create Snapshot
                         </button>
 
-                        <div className="border-t border-gray-100 my-1" />
+                        <div className="border-t theme-border my-1" />
 
                         {/* Timeline Submenu */}
                         <div className="relative">
@@ -112,12 +112,12 @@ export function MenuBar({
                                     <span>📜</span>
                                     Timeline
                                 </span>
-                                <span className="text-gray-400">▸</span>
+                                <span className="theme-text-muted">▸</span>
                             </button>
                             {showTimeline && (
-                                <div className="absolute left-full top-0 ml-1 bg-white border border-gray-200 rounded-lg shadow-xl py-1 min-w-[180px] max-h-[300px] overflow-y-auto">
+                                <div className="absolute left-full top-0 ml-1 theme-surface border theme-border rounded-lg shadow-xl py-1 min-w-[180px] max-h-[300px] overflow-y-auto">
                                     {history.length === 0 ? (
-                                        <div className="px-4 py-3 text-sm text-gray-400 italic">No history yet</div>
+                                        <div className="px-4 py-3 text-sm theme-text-muted italic">No history yet</div>
                                     ) : (
                                         history.slice(0, 10).map((entry) => (
                                             <button
@@ -153,19 +153,19 @@ export function MenuBar({
                     View ▾
                 </button>
                 {openMenu === 'view' && (
-                    <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl py-1 min-w-[180px] z-50">
+                    <div className="absolute right-0 top-full mt-1 theme-surface border theme-border rounded-lg shadow-xl py-1 min-w-[180px] z-50">
                         <button
                             className={menuItemClass}
                             onClick={() => { if (mode !== 'student') onToggleMode(); setOpenMenu(null); }}
                         >
-                            <span className={`w-3 h-3 rounded-full border-2 ${mode === 'student' ? 'bg-blue-500 border-blue-500' : 'border-gray-300'}`} />
+                            <span className={`w-3 h-3 rounded-full border-2 ${mode === 'student' ? 'bg-[var(--color-accent)] border-[var(--color-accent)]' : 'theme-border-strong'}`} />
                             Student View
                         </button>
                         <button
                             className={menuItemClass}
                             onClick={() => { if (mode !== 'teacher') onToggleMode(); setOpenMenu(null); }}
                         >
-                            <span className={`w-3 h-3 rounded-full border-2 ${mode === 'teacher' ? 'bg-blue-500 border-blue-500' : 'border-gray-300'}`} />
+                            <span className={`w-3 h-3 rounded-full border-2 ${mode === 'teacher' ? 'bg-[var(--color-accent)] border-[var(--color-accent)]' : 'theme-border-strong'}`} />
                             Teacher View
                         </button>
                     </div>
@@ -181,8 +181,8 @@ export function MenuBar({
                     Insert ▾
                 </button>
                 {openMenu === 'insert' && (
-                    <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl py-1 min-w-[180px] z-50">
-                        <div className="px-4 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Content</div>
+                    <div className="absolute right-0 top-full mt-1 theme-surface border theme-border rounded-lg shadow-xl py-1 min-w-[180px] z-50">
+                        <div className="px-4 py-1.5 text-[10px] font-bold theme-text-muted uppercase tracking-wider">Content</div>
                         {[
                             { label: 'Card Block', type: 'CARD', icon: '📝' },
                             { label: 'Writing Grid', type: 'GRID', icon: '🔲' },
@@ -198,8 +198,8 @@ export function MenuBar({
                             </button>
                         ))}
 
-                        <div className="border-t border-gray-100 my-1" />
-                        <div className="px-4 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Questions</div>
+                        <div className="border-t theme-border my-1" />
+                        <div className="px-4 py-1.5 text-[10px] font-bold theme-text-muted uppercase tracking-wider">Questions</div>
 
                         {[
                             { label: 'Multiple Choice', type: 'MULTIPLE_CHOICE', icon: '✓' },
