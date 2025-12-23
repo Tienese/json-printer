@@ -87,7 +87,7 @@ export function AnalyticsPage({ onNavigate }: AnalyticsPageProps) {
 
 
     return (
-        <div className="flex flex-col h-screen bg-gray-100">
+        <div className="flex flex-col h-screen theme-bg">
             <Navbar
                 onBack={() => onNavigate(ROUTES.HOME)}
                 actions={
@@ -225,16 +225,16 @@ export function AnalyticsPage({ onNavigate }: AnalyticsPageProps) {
             </div>
 
             {/* Right Sidebar - Configuration */}
-            <div className="w-80 bg-white border-l-2 border-black flex flex-col print:hidden">
+            <div className="w-80 theme-surface border-l-2 theme-border-strong flex flex-col print:hidden">
                 {/* Header */}
-                <div className="p-4 border-b-2 border-black">
-                    <h2 className="font-black uppercase tracking-tight">Configuration</h2>
-                    <p className="text-[8px] text-gray-400 font-bold tracking-widest mt-1">DATA SOURCES</p>
+                <div className="p-4 border-b-2 theme-border-strong">
+                    <h2 className="font-black uppercase tracking-tight theme-text">Configuration</h2>
+                    <p className="text-[8px] theme-text-muted font-bold tracking-widest mt-1">DATA SOURCES</p>
                 </div>
 
                 {/* Mode Toggle */}
-                <div className="p-4 border-b border-gray-200">
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2 block">
+                <div className="p-4 border-b theme-border">
+                    <label className="text-[10px] font-bold uppercase tracking-widest theme-text-muted mb-2 block">
                         Mode
                     </label>
                     <div className="flex gap-2">
@@ -242,7 +242,7 @@ export function AnalyticsPage({ onNavigate }: AnalyticsPageProps) {
                             onClick={() => setMode('offline')}
                             className={`flex-1 py-2 px-3 text-sm font-bold rounded border-2 transition-all ${mode === 'offline'
                                 ? 'bg-green-500 text-white border-green-500'
-                                : 'bg-white text-gray-700 border-gray-300 hover:border-green-500'
+                                : 'theme-surface theme-text theme-border hover:border-green-500'
                                 }`}
                         >
                             🔒 Offline
@@ -251,7 +251,7 @@ export function AnalyticsPage({ onNavigate }: AnalyticsPageProps) {
                             onClick={() => setMode('online')}
                             className={`flex-1 py-2 px-3 text-sm font-bold rounded border-2 transition-all ${mode === 'online'
                                 ? 'bg-blue-500 text-white border-blue-500'
-                                : 'bg-white text-gray-700 border-gray-300 hover:border-blue-500'
+                                : 'theme-surface theme-text theme-border hover:border-blue-500'
                                 }`}
                         >
                             🌐 Online
@@ -260,8 +260,8 @@ export function AnalyticsPage({ onNavigate }: AnalyticsPageProps) {
                 </div>
 
                 {/* CSV File Upload */}
-                <div className="p-4 border-b border-gray-200">
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2 block">
+                <div className="p-4 border-b theme-border">
+                    <label className="text-[10px] font-bold uppercase tracking-widest theme-text-muted mb-2 block">
                         Student Submissions (CSV) *
                     </label>
                     <input
@@ -273,9 +273,9 @@ export function AnalyticsPage({ onNavigate }: AnalyticsPageProps) {
                     />
                     <button
                         onClick={() => csvInputRef.current?.click()}
-                        className={`w-full py-3 px-4 rounded border-2 border-dashed font-bold text-sm transition-all ${csvFile
-                            ? 'border-green-500 bg-green-50 text-green-700'
-                            : 'border-gray-300 hover:border-black'
+                        className={`w-full py-3 px-4 rounded border-2 border-dashed font-bold text-sm transition-all theme-text ${csvFile
+                            ? 'border-green-500 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400'
+                            : 'theme-border hover:border-[var(--color-accent)]'
                             }`}
                     >
                         {csvFile ? `✅ ${csvFile.name}` : '📁 Select CSV File'}
@@ -284,8 +284,8 @@ export function AnalyticsPage({ onNavigate }: AnalyticsPageProps) {
 
                 {/* Mode-specific inputs */}
                 {mode === 'offline' ? (
-                    <div className="p-4 border-b border-gray-200">
-                        <label className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2 block">
+                    <div className="p-4 border-b theme-border">
+                        <label className="text-[10px] font-bold uppercase tracking-widest theme-text-muted mb-2 block">
                             Quiz Metadata (JSON) *
                         </label>
                         <input
@@ -297,21 +297,21 @@ export function AnalyticsPage({ onNavigate }: AnalyticsPageProps) {
                         />
                         <button
                             onClick={() => jsonInputRef.current?.click()}
-                            className={`w-full py-3 px-4 rounded border-2 border-dashed font-bold text-sm transition-all ${quizFile
-                                ? 'border-green-500 bg-green-50 text-green-700'
-                                : 'border-gray-300 hover:border-black'
+                            className={`w-full py-3 px-4 rounded border-2 border-dashed font-bold text-sm transition-all theme-text ${quizFile
+                                ? 'border-green-500 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400'
+                                : 'theme-border hover:border-[var(--color-accent)]'
                                 }`}
                         >
                             {quizFile ? `✅ ${quizFile.name}` : '📁 Select JSON File'}
                         </button>
-                        <p className="text-[8px] text-gray-400 mt-2">
+                        <p className="text-[8px] theme-text-muted mt-2">
                             Export from Canvas when online, use here when offline
                         </p>
                     </div>
                 ) : (
-                    <div className="p-4 border-b border-gray-200 space-y-3">
+                    <div className="p-4 border-b theme-border space-y-3">
                         <div>
-                            <label className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1 block">
+                            <label className="text-[10px] font-bold uppercase tracking-widest theme-text-muted mb-1 block">
                                 Course ID *
                             </label>
                             <input
@@ -319,11 +319,11 @@ export function AnalyticsPage({ onNavigate }: AnalyticsPageProps) {
                                 value={courseId}
                                 onChange={(e) => setCourseId(e.target.value)}
                                 placeholder="e.g., 12345"
-                                className="w-full px-3 py-2 border-2 border-gray-300 rounded font-mono focus:border-black focus:outline-none"
+                                className="w-full px-3 py-2 border-2 theme-border rounded font-mono focus:border-[var(--color-accent)] focus:outline-none theme-surface theme-text"
                             />
                         </div>
                         <div>
-                            <label className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1 block">
+                            <label className="text-[10px] font-bold uppercase tracking-widest theme-text-muted mb-1 block">
                                 Quiz ID *
                             </label>
                             <input
@@ -331,7 +331,7 @@ export function AnalyticsPage({ onNavigate }: AnalyticsPageProps) {
                                 value={quizId}
                                 onChange={(e) => setQuizId(e.target.value)}
                                 placeholder="e.g., 67890"
-                                className="w-full px-3 py-2 border-2 border-gray-300 rounded font-mono focus:border-black focus:outline-none"
+                                className="w-full px-3 py-2 border-2 theme-border rounded font-mono focus:border-[var(--color-accent)] focus:outline-none theme-surface theme-text"
                             />
                         </div>
                     </div>
@@ -341,13 +341,13 @@ export function AnalyticsPage({ onNavigate }: AnalyticsPageProps) {
                 <div className="flex-1" />
 
                 {/* Compute Button */}
-                <div className="p-4 border-t-2 border-black">
+                <div className="p-4 border-t-2 theme-border-strong">
                     <button
                         onClick={handleCompute}
                         disabled={!canCompute() || loading}
                         className={`w-full py-4 font-black uppercase tracking-widest rounded transition-all ${canCompute() && !loading
-                            ? 'bg-black text-white hover:bg-gray-800'
-                            : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                            ? 'bg-[var(--color-accent)] text-white hover:opacity-90'
+                            : 'theme-elevated theme-text-muted cursor-not-allowed'
                             }`}
                     >
                         {loading ? 'Computing...' : '📊 Compute Statistics'}

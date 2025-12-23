@@ -101,7 +101,7 @@ export function SettingsPage({ onNavigate }: SettingsPageProps) {
                             onChange={(e) => updateSetting(setting.key, e.target.checked as any)}
                             className="sr-only peer"
                         />
-                        <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                        <div className="w-9 h-5 bg-[var(--color-border)] peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[var(--color-accent)] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[var(--color-surface)] after:border-[var(--color-border)] after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[var(--color-accent)]"></div>
                     </label>
                 );
 
@@ -110,7 +110,7 @@ export function SettingsPage({ onNavigate }: SettingsPageProps) {
                     <select
                         value={value as string}
                         onChange={(e) => updateSetting(setting.key, e.target.value as any)}
-                        className="px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                        className="px-3 py-1.5 border theme-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] theme-surface theme-text"
                     >
                         {setting.options?.map(opt => (
                             <option key={opt} value={opt}>{opt}</option>
@@ -281,26 +281,26 @@ export function SettingsPage({ onNavigate }: SettingsPageProps) {
 
                     <div className="grid grid-cols-2 gap-4">
                         {/* Left: Default Settings (read-only) */}
-                        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                            <div className="px-4 py-2 bg-gray-100 border-b border-gray-200 flex items-center justify-between">
-                                <span className="text-xs font-semibold text-gray-600">DEFAULT SETTINGS</span>
-                                <span className="text-[10px] text-gray-400">read-only</span>
+                        <div className="theme-card overflow-hidden">
+                            <div className="px-4 py-2 theme-elevated border-b theme-border flex items-center justify-between">
+                                <span className="text-xs font-semibold theme-text-secondary">DEFAULT SETTINGS</span>
+                                <span className="text-[10px] theme-text-muted">read-only</span>
                             </div>
-                            <pre className="p-4 text-xs font-mono text-gray-600 overflow-auto max-h-[60vh] bg-gray-50">
+                            <pre className="p-4 text-xs font-mono theme-text-secondary overflow-auto max-h-[60vh] theme-elevated">
                                 {JSON.stringify(DEFAULT_SETTINGS, null, 2)}
                             </pre>
                         </div>
 
                         {/* Right: User Overrides (editable) */}
-                        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                            <div className="px-4 py-2 bg-blue-50 border-b border-blue-200 flex items-center justify-between">
-                                <span className="text-xs font-semibold text-blue-700">USER OVERRIDES</span>
-                                <span className="text-[10px] text-blue-500">{overrideCount} changes</span>
+                        <div className="theme-card overflow-hidden">
+                            <div className="px-4 py-2 bg-[var(--color-accent)]/10 border-b border-[var(--color-accent)]/30 flex items-center justify-between">
+                                <span className="text-xs font-semibold theme-accent">USER OVERRIDES</span>
+                                <span className="text-[10px] theme-accent opacity-70">{overrideCount} changes</span>
                             </div>
                             <textarea
                                 value={jsonValue}
                                 onChange={(e) => setJsonValue(e.target.value)}
-                                className="w-full p-4 text-xs font-mono border-none resize-none focus:outline-none focus:ring-0"
+                                className="w-full p-4 text-xs font-mono border-none resize-none focus:outline-none focus:ring-0 theme-surface theme-text"
                                 style={{ minHeight: '60vh' }}
                                 spellCheck={false}
                                 placeholder="{}"

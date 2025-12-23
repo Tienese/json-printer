@@ -304,7 +304,7 @@ export function WorksheetPage({ onNavigate, worksheetId }: WorksheetPageProps) {
       </div>
 
       {/* Left Sidebar - Properties with Tabs */}
-      <div className="row-span-1 border-r border-gray-200 bg-white print:hidden h-full overflow-hidden flex flex-col">
+      <div className="row-span-1 border-r theme-border theme-surface print:hidden h-full overflow-hidden flex flex-col">
         <Sidebar
           itemsState={{
             items: displayItems,
@@ -358,7 +358,7 @@ export function WorksheetPage({ onNavigate, worksheetId }: WorksheetPageProps) {
             <div className="flex gap-3">
               <button
                 onClick={() => setPreviewTemplate(null)}
-                className="px-4 py-2 bg-white border border-amber-200 text-amber-900 rounded-lg hover:bg-amber-100 transition-colors font-medium shadow-sm"
+                className="px-4 py-2 theme-surface border border-amber-200 text-amber-900 rounded-lg hover:bg-amber-100 transition-colors font-medium shadow-sm"
               >
                 Cancel
               </button>
@@ -440,7 +440,7 @@ export function WorksheetPage({ onNavigate, worksheetId }: WorksheetPageProps) {
                     <div className="absolute -right-12 top-0 flex flex-col gap-1 opacity-0 group-hover/item:opacity-100 transition-opacity print:hidden">
                       <button
                         onClick={() => deleteItem(item)}
-                        className="p-2 bg-white text-red-500 rounded-full shadow-md hover:bg-red-50 transition-colors"
+                        className="p-2 theme-surface text-red-500 rounded-full shadow-md hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                         title="Delete"
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /></svg>
@@ -455,7 +455,7 @@ export function WorksheetPage({ onNavigate, worksheetId }: WorksheetPageProps) {
       </main>
 
       {/* Right Sidebar - Coach Panel */}
-      <div className="row-span-1 border-l border-gray-200 bg-white print:hidden h-full overflow-hidden flex flex-col">
+      <div className="row-span-1 border-l theme-border theme-surface print:hidden h-full overflow-hidden flex flex-col">
         <CoachSidebar
           worksheetId={currentWorksheetId}
           worksheetJson={JSON.stringify({ metadata, pages })}
