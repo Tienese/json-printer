@@ -404,8 +404,8 @@ export function WorksheetPage({ onNavigate, worksheetId }: WorksheetPageProps) {
         </div>
 
         <section
-          className={`relative mb-10 bg-white shadow-[0_20px_50px_rgba(0,0,0,0.15)] p-[1.27cm] box-border w-[210mm] min-h-[297mm] flex flex-col origin-top transition-transform duration-200 outline-none ${isPreviewMode ? 'ring-4 ring-amber-400 pointer-events-none opacity-80' : ''}`}
-          style={{ transform: `scale(${zoom})`, marginBottom: `${(zoom - 1) * 297 + 40}mm` }}
+          className={`relative mb-10 bg-white shadow-[0_20px_50px_rgba(0,0,0,0.15)] p-[1.27cm] box-border w-[210mm] min-h-[297mm] flex flex-col origin-top transition-transform duration-200 outline-none print:hidden ${isPreviewMode ? 'ring-4 ring-amber-400 pointer-events-none opacity-80' : ''}`}
+          style={{ transform: `scale(${zoom})`, marginBottom: `${Math.max(0, (zoom - 1) * 297) + 40}mm` }}
           onClick={(e) => e.stopPropagation()}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') e.stopPropagation(); }}
           onContextMenu={(e) => {
