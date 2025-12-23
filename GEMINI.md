@@ -1,8 +1,8 @@
 # GEMINI CLI AGENT Configuration: `json-printer`
 
 > **🚨 CRITICAL: LOCALHOST PARALLEL EXECUTION**
-> **CONTEXT:** Single-User, Stateless, Local-First (Java + React).
-> **STACK:** Java 21 (Spring Boot 3.5), React (Vite/Tailwind), Maven.
+> **CONTEXT:** Single-User, Local-First (Java + React + SQLite).
+> **STACK:** Java 21 (Spring Boot 3.5), React (Vite/Tailwind), SQLite, Maven.
 
 ---
 
@@ -13,7 +13,7 @@
 ### 🔴 Mandatory Concurrent Patterns
 
 * **Full Stack Updates:** ALWAYS batch Java (Backend) and React (Frontend) changes together if they relate to the same feature.
-* **Stateless Mindset:** NEVER attempt to create database entities, repositories, or SQL migrations.
+* **SQLite Persistence:** Use JPA repositories for worksheet/quiz persistence. No complex migrations.
 * **Build Operations:** ALWAYS use the Maven wrapper, which controls the frontend build.
 
 > ⚡ **GOLDEN RULE:** "1 MESSAGE = FULL FEATURE IMPLEMENTATION (Backend API + Frontend UI)"
@@ -47,17 +47,17 @@
 
 ### ❌ BANNED TECHNOLOGIES (Do Not Use)
 
-* **No Databases:** PostgreSQL, MySQL, H2, MongoDB, Flyway, Hibernate/JPA.
+* **No Cloud Databases:** PostgreSQL, MySQL, MongoDB (use SQLite only).
 * **No Complex Security:** Spring Security, JWT, OAuth2, Keycloak.
-* **No Heavy Frontend:** Next.js, Redux (unless absolutely necessary), SSR (Server Side Rendering).
-* **No Cloud Ops:** Docker, Kubernetes, Jenkins, Terraform, AWS/Cloud annotations.
+* **No Heavy Frontend:** Next.js, Redux (unless absolutely necessary), SSR.
+* **No Cloud Ops:** Docker, Kubernetes, Jenkins, Terraform, AWS.
 
 ---
 
 ## ☕ Backend Coordination (Spring Boot 3.5 + Java 21)
 
-**Role:** Data Orchestrator & Proxy.
-**State:** In-memory only. Records over Classes.
+**Role:** Data Orchestrator, Proxy & Persistence.
+**State:** SQLite for worksheets/quizzes, in-memory for transient data.
 
 ### 🔌 API & Integration Pattern
 
