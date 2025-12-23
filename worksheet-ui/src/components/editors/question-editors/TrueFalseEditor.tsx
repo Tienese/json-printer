@@ -1,5 +1,6 @@
 import { type FC } from 'react';
 import type { TrueFalseItem } from '../../../types/worksheet';
+import { devAssert } from '../../../utils/devAssert';
 
 interface Props {
   item: TrueFalseItem;
@@ -9,14 +10,35 @@ interface Props {
 
 export const TrueFalseEditor: FC<Props> = ({ item, onUpdate, onAddQuestion }) => {
   const handleAddQuestion = () => {
-    onAddQuestion(item.id, { id: crypto.randomUUID(), text: 'New statement', correctAnswer: true, showReasoning: true });
+    const prevCount = item.questions.length;
+    const newQuestion = { id: crypto.randomUUID(), text: 'New statement', correctAnswer: true, showReasoning: true };
+
+    void devAssert.check('TrueFalseEditor', 'ADD_QUESTION', {
+      expected: { questionCount: prevCount + 1 },
+      actual: { questionCount: prevCount + 1 }, // Will be updated by parent
+      message: `Add T/F question to item`,
+      snapshot: () => ({ itemId: item.id, newQuestion })
+    });
+
+    onAddQuestion(item.id, newQuestion);
   };
 
   const handleRemoveQuestion = (index: number) => {
-    if (item.questions.length <= 1) return;
+    const prevCount = item.questions.length;
+    if (prevCount <= 1) return;
+
     const newQuestions = item.questions.filter((_, i) => i !== index);
+
+    void devAssert.check('TrueFalseEditor', 'REMOVE_QUESTION', {
+      expected: { questionCount: prevCount - 1 },
+      actual: { questionCount: newQuestions.length },
+      message: `Remove T/F question ${index}`,
+      snapshot: () => ({ itemId: item.id, removedIndex: index, questions: newQuestions })
+    });
+
     onUpdate({ ...item, questions: newQuestions });
   };
+
 
   const handleQuestionChange = (index: number, field: 'text' | 'correctAnswer' | 'showReasoning', value: any) => {
     const newQuestions = [...item.questions];

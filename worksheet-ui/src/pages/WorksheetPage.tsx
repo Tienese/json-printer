@@ -120,14 +120,21 @@ export function WorksheetPage({ onNavigate, worksheetId }: WorksheetPageProps) {
     async function loadWorksheet() {
       if (!worksheetId) return;
 
+      aiLog.action('WorksheetPage', 'LOAD_FROM_SERVER_STARTED', { worksheetId });
       try {
         const { worksheetApi } = await import('../api/worksheets');
         const worksheet = await worksheetApi.get(Number(worksheetId));
         const template: WorksheetTemplate = JSON.parse(worksheet.jsonContent);
 
+        aiLog.state('WorksheetPage', 'LOAD_FROM_SERVER_SUCCESS', {
+          worksheetId,
+          pageCount: template.pages?.length || 0,
+          title: template.metadata?.title
+        });
         setAllPages(template.pages);
         updateMetadata(template.metadata);
       } catch (error) {
+        aiLog.error('WorksheetPage', 'LOAD_FROM_SERVER_FAILED', error);
         console.error('Failed to load worksheet:', error);
       }
     }
@@ -173,18 +180,32 @@ export function WorksheetPage({ onNavigate, worksheetId }: WorksheetPageProps) {
   }, []);
 
   const handleSave = () => {
+    aiLog.action('WorksheetPage', 'SAVE_TO_FILE', {
+      pageCount: pages.length,
+      title: metadata.title
+    });
     saveWorksheetToFile({ metadata, pages });
   };
 
   const handleLoad = async () => {
+    aiLog.action('WorksheetPage', 'LOAD_FROM_FILE_STARTED', {});
     const template = await loadWorksheetFromFile();
     if (template) {
+      aiLog.state('WorksheetPage', 'LOAD_FROM_FILE_SUCCESS', {
+        pageCount: template.pages?.length || 0
+      });
       setAllPages(template.pages);
       updateMetadata(template.metadata);
+    } else {
+      aiLog.state('WorksheetPage', 'LOAD_FROM_FILE_CANCELLED', {});
     }
   };
 
   const handleSaveToCloud = async () => {
+    aiLog.action('WorksheetPage', 'SAVE_TO_CLOUD_STARTED', {
+      worksheetId: currentWorksheetId,
+      isNew: !currentWorksheetId
+    });
     setIsSaving(true);
     try {
       const { worksheetApi } = await import('../api/worksheets');
@@ -210,6 +231,7 @@ export function WorksheetPage({ onNavigate, worksheetId }: WorksheetPageProps) {
           jsonContent,
           metadata: metadataJson,
         });
+        aiLog.state('WorksheetPage', 'SAVE_TO_CLOUD_UPDATE_SUCCESS', { worksheetId: currentWorksheetId });
       } else {
         // Create new worksheet
         const saved = await worksheetApi.create({
@@ -218,11 +240,13 @@ export function WorksheetPage({ onNavigate, worksheetId }: WorksheetPageProps) {
           type: 'SNAPSHOT',
           metadata: metadataJson,
         });
+        aiLog.state('WorksheetPage', 'SAVE_TO_CLOUD_CREATE_SUCCESS', { newWorksheetId: saved.id });
         setCurrentWorksheetId(saved.id);
       }
 
       alert('Worksheet saved successfully!');
     } catch (error) {
+      aiLog.error('WorksheetPage', 'SAVE_TO_CLOUD_FAILED', error);
       console.error('Failed to save worksheet:', error);
       alert('Failed to save worksheet. Please try again.');
     } finally {
@@ -232,6 +256,11 @@ export function WorksheetPage({ onNavigate, worksheetId }: WorksheetPageProps) {
 
   const handleContextMenu = (e: React.MouseEvent, type: 'ADD' | 'DELETE', item?: WorksheetItem) => {
     e.preventDefault();
+    aiLog.action('WorksheetPage', 'CONTEXT_MENU_OPENED', {
+      type,
+      itemId: item?.id || null,
+      itemType: item?.type || null
+    });
     setContextMenu({
       x: e.clientX,
       y: e.clientY,
@@ -241,6 +270,7 @@ export function WorksheetPage({ onNavigate, worksheetId }: WorksheetPageProps) {
   };
 
   const addNewItem = (type: string, index: number) => {
+    aiLog.action('WorksheetPage', 'ADD_NEW_ITEM', { type, index });
     const newItem = createItemByType(type);
     addItem(newItem, index);
     setContextMenu(null);

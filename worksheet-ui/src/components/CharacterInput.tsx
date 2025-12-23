@@ -17,7 +17,7 @@ export const CharacterInput = memo(function CharacterInput({
   onAdvance,
   onRetreat,
   onSectionBreak,
-  selectOnFocus = false
+  selectOnFocus = true
 }: CharacterInputProps) {
   const [internalValue, setInternalValue] = useState(value);
   const inputRef = useRef<HTMLInputElement>(null);

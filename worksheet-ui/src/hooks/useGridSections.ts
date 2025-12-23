@@ -1,11 +1,13 @@
 /**
  * useGridSections Hook
  * Centralizes section and box CRUD operations for GridItem.
+ * All operations are instrumented with devAssert for runtime validation.
  */
 
 import { useCallback } from 'react';
 import type { GridItem } from '../types/worksheet';
 import { focusGridBox } from '../utils/gridFocus';
+import { devAssert } from '../utils/devAssert';
 
 interface UseGridSectionsReturn {
     // Section operations
@@ -33,12 +35,21 @@ export function useGridSections(
 
     // Insert a new section before or after the reference section
     const insertSection = useCallback((refIndex: number, position: 'before' | 'after') => {
+        const prevSectionCount = item.sections.length;
         const insertIndex = position === 'before' ? refIndex : refIndex + 1;
         const newSection = { id: crypto.randomUUID(), boxes: [{ char: '', furigana: '' }] };
         const newSections = [...item.sections];
         newSections.splice(insertIndex, 0, newSection);
-        onUpdate({ ...item, sections: newSections });
 
+        // Assert: section count should increase by 1
+        void devAssert.check('useGridSections', 'INSERT_SECTION', {
+            expected: { sectionCount: prevSectionCount + 1 },
+            actual: { sectionCount: newSections.length },
+            message: `Insert section ${position} index ${refIndex}`,
+            snapshot: () => ({ prevSections: item.sections, newSections, insertIndex })
+        });
+
+        onUpdate({ ...item, sections: newSections });
         setActiveBox({ sectionIndex: insertIndex, boxIndex: 0 });
         focusGridBox(insertIndex, 0, 'char');
     }, [item, onUpdate, setActiveBox]);
@@ -48,6 +59,7 @@ export function useGridSections(
         // Do nothing at position 0
         if (boxIndex === 0) return;
 
+        const prevSectionCount = item.sections.length;
         const section = item.sections[sectionIndex];
 
         // Split boxes
@@ -60,6 +72,23 @@ export function useGridSections(
 
         const newSections = [...item.sections];
         newSections.splice(sectionIndex, 1, beforeSection, afterSection);
+
+        // Assert: section count should increase by 1, boxes split correctly
+        void devAssert.check('useGridSections', 'BREAK_SECTION', {
+            expected: {
+                sectionCount: prevSectionCount + 1,
+                beforeBoxCount: boxIndex,
+                afterBoxCount: section.boxes.length - boxIndex
+            },
+            actual: {
+                sectionCount: newSections.length,
+                beforeBoxCount: beforeSection.boxes.length,
+                afterBoxCount: afterSection.boxes.length
+            },
+            message: `Break section ${sectionIndex} at box ${boxIndex}`,
+            snapshot: () => ({ prevSection: section, beforeSection, afterSection })
+        });
+
         onUpdate({ ...item, sections: newSections });
 
         // Focus first box of new section
@@ -70,12 +99,29 @@ export function useGridSections(
 
     // Add a new box to the end of a section
     const addBox = useCallback((sectionIndex: number) => {
+        const prevBoxCount = item.sections[sectionIndex].boxes.length;
+
         const newSections = [...item.sections];
         const newBox = { char: '', furigana: '' };
         newSections[sectionIndex] = {
             ...newSections[sectionIndex],
             boxes: [...newSections[sectionIndex].boxes, newBox]
         };
+
+        const newBoxCount = newSections[sectionIndex].boxes.length;
+        const expectedCursor = { sectionIndex, boxIndex: newBoxCount - 1 };
+
+        // Assert: box count should increase by 1
+        void devAssert.check('useGridSections', 'ADD_BOX', {
+            expected: { boxCount: prevBoxCount + 1, cursor: expectedCursor },
+            actual: { boxCount: newBoxCount, cursor: expectedCursor },
+            message: `Add box to section ${sectionIndex}`,
+            snapshot: () => ({
+                prevBoxes: item.sections[sectionIndex].boxes,
+                newBoxes: newSections[sectionIndex].boxes
+            })
+        });
+
         onUpdate({ ...item, sections: newSections });
 
         const newBoxIndex = newSections[sectionIndex].boxes.length - 1;
@@ -86,12 +132,23 @@ export function useGridSections(
     // Delete a box (forced, even with content). If last box, delete entire section.
     const deleteBox = useCallback((sectionIndex: number, boxIndex: number) => {
         const section = item.sections[sectionIndex];
+        const prevBoxCount = section.boxes.length;
+        const prevSectionCount = item.sections.length;
 
         if (section.boxes.length <= 1) {
             // Last box in section - delete entire section
             if (item.sections.length <= 1) return; // Keep at least one section
 
             const newSections = item.sections.filter((_, i) => i !== sectionIndex);
+
+            // Assert: section count should decrease by 1
+            void devAssert.check('useGridSections', 'DELETE_BOX_SECTION', {
+                expected: { sectionCount: prevSectionCount - 1 },
+                actual: { sectionCount: newSections.length },
+                message: `Delete last box in section ${sectionIndex}, removing section`,
+                snapshot: () => ({ deletedSection: section, remainingSections: newSections })
+            });
+
             onUpdate({ ...item, sections: newSections });
 
             // Focus previous section (or first if deleting first)
@@ -105,6 +162,15 @@ export function useGridSections(
 
             const newSections = [...item.sections];
             newSections[sectionIndex] = { ...section, boxes: newBoxes };
+
+            // Assert: box count should decrease by 1
+            void devAssert.check('useGridSections', 'DELETE_BOX', {
+                expected: { boxCount: prevBoxCount - 1 },
+                actual: { boxCount: newBoxes.length },
+                message: `Delete box ${boxIndex} from section ${sectionIndex}`,
+                snapshot: () => ({ deletedBox: section.boxes[boxIndex], remainingBoxes: newBoxes })
+            });
+
             onUpdate({ ...item, sections: newSections });
 
             // Focus previous box (or stay at same index if at start)
@@ -125,10 +191,21 @@ export function useGridSections(
         const box = section.boxes[boxIndex];
         if (box.char || box.furigana) return false; // Don't remove if has content
 
+        const prevBoxCount = section.boxes.length;
+
         const newSections = [...item.sections];
         const newBoxes = [...newSections[sectionIndex].boxes];
         newBoxes.pop();
         newSections[sectionIndex] = { ...newSections[sectionIndex], boxes: newBoxes };
+
+        // Assert: box count should decrease by 1
+        void devAssert.check('useGridSections', 'REMOVE_EMPTY_BOX', {
+            expected: { boxCount: prevBoxCount - 1 },
+            actual: { boxCount: newBoxes.length },
+            message: `Remove empty box ${boxIndex} from section ${sectionIndex}`,
+            snapshot: () => ({ removedBox: box, remainingBoxes: newBoxes })
+        });
+
         onUpdate({ ...item, sections: newSections });
 
         // Focus the previous box
@@ -140,10 +217,12 @@ export function useGridSections(
 
     // Handle multi-character IME confirmation with INSERT-AND-PUSH logic
     const multiCommit = useCallback((sectionIndex: number, insertIndex: number, chars: string[]) => {
+        const prevBoxCount = item.sections[sectionIndex].boxes.length;
+        const insertCount = chars.length;
+
         const newSections = [...item.sections];
         const section = newSections[sectionIndex];
         const oldBoxes = [...section.boxes];
-        const insertCount = chars.length;
 
         // Build new boxes array with insertion
         const beforeInsert = oldBoxes.slice(0, insertIndex);
@@ -152,6 +231,31 @@ export function useGridSections(
         const newBoxes = [...beforeInsert, ...insertedBoxes, ...afterInsert];
 
         newSections[sectionIndex] = { ...section, boxes: newBoxes };
+
+        // Expected cursor: box after the last inserted char
+        const expectedCursorIndex = insertIndex + insertCount;
+
+        // Assert: box count should increase by chars.length
+        void devAssert.check('useGridSections', 'MULTI_COMMIT', {
+            expected: {
+                boxCount: prevBoxCount + insertCount,
+                insertedChars: chars.join(''),
+                cursorIndex: expectedCursorIndex
+            },
+            actual: {
+                boxCount: newBoxes.length,
+                insertedChars: insertedBoxes.map(b => b.char).join(''),
+                cursorIndex: expectedCursorIndex
+            },
+            message: `IME insert "${chars.join('')}" at index ${insertIndex}`,
+            snapshot: () => ({
+                input: { sectionIndex, insertIndex, chars },
+                before: oldBoxes.map(b => b.char).join('|'),
+                after: newBoxes.map(b => b.char).join('|'),
+                cursor: expectedCursorIndex
+            })
+        });
+
         onUpdate({ ...item, sections: newSections });
 
         // Focus the box after the last inserted char

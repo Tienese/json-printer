@@ -1,5 +1,6 @@
 import { type FC } from 'react';
 import type { MatchingItem } from '../../../types/worksheet';
+import { devAssert } from '../../../utils/devAssert';
 
 interface Props {
   item: MatchingItem;
@@ -8,16 +9,37 @@ interface Props {
 
 export const MatchingEditor: FC<Props> = ({ item, onUpdate }) => {
   const handleAddPair = () => {
-    if (item.pairs.length >= 10) return;
+    const prevCount = item.pairs.length;
+    if (prevCount >= 10) return;
+
     const newPairs = [...item.pairs, { left: 'New Term', right: 'New Definition' }];
+
+    void devAssert.check('MatchingEditor', 'ADD_PAIR', {
+      expected: { pairCount: prevCount + 1 },
+      actual: { pairCount: newPairs.length },
+      message: `Add pair to matching item`,
+      snapshot: () => ({ itemId: item.id, pairs: newPairs })
+    });
+
     onUpdate({ ...item, pairs: newPairs });
   };
 
   const handleRemovePair = (index: number) => {
-    if (item.pairs.length <= 2) return;
+    const prevCount = item.pairs.length;
+    if (prevCount <= 2) return;
+
     const newPairs = item.pairs.filter((_, i) => i !== index);
+
+    void devAssert.check('MatchingEditor', 'REMOVE_PAIR', {
+      expected: { pairCount: prevCount - 1 },
+      actual: { pairCount: newPairs.length },
+      message: `Remove pair ${index} from matching item`,
+      snapshot: () => ({ itemId: item.id, removedIndex: index, pairs: newPairs })
+    });
+
     onUpdate({ ...item, pairs: newPairs });
   };
+
 
   return (
     <div className="prop-group" data-testid="matching-editor">

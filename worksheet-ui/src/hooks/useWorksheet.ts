@@ -1,16 +1,20 @@
 import { useState, useCallback } from 'react';
 import type { WorksheetItem, WorksheetMetadata, WorksheetPage, ViewMode } from '../types/worksheet';
 import { createPage } from '../utils/worksheetFactory';
+import { aiLog } from '../utils/aiLogger';
+import { devAssert } from '../utils/devAssert';
 
 /**
  * Multi-page worksheet state management hook.
  * Manages pages, items within pages, and page navigation.
+ * All state mutations are logged via aiLog for debugging.
  */
 export function useWorksheet(initialItems: WorksheetItem[] = []) {
     // Initialize with one page containing initial items
-    const [pages, setPages] = useState<WorksheetPage[]>(() => [
-        { id: crypto.randomUUID(), items: initialItems }
-    ]);
+    const [pages, setPages] = useState<WorksheetPage[]>(() => {
+        aiLog.state('useWorksheet', 'INIT', { initialItemCount: initialItems.length });
+        return [{ id: crypto.randomUUID(), items: initialItems }];
+    });
     const [currentPageIndex, setCurrentPageIndex] = useState(0);
     const [selectedItem, setSelectedItem] = useState<WorksheetItem | null>(null);
     const [mode, setMode] = useState<ViewMode>('teacher');
@@ -30,10 +34,11 @@ export function useWorksheet(initialItems: WorksheetItem[] = []) {
     // Page navigation
     const goToPage = useCallback((index: number) => {
         if (index >= 0 && index < pages.length) {
+            aiLog.state('useWorksheet', 'GO_TO_PAGE', { from: currentPageIndex, to: index, totalPages: pages.length });
             setCurrentPageIndex(index);
             setSelectedItem(null);
         }
-    }, [pages.length]);
+    }, [pages.length, currentPageIndex]);
 
     const nextPage = useCallback(() => goToPage(currentPageIndex + 1), [currentPageIndex, goToPage]);
     const prevPage = useCallback(() => goToPage(currentPageIndex - 1), [currentPageIndex, goToPage]);
@@ -41,6 +46,7 @@ export function useWorksheet(initialItems: WorksheetItem[] = []) {
     // Add new page
     const addPage = useCallback(() => {
         const newPage = createPage();
+        aiLog.state('useWorksheet', 'PAGE_ADDED', { newPageId: newPage.id, newTotalPages: pages.length + 1 });
         setPages(prev => [...prev, newPage]);
         setCurrentPageIndex(pages.length); // Go to new page
         setSelectedItem(null);
@@ -48,8 +54,11 @@ export function useWorksheet(initialItems: WorksheetItem[] = []) {
 
     // Delete current page (keep at least one)
     const deletePage = useCallback(() => {
-        if (pages.length <= 1) return;
-
+        if (pages.length <= 1) {
+            aiLog.state('useWorksheet', 'PAGE_DELETE_BLOCKED', { reason: 'Only one page remaining' });
+            return;
+        }
+        aiLog.state('useWorksheet', 'PAGE_DELETED', { deletedIndex: currentPageIndex, remainingPages: pages.length - 1 });
         setPages(prev => prev.filter((_, i) => i !== currentPageIndex));
         setCurrentPageIndex(prev => Math.max(0, prev - 1));
         setSelectedItem(null);
@@ -57,11 +66,20 @@ export function useWorksheet(initialItems: WorksheetItem[] = []) {
 
     // Item selection
     const handleSelectItem = useCallback((item: WorksheetItem | null) => {
+        aiLog.state('useWorksheet', 'ITEM_SELECTED', {
+            itemId: item?.id || null,
+            itemType: item?.type || null
+        });
         setSelectedItem(item);
     }, []);
 
     // Update item in current page
     const updateItem = useCallback((updated: WorksheetItem) => {
+        aiLog.state('useWorksheet', 'ITEM_UPDATED', {
+            itemId: updated.id,
+            itemType: updated.type,
+            pageIndex: currentPageIndex
+        });
         setPages(prev => prev.map((page, i) =>
             i === currentPageIndex
                 ? { ...page, items: page.items.map(item => item.id === updated.id ? updated : item) }
@@ -86,9 +104,18 @@ export function useWorksheet(initialItems: WorksheetItem[] = []) {
 
     // Add item to current page (recalculates ALL prompt numbers)
     const addItem = useCallback((newItem: WorksheetItem, index?: number) => {
+        const prevItemCount = pages[currentPageIndex].items.length;
+        const insertIndex = index ?? prevItemCount;
+
+        aiLog.state('useWorksheet', 'ITEM_ADDED', {
+            itemId: newItem.id,
+            itemType: newItem.type,
+            insertIndex,
+            pageIndex: currentPageIndex
+        });
+
         setPages(prev => {
             // First, add the item
-            const insertIndex = index ?? prev[currentPageIndex].items.length;
             const newPages = prev.map((page, i) => {
                 if (i !== currentPageIndex) return page;
                 const newItems = [...page.items];
@@ -96,13 +123,31 @@ export function useWorksheet(initialItems: WorksheetItem[] = []) {
                 return { ...page, items: newItems };
             });
             // Then recalculate all prompt numbers
-            return recalculatePromptNumbers(newPages);
+            const result = recalculatePromptNumbers(newPages);
+
+            // Assert: Item count should increase by 1
+            void devAssert.check('useWorksheet', 'ADD_ITEM', {
+                expected: prevItemCount + 1,
+                actual: result[currentPageIndex].items.length,
+                message: `Item count after adding ${newItem.type}`,
+                snapshot: () => ({ pages: result, newItem, currentPageIndex })
+            });
+
+            return result;
         });
         setSelectedItem(newItem);
-    }, [currentPageIndex, recalculatePromptNumbers]);
+    }, [currentPageIndex, recalculatePromptNumbers, pages]);
 
     // Delete item from current page (recalculates ALL prompt numbers)
     const deleteItem = useCallback((itemToDelete: WorksheetItem) => {
+        const prevItemCount = pages[currentPageIndex].items.length;
+
+        aiLog.state('useWorksheet', 'ITEM_DELETED', {
+            itemId: itemToDelete.id,
+            itemType: itemToDelete.type,
+            pageIndex: currentPageIndex
+        });
+
         setPages(prev => {
             const newPages = prev.map((page, i) =>
                 i === currentPageIndex
@@ -110,13 +155,27 @@ export function useWorksheet(initialItems: WorksheetItem[] = []) {
                     : page
             );
             // Recalculate all prompt numbers after deletion
-            return recalculatePromptNumbers(newPages);
+            const result = recalculatePromptNumbers(newPages);
+
+            // Assert: Item count should decrease by 1
+            void devAssert.check('useWorksheet', 'DELETE_ITEM', {
+                expected: prevItemCount - 1,
+                actual: result[currentPageIndex].items.length,
+                message: `Item count after deleting ${itemToDelete.type}`,
+                snapshot: () => ({ pages: result, deletedItem: itemToDelete, currentPageIndex })
+            });
+
+            return result;
         });
         setSelectedItem(null);
-    }, [currentPageIndex, recalculatePromptNumbers]);
+    }, [currentPageIndex, recalculatePromptNumbers, pages]);
 
     // Set all items for current page (for reordering)
     const setItems = useCallback((newItems: WorksheetItem[]) => {
+        aiLog.state('useWorksheet', 'ITEMS_REORDERED', {
+            itemCount: newItems.length,
+            pageIndex: currentPageIndex
+        });
         setPages(prev => prev.map((page, i) =>
             i === currentPageIndex ? { ...page, items: newItems } : page
         ));
@@ -124,23 +183,38 @@ export function useWorksheet(initialItems: WorksheetItem[] = []) {
 
     // Set all pages (for loading)
     const setAllPages = useCallback((newPages: WorksheetPage[]) => {
-        setPages(newPages.length > 0 ? newPages : [createPage()]);
+        const finalPages = newPages.length > 0 ? newPages : [createPage()];
+        const totalItems = finalPages.reduce((sum, p) => sum + p.items.length, 0);
+        aiLog.state('useWorksheet', 'PAGES_LOADED', {
+            pageCount: finalPages.length,
+            totalItems
+        });
+        setPages(finalPages);
         setCurrentPageIndex(0);
         setSelectedItem(null);
     }, []);
 
     // Mode toggle
     const toggleMode = useCallback(() => {
-        setMode(prev => prev === 'teacher' ? 'student' : 'teacher');
+        setMode(prev => {
+            const newMode = prev === 'teacher' ? 'student' : 'teacher';
+            aiLog.state('useWorksheet', 'MODE_TOGGLED', { from: prev, to: newMode });
+            return newMode;
+        });
     }, []);
 
     // Metadata update
     const updateMetadata = useCallback((newMetadata: WorksheetMetadata) => {
+        aiLog.state('useWorksheet', 'METADATA_UPDATED', {
+            title: newMetadata.title,
+            subject: newMetadata.subject
+        });
         setMetadata({ ...newMetadata, updatedAt: new Date().toISOString() });
     }, []);
 
     // Add vocab term (convenience)
     const addVocabTerm = useCallback((itemId: string) => {
+        aiLog.action('useWorksheet', 'VOCAB_TERM_ADDED', { itemId });
         setPages(prev => prev.map((page, i) => {
             if (i !== currentPageIndex) return page;
             return {
@@ -158,6 +232,7 @@ export function useWorksheet(initialItems: WorksheetItem[] = []) {
 
     // Add T/F question (convenience)
     const addTFQuestion = useCallback((itemId: string) => {
+        aiLog.action('useWorksheet', 'TF_QUESTION_ADDED', { itemId });
         setPages(prev => prev.map((page, i) => {
             if (i !== currentPageIndex) return page;
             return {

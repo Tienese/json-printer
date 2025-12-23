@@ -1,5 +1,6 @@
 import { useState, useEffect, type FC } from 'react';
 import type { MultipleChoiceItem } from '../../../types/worksheet';
+import { devAssert } from '../../../utils/devAssert';
 
 interface Props {
   item: MultipleChoiceItem;
@@ -14,23 +15,45 @@ export const MultipleChoiceEditor: FC<Props> = ({ item, onUpdate }) => {
   }, [item.options]);
 
   const handleAddOption = () => {
-    if (localOptions.length >= 6) return;
-    const newOptions = [...localOptions, `Option ${localOptions.length + 1}`];
+    const prevCount = localOptions.length;
+    if (prevCount >= 6) return;
+
+    const newOptions = [...localOptions, `Option ${prevCount + 1}`];
+
+    void devAssert.check('MultipleChoiceEditor', 'ADD_OPTION', {
+      expected: { optionCount: prevCount + 1 },
+      actual: { optionCount: newOptions.length },
+      message: `Add option to MC item`,
+      snapshot: () => ({ itemId: item.id, options: newOptions })
+    });
+
     setLocalOptions(newOptions);
     onUpdate({ ...item, options: newOptions });
   };
 
+
   const handleRemoveOption = (index: number) => {
-    if (localOptions.length <= 2) return;
+    const prevCount = localOptions.length;
+    if (prevCount <= 2) return;
+
     const newOptions = localOptions.filter((_, i) => i !== index);
     const newCorrectIndex = item.correctIndex >= newOptions.length
       ? newOptions.length - 1
       : item.correctIndex > index
         ? item.correctIndex - 1
         : item.correctIndex;
+
+    void devAssert.check('MultipleChoiceEditor', 'REMOVE_OPTION', {
+      expected: { optionCount: prevCount - 1 },
+      actual: { optionCount: newOptions.length },
+      message: `Remove option ${index} from MC item`,
+      snapshot: () => ({ itemId: item.id, removedIndex: index, options: newOptions })
+    });
+
     setLocalOptions(newOptions);
     onUpdate({ ...item, options: newOptions, correctIndex: newCorrectIndex });
   };
+
 
   const handleCorrectChange = (index: number) => {
     onUpdate({ ...item, correctIndex: index });
@@ -45,11 +68,10 @@ export const MultipleChoiceEditor: FC<Props> = ({ item, onUpdate }) => {
         {[1, 2, 3, 4].map((num) => (
           <button
             key={num}
-            className={`flex-1 py-1 text-xs ${
-              (item.columns || 1) === num
-                ? 'bg-primary-blue text-white'
-                : 'bg-white text-gray-700 hover:bg-gray-100'
-            }`}
+            className={`flex-1 py-1 text-xs ${(item.columns || 1) === num
+              ? 'bg-primary-blue text-white'
+              : 'bg-white text-gray-700 hover:bg-gray-100'
+              }`}
             onClick={() => onUpdate({ ...item, columns: num })}
           >
             {num}
