@@ -107,7 +107,7 @@ export function WorksheetPage({ onNavigate, worksheetId }: WorksheetPageProps) {
   const [currentWorksheetId, setCurrentWorksheetId] = useState<number | null>(
     worksheetId ? Number(worksheetId) : null
   );
-  const { history, renameHistoryEntry, triggerManualSave } = useAutoSave(pages, metadata, currentWorksheetId);
+  const { history, triggerManualSave } = useAutoSave(pages, metadata, currentWorksheetId);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);  // Collapsed by default
   const [previewTemplate, setPreviewTemplate] = useState<WorksheetTemplate | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -276,7 +276,7 @@ export function WorksheetPage({ onNavigate, worksheetId }: WorksheetPageProps) {
 
 
   return (
-    <div className={`grid grid-rows-[auto_1fr] h-screen w-full bg-app-gray overflow-hidden print:bg-white print:h-auto print:overflow-visible print:block ${isSidebarOpen ? 'grid-cols-[300px_1fr]' : 'grid-cols-[40px_1fr]'}`}>
+    <div className={`grid grid-rows-[auto_1fr_auto] h-screen w-full bg-app-gray overflow-hidden print:bg-white print:h-auto print:overflow-visible print:block ${isSidebarOpen ? 'grid-cols-[300px_1fr]' : 'grid-cols-[40px_1fr]'}`}>
       {/* Top Menu Bar */}
       <div className="col-span-2 print:hidden">
         <Navbar
@@ -293,6 +293,7 @@ export function WorksheetPage({ onNavigate, worksheetId }: WorksheetPageProps) {
               mode={mode}
               onToggleMode={toggleMode}
               onAddItem={(type) => addItem(createItemByType(type), items.length)}
+              onNavigate={onNavigate}
             />
           }
         />
@@ -325,11 +326,6 @@ export function WorksheetPage({ onNavigate, worksheetId }: WorksheetPageProps) {
           onAddTFQuestion={addTFQuestion}
           isOpen={isSidebarOpen}
           onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
-          history={history}
-          onPreviewHistory={setPreviewTemplate}
-          onRenameHistory={renameHistoryEntry}
-          worksheetId={currentWorksheetId}
-          worksheetJson={JSON.stringify({ metadata, pages })}
         />
       </div>
 
@@ -377,31 +373,6 @@ export function WorksheetPage({ onNavigate, worksheetId }: WorksheetPageProps) {
         )}
 
 
-        {/* Zoom Controls */}
-        <div className="fixed bottom-4 right-4 flex items-center gap-2 bg-white rounded-lg shadow-lg border border-gray-200 p-2 z-40 print:hidden">
-          <button
-            onClick={() => setZoom(z => Math.max(0.5, z - 0.1))}
-            className="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded"
-            title="Zoom Out"
-          >
-            −
-          </button>
-          <span className="text-sm font-mono w-12 text-center">{Math.round(zoom * 100)}%</span>
-          <button
-            onClick={() => setZoom(z => Math.min(2, z + 0.1))}
-            className="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded"
-            title="Zoom In"
-          >
-            +
-          </button>
-          <button
-            onClick={() => setZoom(1)}
-            className="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded text-xs"
-            title="Reset Zoom"
-          >
-            ⟲
-          </button>
-        </div>
 
         <section
           className={`relative mb-10 bg-white shadow-[0_20px_50px_rgba(0,0,0,0.15)] p-[1.27cm] box-border w-[210mm] min-h-[297mm] flex flex-col origin-top transition-transform duration-200 outline-none print:hidden ${isPreviewMode ? 'ring-4 ring-amber-400 pointer-events-none opacity-80' : ''}`}
@@ -541,6 +512,43 @@ export function WorksheetPage({ onNavigate, worksheetId }: WorksheetPageProps) {
           </div>
         )
       }
+
+      {/* Bottom Status Bar */}
+      <div className="col-span-2 h-8 bg-white border-t border-gray-200 flex items-center justify-between px-4 text-xs text-gray-600 print:hidden">
+        {/* Left: Metadata */}
+        <div className="flex items-center gap-4">
+          <span>📄 {totalPages} page{totalPages !== 1 ? 's' : ''}</span>
+          <span>•</span>
+          <span>📦 {pages.reduce((acc, p) => acc + p.items.length, 0)} items</span>
+          <span>•</span>
+          <span>Page {currentPageIndex + 1}/{totalPages}</span>
+        </div>
+
+        {/* Right: Zoom Controls */}
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => setZoom(z => Math.max(0.5, z - 0.1))}
+            className="w-6 h-6 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded"
+            title="Zoom Out"
+          >
+            −
+          </button>
+          <button
+            onClick={() => setZoom(1)}
+            className="px-2 h-6 text-xs font-mono hover:bg-gray-100 rounded"
+            title="Reset Zoom"
+          >
+            {Math.round(zoom * 100)}%
+          </button>
+          <button
+            onClick={() => setZoom(z => Math.min(2, z + 0.1))}
+            className="w-6 h-6 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded"
+            title="Zoom In"
+          >
+            +
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

@@ -5,11 +5,11 @@ package com.qtihelper.demo.dto;
  * Used for dashboard preview cards to show item counts.
  */
 public record WorksheetMetadataDto(
-        int gridCount,
-        int vocabCount,
-        int textCount,
-        int mcCount,
-        int tfCount,
-        int matchingCount,
-        int clozeCount) {
+                int gridCount,
+                int vocabCount,
+                int textCount,
+                int mcCount,
+                int tfCount,
+                int matchingCount,
+                int clozeCount) {
 }
