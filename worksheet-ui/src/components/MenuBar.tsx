@@ -75,7 +75,7 @@ export function MenuBar({
                     Save ▾
                 </button>
                 {openMenu === 'save' && (
-                    <div className="absolute left-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl py-1 min-w-[200px] z-50">
+                    <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl py-1 min-w-[200px] z-50">
                         <button className={menuItemClass} onClick={() => { onSaveToCloud(); setOpenMenu(null); }} disabled={isSaving}>
                             <span>☁</span>
                             {isSaving ? 'Saving...' : 'Save to Cloud'}
@@ -149,7 +149,7 @@ export function MenuBar({
                     View ▾
                 </button>
                 {openMenu === 'view' && (
-                    <div className="absolute left-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl py-1 min-w-[180px] z-50">
+                    <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl py-1 min-w-[180px] z-50">
                         <button
                             className={menuItemClass}
                             onClick={() => { if (mode !== 'student') onToggleMode(); setOpenMenu(null); }}
@@ -177,7 +177,7 @@ export function MenuBar({
                     Insert ▾
                 </button>
                 {openMenu === 'insert' && (
-                    <div className="absolute left-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl py-1 min-w-[180px] z-50">
+                    <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl py-1 min-w-[180px] z-50">
                         <div className="px-4 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Content</div>
                         {[
                             { label: 'Card Block', type: 'CARD', icon: '📝' },

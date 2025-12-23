@@ -56,7 +56,9 @@ export interface GridItem {
   boxSize: '8mm' | '10mm' | '12mm';
   showFurigana: boolean;
   showGuides: boolean;
-  hideBorderOnContent?: boolean;  // NEW: Hide box border when box has content
+  hideBorderOnContent?: boolean;  // Hide box border when box has content
+  alignment?: 'left' | 'center' | 'right';  // Grid alignment
+  furiganaFontSize?: string;  // Furigana text font size, e.g. '6pt'
   columns: number;
   rows: number;
   sections: GridSection[];

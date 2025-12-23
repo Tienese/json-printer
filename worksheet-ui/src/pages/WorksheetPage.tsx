@@ -108,9 +108,10 @@ export function WorksheetPage({ onNavigate, worksheetId }: WorksheetPageProps) {
     worksheetId ? Number(worksheetId) : null
   );
   const { history, renameHistoryEntry, triggerManualSave } = useAutoSave(pages, metadata, currentWorksheetId);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);  // Collapsed by default
   const [previewTemplate, setPreviewTemplate] = useState<WorksheetTemplate | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [zoom, setZoom] = useState(1);  // 1 = 100%, for printable area readability
 
   // Load worksheet from server if ID is provided
   useEffect(() => {
@@ -273,11 +274,9 @@ export function WorksheetPage({ onNavigate, worksheetId }: WorksheetPageProps) {
     setContextMenu(null);
   };
 
-  // Get current worksheet JSON for analysis
-  const worksheetJson = JSON.stringify({ metadata, pages });
 
   return (
-    <div className={`grid grid-rows-[auto_1fr] h-screen w-full bg-app-gray overflow-hidden print:bg-white print:h-auto print:overflow-visible print:block ${isSidebarOpen ? 'grid-cols-[1fr_300px]' : 'grid-cols-[1fr_40px]'}`}>
+    <div className={`grid grid-rows-[auto_1fr] h-screen w-full bg-app-gray overflow-hidden print:bg-white print:h-auto print:overflow-visible print:block ${isSidebarOpen ? 'grid-cols-[300px_1fr]' : 'grid-cols-[40px_1fr]'}`}>
       {/* Top Menu Bar */}
       <div className="col-span-2 print:hidden">
         <Navbar
@@ -296,6 +295,41 @@ export function WorksheetPage({ onNavigate, worksheetId }: WorksheetPageProps) {
               onAddItem={(type) => addItem(createItemByType(type), items.length)}
             />
           }
+        />
+      </div>
+
+      {/* Left Sidebar - Properties with Tabs */}
+      <div className="row-span-1 border-r border-gray-200 bg-white print:hidden h-full overflow-hidden flex flex-col">
+        <Sidebar
+          itemsState={{
+            items: displayItems,
+            selectedItem,
+            onSelectItem: handleSelectItem,
+            onUpdate: updateItem,
+            onDelete: deleteItem,
+            onReorderItems: setItems
+          }}
+          metadataState={{
+            metadata: displayMetadata,
+            onUpdateMetadata: updateMetadata
+          }}
+          pageState={{
+            currentPageIndex,
+            totalPages,
+            onPrevPage: prevPage,
+            onNextPage: nextPage,
+            onAddPage: addPage,
+            onDeletePage: deletePage
+          }}
+          onAddVocabTerm={addVocabTerm}
+          onAddTFQuestion={addTFQuestion}
+          isOpen={isSidebarOpen}
+          onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+          history={history}
+          onPreviewHistory={setPreviewTemplate}
+          onRenameHistory={renameHistoryEntry}
+          worksheetId={currentWorksheetId}
+          worksheetJson={JSON.stringify({ metadata, pages })}
         />
       </div>
 
@@ -343,8 +377,35 @@ export function WorksheetPage({ onNavigate, worksheetId }: WorksheetPageProps) {
         )}
 
 
+        {/* Zoom Controls */}
+        <div className="fixed bottom-4 right-4 flex items-center gap-2 bg-white rounded-lg shadow-lg border border-gray-200 p-2 z-40 print:hidden">
+          <button
+            onClick={() => setZoom(z => Math.max(0.5, z - 0.1))}
+            className="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded"
+            title="Zoom Out"
+          >
+            −
+          </button>
+          <span className="text-sm font-mono w-12 text-center">{Math.round(zoom * 100)}%</span>
+          <button
+            onClick={() => setZoom(z => Math.min(2, z + 0.1))}
+            className="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded"
+            title="Zoom In"
+          >
+            +
+          </button>
+          <button
+            onClick={() => setZoom(1)}
+            className="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded text-xs"
+            title="Reset Zoom"
+          >
+            ⟲
+          </button>
+        </div>
+
         <section
-          className={`relative mb-10 bg-white shadow-[0_20px_50px_rgba(0,0,0,0.15)] p-[1.27cm] box-border w-[210mm] min-h-[297mm] flex flex-col origin-top transition-all duration-300 print:hidden outline-none ${isPreviewMode ? 'ring-4 ring-amber-400 pointer-events-none opacity-80 scale-[0.98]' : ''}`}
+          className={`relative mb-10 bg-white shadow-[0_20px_50px_rgba(0,0,0,0.15)] p-[1.27cm] box-border w-[210mm] min-h-[297mm] flex flex-col origin-top transition-transform duration-200 outline-none ${isPreviewMode ? 'ring-4 ring-amber-400 pointer-events-none opacity-80' : ''}`}
+          style={{ transform: `scale(${zoom})`, marginBottom: `${(zoom - 1) * 297 + 40}mm` }}
           onClick={(e) => e.stopPropagation()}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') e.stopPropagation(); }}
           onContextMenu={(e) => {
@@ -435,42 +496,6 @@ export function WorksheetPage({ onNavigate, worksheetId }: WorksheetPageProps) {
             ))}
           </div>
         ))}
-      </div>
-
-      {/* Right Sidebar - Properties with Tabs */}
-      <div className="row-span-1 border-l border-gray-200 bg-white print:hidden h-full overflow-hidden flex flex-col">
-        <Sidebar
-          itemsState={{
-            items: displayItems,
-            selectedItem,
-            onSelectItem: handleSelectItem,
-            onUpdate: updateItem,
-            onDelete: deleteItem,
-            onReorderItems: setItems
-          }}
-          metadataState={{
-            metadata: displayMetadata,
-            onUpdateMetadata: updateMetadata
-          }}
-          pageState={{
-            currentPageIndex,
-            totalPages,
-            onPrevPage: prevPage,
-            onNextPage: nextPage,
-            onAddPage: addPage,
-            onDeletePage: deletePage
-          }}
-          onAddVocabTerm={addVocabTerm}
-          onAddTFQuestion={addTFQuestion}
-          isOpen={isSidebarOpen}
-          onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
-          // New props for integrated timeline and vocab
-          history={history}
-          onPreviewHistory={setPreviewTemplate}
-          onRenameHistory={renameHistoryEntry}
-          worksheetId={currentWorksheetId}
-          worksheetJson={worksheetJson}
-        />
       </div>
 
       {/* Context Menu */}

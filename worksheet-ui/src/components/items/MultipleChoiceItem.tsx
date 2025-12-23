@@ -2,6 +2,7 @@ import { useRef, useCallback, type FC, useEffect } from 'react';
 import type { MultipleChoiceItem, ViewMode } from '../../types/worksheet';
 import { sanitizePaste, sanitizeHTML } from '../../utils/htmlSanitizer';
 import { QuestionNumber } from '../shared/QuestionNumber';
+import { createSelectAllContentOnFocus } from '../../utils/inputUtils';
 
 interface Props {
   item: MultipleChoiceItem;
@@ -83,10 +84,10 @@ export const MultipleChoiceItemComponent: FC<Props> = ({
       <div className="flex-1">
         <div
           ref={promptRef}
-          className="mb-[1mm] text-[11pt] leading-[1.4] outline-none hover:bg-[#eef] focus:bg-[#eef] p-[1px] rounded empty:before:content-['Click_to_add_question...'] empty:before:text-gray-400 empty:before:italic focus:empty:before:content-['']"
+          className="mb-[1mm] text-[11pt] leading-[1.4] outline-none focus:outline-dashed focus:outline-1 focus:outline-gray-300 p-[1px] rounded empty:before:content-['Click_to_add_question...'] empty:before:text-gray-400 empty:before:italic focus:empty:before:content-['']"
           contentEditable
           suppressContentEditableWarning
-          onFocus={() => { isEditingPrompt.current = true; }}
+          onFocus={createSelectAllContentOnFocus(() => { isEditingPrompt.current = true; })}
           onBlur={handlePromptBlur}
           onPaste={handlePaste}
           data-testid="mc-prompt"
@@ -117,10 +118,10 @@ export const MultipleChoiceItemComponent: FC<Props> = ({
                 <span className="font-medium w-[5mm] shrink-0">{letter}.</span>
                 <span
                   ref={(el) => { optionsRefs.current[index] = el; }}
-                  className="flex-1 outline-none hover:bg-[#eef] focus:bg-[#eef] rounded px-[2px] min-w-[20px]"
+                  className="flex-1 outline-none focus:outline-dashed focus:outline-1 focus:outline-gray-300 rounded px-[2px] min-w-[20px]"
                   contentEditable={mode === 'teacher'}
                   suppressContentEditableWarning
-                  onFocus={() => { editingOptionIndex.current = index; }}
+                  onFocus={createSelectAllContentOnFocus(() => { editingOptionIndex.current = index; })}
                   onBlur={() => handleOptionBlur(index)}
                   onPaste={handlePaste}
                 />

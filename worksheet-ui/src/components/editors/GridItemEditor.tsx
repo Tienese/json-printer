@@ -60,14 +60,41 @@ export function GridItemEditor({ item, onUpdate }: GridItemEditorProps) {
         onChange={(e) => {
           const newSize = e.target.value as any;
           onUpdate({ ...item, boxSize: newSize });
-          // Optional: Auto-adjust columns if they exceed new max?
-          // For now, let's just let the user see the visual overflow or fix it manually
         }}
       >
         <option value="8mm">Small (8mm)</option>
         <option value="10mm">Medium (10mm)</option>
         <option value="12mm">Large (12mm)</option>
       </select>
+
+      <label className="prop-label">Alignment</label>
+      <div className="flex border border-gray-300 rounded overflow-hidden mb-4">
+        {(['left', 'center', 'right'] as const).map((align) => (
+          <button
+            key={align}
+            className={`flex-1 py-1 text-xs capitalize ${(item.alignment || 'left') === align ? 'bg-black text-white' : 'bg-white text-gray-700'}`}
+            onClick={() => onUpdate({ ...item, alignment: align })}
+          >
+            {align}
+          </button>
+        ))}
+      </div>
+
+      {item.showFurigana && (
+        <>
+          <label className="prop-label">Furigana Font Size</label>
+          <select
+            className="prop-input mb-4"
+            value={item.furiganaFontSize || '6pt'}
+            onChange={(e) => onUpdate({ ...item, furiganaFontSize: e.target.value })}
+          >
+            <option value="5pt">5pt (Tiny)</option>
+            <option value="6pt">6pt (Small)</option>
+            <option value="7pt">7pt (Medium)</option>
+            <option value="8pt">8pt (Large)</option>
+          </select>
+        </>
+      )}
 
       <div className="prop-group">
         <h5 className="text-[12px] font-semibold mt-6 mb-2">Sections & Columns</h5>

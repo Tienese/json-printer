@@ -2,6 +2,7 @@ import { useRef, useCallback, type FC, useEffect } from 'react';
 import type { TrueFalseItem, ViewMode } from '../../types/worksheet';
 import { sanitizePaste, sanitizeHTML } from '../../utils/htmlSanitizer';
 import { QuestionNumber } from '../shared/QuestionNumber';
+import { selectAllContentOnFocus } from '../../utils/inputUtils';
 
 interface Props {
   item: TrueFalseItem;
@@ -105,12 +106,8 @@ export const TrueFalseItemComponent: FC<Props> = ({
 
   const handleFocus = useCallback((e: React.FocusEvent<HTMLDivElement>) => {
     isEditing.current = true;
-    const range = document.createRange();
-    const selection = window.getSelection();
-    range.selectNodeContents(e.target);
-    range.collapse(false);
-    selection?.removeAllRanges();
-    selection?.addRange(range);
+    // Select all content for quick replacement
+    selectAllContentOnFocus(e);
   }, []);
 
   const renderSingleLayout = () => {
@@ -128,7 +125,7 @@ export const TrueFalseItemComponent: FC<Props> = ({
       <div className="mt-1">
         <div
           ref={(el) => { questionsRefs.current[0] = el; }}
-          className="mb-2 outline-none hover:bg-[#eef] focus:bg-[#eef] rounded p-[1px] min-h-[1.2em]"
+          className="mb-2 outline-none focus:outline-dashed focus:outline-1 focus:outline-gray-300 rounded p-[1px] min-h-[1.2em]"
           contentEditable={mode === 'teacher'}
           suppressContentEditableWarning
           onFocus={handleFocus}
@@ -166,7 +163,7 @@ export const TrueFalseItemComponent: FC<Props> = ({
                   <span className="font-bold mr-2 text-[10pt]">{String.fromCharCode(97 + idx)})</span>
                   <div
                     ref={(el) => { questionsRefs.current[idx] = el; }}
-                    className="flex-1 outline-none hover:bg-[#eef] focus:bg-[#eef] rounded p-[1px] min-h-[1.2em]"
+                    className="flex-1 outline-none focus:outline-dashed focus:outline-1 focus:outline-gray-300 rounded p-[1px] min-h-[1.2em]"
                     contentEditable={mode === 'teacher'}
                     suppressContentEditableWarning
                     onFocus={handleFocus}
@@ -247,7 +244,7 @@ export const TrueFalseItemComponent: FC<Props> = ({
           {item.layout === 'multiple' && (
             <div
               ref={promptRef}
-              className="mb-1 outline-none hover:bg-[#eef] focus:bg-[#eef] p-[1px] rounded empty:before:content-['Click_to_add_prompt...'] empty:before:text-gray-400 empty:before:italic focus:empty:before:content-['']"
+              className="mb-1 outline-none focus:outline-dashed focus:outline-1 focus:outline-gray-300 p-[1px] rounded empty:before:content-['Click_to_add_prompt...'] empty:before:text-gray-400 empty:before:italic focus:empty:before:content-['']"
               contentEditable
               suppressContentEditableWarning
               onFocus={handleFocus}

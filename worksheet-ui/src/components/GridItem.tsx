@@ -258,7 +258,12 @@ export function GridItemComponent({ item, isSelected, onUpdate }: GridItemProps)
 
 
         {/* Grid Lines */}
-        <div className="flex flex-col gap-y-2">
+        <div
+          className="flex flex-col gap-y-2"
+          style={{
+            alignItems: item.alignment === 'center' ? 'center' : item.alignment === 'right' ? 'flex-end' : 'flex-start'
+          }}
+        >
           {mergedLines.map((line, lineIndex) => {
             // Calculate global section index for merged lines
             let globalSectionStartIndex = 0;
@@ -290,8 +295,8 @@ export function GridItemComponent({ item, isSelected, onUpdate }: GridItemProps)
                             {/* Furigana Row */}
                             {item.showFurigana && (
                               <input
-                                className="text-center text-[8pt] border-none outline-none leading-none text-gray-600 bg-transparent m-0 p-0 focus:bg-blue-50 print:text-black"
-                                style={{ height: `${furiganaHeightMm}mm`, width: '100%' }}
+                                className="text-center border-none outline-none leading-none text-gray-600 bg-transparent m-0 p-0 print:text-black"
+                                style={{ height: `${furiganaHeightMm}mm`, width: '100%', fontSize: item.furiganaFontSize || '6pt' }}
                                 value={box.furigana || ''}
                                 onChange={(e) => handleFuriganaChange(globalSectionIndex, bIndex, e.target.value)}
                                 onKeyDown={(e) => handleFuriganaKeyDown(e, globalSectionIndex, bIndex)}

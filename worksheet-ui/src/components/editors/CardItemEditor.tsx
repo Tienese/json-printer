@@ -1,4 +1,5 @@
 import type { CardItem } from '../../types/worksheet';
+import { selectOnFocus } from '../../utils/inputUtils';
 
 interface CardItemEditorProps {
   item: CardItem;
@@ -43,6 +44,7 @@ export function CardItemEditor({ item, onUpdate }: CardItemEditorProps) {
             value={item.cardHeader || ''}
             placeholder="e.g., Ghi chú quan trọng"
             onChange={(e) => onUpdate({ ...item, cardHeader: e.target.value })}
+            onFocus={selectOnFocus}
           />
           <small className="text-xs text-gray-500 mt-1 block">
             Title will appear with underlines and language indicator
