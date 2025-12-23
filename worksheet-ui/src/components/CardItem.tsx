@@ -95,9 +95,10 @@ export function CardItemComponent({ item, onUpdate }: CardItemProps) {
       <div className="flex-1">
         {/* Card Content Box with overlaid title */}
         <div
-          className="relative border-2 border-black p-[3mm] pt-[5mm] print:bg-white print:border-black"
+          className={`relative p-[3mm] pt-[5mm] print:bg-white ${(item.showBorder ?? true) ? 'border-2 border-black print:border-black' : ''}`}
           style={{
             minHeight: '2cm',
+            borderStyle: (item.showBorder ?? true) ? (item.borderStyle || 'solid') : 'none',
           }}
         >
           {/* Card Title - overlays the top border */}
@@ -105,7 +106,7 @@ export function CardItemComponent({ item, onUpdate }: CardItemProps) {
 
           <div
             ref={editorRef}
-            className="border-none bg-transparent outline-none resize-none overflow-hidden min-h-[1.4em] focus:bg-[#eef] print:bg-white empty:before:content-['Click_to_add_card_content...'] empty:before:text-gray-400 empty:before:italic focus:empty:before:content-['']"
+            className="border-none bg-transparent outline-none resize-none overflow-hidden min-h-[1.4em] print:bg-white empty:before:content-['Click_to_add_card_content...'] empty:before:text-gray-400 empty:before:italic focus:empty:before:content-['']"
             style={style}
             contentEditable
             suppressContentEditableWarning

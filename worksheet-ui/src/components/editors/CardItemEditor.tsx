@@ -24,6 +24,49 @@ export function CardItemEditor({ item, onUpdate }: CardItemEditorProps) {
         </div>
 
         <div className="mb-4">
+          <label className="checkbox-label">
+            <input
+              type="checkbox"
+              checked={item.showBorder ?? true}
+              onChange={(e) => onUpdate({ ...item, showBorder: e.target.checked })}
+            />
+            Show Border
+          </label>
+        </div>
+
+        {(item.showBorder ?? true) && (
+          <div className="mb-4">
+            <label className="prop-label">Border Style</label>
+            <div className="flex border border-gray-300 rounded overflow-hidden">
+              {(['solid', 'double', 'dashed'] as const).map((style) => (
+                <button
+                  key={style}
+                  className={`flex-1 py-1 text-xs capitalize ${(item.borderStyle || 'solid') === style ? 'bg-black text-white' : 'bg-white text-gray-700'}`}
+                  onClick={() => onUpdate({ ...item, borderStyle: style })}
+                >
+                  {style}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="mb-4">
+          <label className="prop-label">Card Style</label>
+          <div className="flex border border-gray-300 rounded overflow-hidden">
+            {(['note', 'info', 'warning'] as const).map((style) => (
+              <button
+                key={style}
+                className={`flex-1 py-1 text-xs capitalize ${(item.cardStyle || 'note') === style ? 'bg-black text-white' : 'bg-white text-gray-700'}`}
+                onClick={() => onUpdate({ ...item, cardStyle: style })}
+              >
+                {style}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="mb-4">
           <label className="prop-label">Language</label>
           <select
             className="prop-select"
