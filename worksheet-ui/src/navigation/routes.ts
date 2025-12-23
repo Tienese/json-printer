@@ -13,6 +13,7 @@ export const ROUTES = {
   WORKSHEET_DASHBOARD: 'worksheet',
   WORKSHEET_EDIT: 'worksheet/edit',
   ANALYTICS: 'analytics',
+  SETTINGS: 'settings',
 } as const;
 
 export type Route = typeof ROUTES[keyof typeof ROUTES];

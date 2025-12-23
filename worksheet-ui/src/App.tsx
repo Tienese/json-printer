@@ -12,6 +12,7 @@ import { QtiEditorPage } from './pages/QtiEditorPage';
 import { QtiSuccessPage } from './pages/QtiSuccessPage';
 import { AnalyticsPage } from './pages/AnalyticsPage';
 import { LandingPage } from './pages/LandingPage';
+import { SettingsPage } from './pages/SettingsPage';
 
 import { ErrorBoundary } from './components/ErrorBoundary';
 
@@ -59,6 +60,9 @@ function App() {
 
       case ROUTES.CANVAS_COURSES:
         return <DashboardPage onNavigate={navigate} />;
+
+      case ROUTES.SETTINGS:
+        return <SettingsPage onNavigate={navigate} />;
 
       default:
         return <LandingPage onNavigate={navigate} />;
