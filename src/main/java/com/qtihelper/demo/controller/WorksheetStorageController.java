@@ -27,11 +27,11 @@ public class WorksheetStorageController {
      * GET /api/worksheets?type=SNAPSHOT
      */
     @GetMapping
-    public List<Worksheet> getAllWorksheets(@RequestParam(required = false) WorksheetType type) {
+    public ResponseEntity<List<com.qtihelper.demo.repository.WorksheetSummary>> getAllWorksheets(@RequestParam(required = false) WorksheetType type) {
         if (type != null) {
-            return worksheetRepository.findByTypeOrderByUpdatedAtDesc(type);
+            return ResponseEntity.ok(worksheetRepository.findSummaryByTypeOrderByUpdatedAtDesc(type));
         }
-        return worksheetRepository.findAllByOrderByUpdatedAtDesc();
+        return ResponseEntity.ok(worksheetRepository.findSummaryByOrderByUpdatedAtDesc());
     }
 
     /**
@@ -76,12 +76,11 @@ public class WorksheetStorageController {
         // Save new autosave
         Worksheet saved = worksheetRepository.save(autosave);
 
-        // Cleanup: Keep only latest 10 autosaves for this parent
-        List<Worksheet> autosaves = worksheetRepository.findByParentIdOrderByUpdatedAtDesc(id);
-        if (autosaves.size() > MAX_AUTOSAVES) {
-            for (int i = MAX_AUTOSAVES; i < autosaves.size(); i++) {
-                worksheetRepository.delete(autosaves.get(i));
-            }
+        // Cleanup: Keep only latest 10 autosaves for this parent using optimized ID fetch
+        List<Long> autosaveIds = worksheetRepository.findIdsByParentIdOrderByUpdatedAtDesc(id);
+        if (autosaveIds.size() > MAX_AUTOSAVES) {
+            List<Long> idsToDelete = autosaveIds.subList(MAX_AUTOSAVES, autosaveIds.size());
+            worksheetRepository.deleteAllById(idsToDelete);
         }
 
         return saved;
