@@ -69,6 +69,17 @@ export function useSettings() {
         return settings[key];
     }, [settings]);
 
+    // Get only user override (changed) settings
+    const getUserOverrides = useCallback((): Partial<WorksheetSettings> => {
+        const overrides: Partial<WorksheetSettings> = {};
+        for (const key of Object.keys(settings) as (keyof WorksheetSettings)[]) {
+            if (settings[key] !== DEFAULT_SETTINGS[key]) {
+                overrides[key] = settings[key] as any;
+            }
+        }
+        return overrides;
+    }, [settings]);
+
     return {
         settings,
         updateSetting,
@@ -77,5 +88,6 @@ export function useSettings() {
         exportSettings,
         importSettings,
         getSetting,
+        getUserOverrides,
     };
 }

@@ -8,10 +8,12 @@ interface SettingsPageProps {
     onNavigate?: (route: string) => void;
 }
 
+type ViewMode = 'ui' | 'json';
+
 export function SettingsPage({ onNavigate }: SettingsPageProps) {
-    const { settings, updateSetting, resetSettings, exportSettings, importSettings } = useSettings();
+    const { settings, updateSetting, resetSettings, exportSettings, importSettings, getUserOverrides } = useSettings();
     const [searchQuery, setSearchQuery] = useState('');
-    const [showJsonEditor, setShowJsonEditor] = useState(false);
+    const [viewMode, setViewMode] = useState<ViewMode>('ui');
     const [jsonValue, setJsonValue] = useState('');
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -67,16 +69,20 @@ export function SettingsPage({ onNavigate }: SettingsPageProps) {
 
     const handleOpenJsonEditor = () => {
         setJsonValue(exportSettings());
-        setShowJsonEditor(true);
+        setViewMode('json');
     };
 
     const handleSaveJson = () => {
         if (importSettings(jsonValue)) {
-            setShowJsonEditor(false);
+            setViewMode('ui');
         } else {
             alert('Invalid JSON format');
         }
     };
+
+    // Get user overrides for display
+    const userOverrides = getUserOverrides();
+    const overrideCount = Object.keys(userOverrides).length;
 
     const isModified = (key: keyof WorksheetSettings) => {
         return settings[key] !== DEFAULT_SETTINGS[key];
@@ -179,108 +185,126 @@ export function SettingsPage({ onNavigate }: SettingsPageProps) {
                 className="hidden"
             />
 
-            <div className="max-w-4xl mx-auto p-6">
-                {/* Header */}
-                <div className="mb-6">
-                    <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-                    <p className="text-gray-500 text-sm mt-1">Configure worksheet builder defaults</p>
-                </div>
-
-                {/* Search */}
-                <div className="mb-6">
-                    <div className="relative">
-                        <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                        <input
-                            type="text"
-                            placeholder="Search settings..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
+            {/* UI Settings View */}
+            {viewMode === 'ui' && (
+                <div className="max-w-4xl mx-auto p-6">
+                    {/* Header */}
+                    <div className="mb-6">
+                        <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
+                        <p className="text-gray-500 text-sm mt-1">Configure worksheet builder defaults</p>
                     </div>
-                </div>
 
-                {/* Settings Groups */}
-                <div className="space-y-6">
-                    {Array.from(filteredGrouped.entries()).map(([category, categorySettings]) => (
-                        <div key={category} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                            <div className="px-5 py-3 bg-gray-50 border-b border-gray-200">
-                                <h2 className="text-sm font-semibold text-gray-700">{category}</h2>
-                            </div>
-                            <div className="divide-y divide-gray-100">
-                                {categorySettings.map(setting => (
-                                    <div key={setting.key} className="px-5 py-4 flex items-center justify-between gap-4">
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-sm font-medium text-gray-900">{setting.label}</span>
-                                                {isModified(setting.key) && (
-                                                    <span className="w-2 h-2 rounded-full bg-blue-500" title="Modified" />
-                                                )}
-                                            </div>
-                                            <p className="text-xs text-gray-500 mt-0.5">{setting.description}</p>
-                                            <code className="text-[10px] text-gray-400 font-mono mt-1 block">{setting.key}</code>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            {renderSettingInput(setting)}
-                                            {isModified(setting.key) && (
-                                                <button
-                                                    onClick={() => updateSetting(setting.key, DEFAULT_SETTINGS[setting.key])}
-                                                    className="p-1 text-gray-400 hover:text-gray-600"
-                                                    title="Reset to default"
-                                                >
-                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                                    </svg>
-                                                </button>
-                                            )}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-
-            {/* JSON Editor Modal */}
-            {showJsonEditor && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col">
-                        <div className="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
-                            <h2 className="text-lg font-semibold">Edit Settings JSON</h2>
-                            <button
-                                onClick={() => setShowJsonEditor(false)}
-                                className="p-1 hover:bg-gray-100 rounded"
-                            >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
-                        </div>
-                        <div className="flex-1 p-4 overflow-hidden">
-                            <textarea
-                                value={jsonValue}
-                                onChange={(e) => setJsonValue(e.target.value)}
-                                className="w-full h-full font-mono text-sm p-4 border border-gray-200 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                style={{ minHeight: '400px' }}
-                                spellCheck={false}
+                    {/* Search */}
+                    <div className="mb-6">
+                        <div className="relative">
+                            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                            <input
+                                type="text"
+                                placeholder="Search settings..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
                         </div>
-                        <div className="px-5 py-4 border-t border-gray-200 flex justify-end gap-3">
+                    </div>
+
+                    {/* Settings Groups */}
+                    <div className="space-y-6">
+                        {Array.from(filteredGrouped.entries()).map(([category, categorySettings]) => (
+                            <div key={category} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                                <div className="px-5 py-3 bg-gray-50 border-b border-gray-200">
+                                    <h2 className="text-sm font-semibold text-gray-700">{category}</h2>
+                                </div>
+                                <div className="divide-y divide-gray-100">
+                                    {categorySettings.map(setting => (
+                                        <div key={setting.key} className="px-5 py-4 flex items-center justify-between gap-4">
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-sm font-medium text-gray-900">{setting.label}</span>
+                                                    {isModified(setting.key) && (
+                                                        <span className="w-2 h-2 rounded-full bg-blue-500" title="Modified" />
+                                                    )}
+                                                </div>
+                                                <p className="text-xs text-gray-500 mt-0.5">{setting.description}</p>
+                                                <code className="text-[10px] text-gray-400 font-mono mt-1 block">{setting.key}</code>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                {renderSettingInput(setting)}
+                                                {isModified(setting.key) && (
+                                                    <button
+                                                        onClick={() => updateSetting(setting.key, DEFAULT_SETTINGS[setting.key])}
+                                                        className="p-1 text-gray-400 hover:text-gray-600"
+                                                        title="Reset to default"
+                                                    >
+                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                                        </svg>
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* JSON Two-Panel View (VS Code style) */}
+            {viewMode === 'json' && (
+                <div className="max-w-6xl mx-auto p-6">
+                    <div className="mb-4 flex items-center justify-between">
+                        <div>
+                            <h2 className="text-lg font-semibold">JSON Settings Editor</h2>
+                            <p className="text-xs text-gray-500">
+                                Left: All defaults (read-only) | Right: Your overrides ({overrideCount} changed)
+                            </p>
+                        </div>
+                        <div className="flex gap-2">
                             <button
-                                onClick={() => setShowJsonEditor(false)}
-                                className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg"
+                                onClick={() => setViewMode('ui')}
+                                className="px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 rounded-md"
                             >
-                                Cancel
+                                ← Back to UI
                             </button>
                             <button
                                 onClick={handleSaveJson}
-                                className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                                className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
                             >
                                 Save Changes
                             </button>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        {/* Left: Default Settings (read-only) */}
+                        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                            <div className="px-4 py-2 bg-gray-100 border-b border-gray-200 flex items-center justify-between">
+                                <span className="text-xs font-semibold text-gray-600">DEFAULT SETTINGS</span>
+                                <span className="text-[10px] text-gray-400">read-only</span>
+                            </div>
+                            <pre className="p-4 text-xs font-mono text-gray-600 overflow-auto max-h-[60vh] bg-gray-50">
+                                {JSON.stringify(DEFAULT_SETTINGS, null, 2)}
+                            </pre>
+                        </div>
+
+                        {/* Right: User Overrides (editable) */}
+                        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                            <div className="px-4 py-2 bg-blue-50 border-b border-blue-200 flex items-center justify-between">
+                                <span className="text-xs font-semibold text-blue-700">USER OVERRIDES</span>
+                                <span className="text-[10px] text-blue-500">{overrideCount} changes</span>
+                            </div>
+                            <textarea
+                                value={jsonValue}
+                                onChange={(e) => setJsonValue(e.target.value)}
+                                className="w-full p-4 text-xs font-mono border-none resize-none focus:outline-none focus:ring-0"
+                                style={{ minHeight: '60vh' }}
+                                spellCheck={false}
+                                placeholder="{}"
+                            />
                         </div>
                     </div>
                 </div>
