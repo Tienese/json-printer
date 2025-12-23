@@ -1,0 +1,57 @@
+
+> worksheet-ui@0.0.0 dev
+> vite
+
+
+  VITE v7.3.0  ready in 259 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+11:09:36 PM [vite] http proxy error: /api/worksheets/templates
+AggregateError [ECONNREFUSED]:
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)
+11:09:36 PM [vite] http proxy error: /api/worksheets?type=SNAPSHOT
+AggregateError [ECONNREFUSED]:
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)
+11:09:36 PM [vite] http proxy error: /api/worksheets/templates
+AggregateError [ECONNREFUSED]:
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)
+11:09:36 PM [vite] http proxy error: /api/worksheets?type=SNAPSHOT
+AggregateError [ECONNREFUSED]:
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)
+11:10:10 PM [vite] http proxy error: /api/worksheets?type=SNAPSHOT
+AggregateError [ECONNREFUSED]:
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)
+11:10:10 PM [vite] http proxy error: /api/worksheets/templates
+AggregateError [ECONNREFUSED]:
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)
+11:10:10 PM [vite] http proxy error: /api/worksheets?type=SNAPSHOT
+AggregateError [ECONNREFUSED]:
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)
+11:10:10 PM [vite] http proxy error: /api/worksheets/templates
+AggregateError [ECONNREFUSED]:
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)
+11:10:33 PM [vite] http proxy error: /api/worksheets/templates
+AggregateError [ECONNREFUSED]:
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)
+11:10:33 PM [vite] http proxy error: /api/worksheets?type=SNAPSHOT
+AggregateError [ECONNREFUSED]:
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)
+11:10:33 PM [vite] http proxy error: /api/worksheets/templates
+AggregateError [ECONNREFUSED]:
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)
+11:10:33 PM [vite] http proxy error: /api/worksheets?type=SNAPSHOT
+AggregateError [ECONNREFUSED]:
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)

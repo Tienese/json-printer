@@ -11,11 +11,15 @@ describe('worksheetStorage', () => {
             updatedAt: new Date().toISOString(),
             version: '1.0.0'
         },
-        items: [
-            { id: '1', type: 'HEADER', title: 'Header', showName: true, showDate: true }
-        ],
-        mode: 'teacher'
-    } as any; // Cast to any to handle type overlap if necessary
+        pages: [
+            {
+                id: 'page-1',
+                items: [
+                    { id: '1', type: 'HEADER', title: 'Header', showName: true, showDate: true }
+                ]
+            }
+        ]
+    };
 
     beforeEach(() => {
         localStorage.clear();

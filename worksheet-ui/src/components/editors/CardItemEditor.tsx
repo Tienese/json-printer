@@ -99,7 +99,7 @@ export function CardItemEditor({ item, onUpdate }: CardItemEditorProps) {
             <input
               type="text"
               className="prop-input"
-              value={item.marginTop || '0.5'}
+              value={item.marginTop?.replace('mm', '') || '0.5'}
               placeholder="0.5"
               onChange={(e) => onUpdate({ ...item, marginTop: e.target.value + 'mm' })}
             />
@@ -109,7 +109,7 @@ export function CardItemEditor({ item, onUpdate }: CardItemEditorProps) {
             <input
               type="text"
               className="prop-input"
-              value={item.marginBottom || '0.5'}
+              value={item.marginBottom?.replace('mm', '') || '0.5'}
               placeholder="0.5"
               onChange={(e) => onUpdate({ ...item, marginBottom: e.target.value + 'mm' })}
             />
