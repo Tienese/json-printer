@@ -62,6 +62,33 @@ export interface WorksheetSettings {
   // ===== ANALYSIS (VOCAB COACH) =====
   "worksheet.analysis.defaultLessonId": number;
   "worksheet.analysis.autoAnalyzeOnSave": boolean;
+
+  // ===== QUIZ REPORT (View Page) =====
+  "quiz.report.pageMargin": string;
+  "quiz.report.showFeedback": boolean;
+  "quiz.report.showPoints": boolean;
+  "quiz.report.showQuestionType": boolean;
+  "quiz.report.optionsColumns": number;
+  "quiz.report.questionSpacing": string;
+  "quiz.report.headerStyle": "full" | "compact" | "minimal";
+
+  // ===== QUIZ BLANK (Worksheet Page) =====
+  "quiz.blank.pageMargin": string;
+  "quiz.blank.showInstructions": boolean;
+  "quiz.blank.essayLines": number;
+  "quiz.blank.shortAnswerWidth": string;
+  "quiz.blank.checkboxSize": string;
+  "quiz.blank.showPointsPerQuestion": boolean;
+  "quiz.blank.headerFields": ("name" | "id" | "date")[];
+  "quiz.blank.optionsColumns": number;
+
+  // ===== QUIZ SLIP (Retake Slips) =====
+  "quiz.slip.showCutMarkers": boolean;
+  "quiz.slip.showStudentId": boolean;
+  "quiz.slip.showFeedback": boolean;
+  "quiz.slip.slipBorderStyle": "solid" | "double" | "dashed";
+  "quiz.slip.showCorrectAnswer": boolean;
+  "quiz.slip.compactMode": boolean;
 }
 
 // Default settings
@@ -121,6 +148,33 @@ export const DEFAULT_SETTINGS: WorksheetSettings = {
   // Analysis
   "worksheet.analysis.defaultLessonId": 1,
   "worksheet.analysis.autoAnalyzeOnSave": false,
+
+  // Quiz Report
+  "quiz.report.pageMargin": "0.5cm",
+  "quiz.report.showFeedback": true,
+  "quiz.report.showPoints": true,
+  "quiz.report.showQuestionType": true,
+  "quiz.report.optionsColumns": 2,
+  "quiz.report.questionSpacing": "1rem",
+  "quiz.report.headerStyle": "full",
+
+  // Quiz Blank
+  "quiz.blank.pageMargin": "0.5cm",
+  "quiz.blank.showInstructions": true,
+  "quiz.blank.essayLines": 4,
+  "quiz.blank.shortAnswerWidth": "300px",
+  "quiz.blank.checkboxSize": "4",
+  "quiz.blank.showPointsPerQuestion": true,
+  "quiz.blank.headerFields": ["name", "id", "date"],
+  "quiz.blank.optionsColumns": 2,
+
+  // Quiz Slip
+  "quiz.slip.showCutMarkers": true,
+  "quiz.slip.showStudentId": true,
+  "quiz.slip.showFeedback": true,
+  "quiz.slip.slipBorderStyle": "solid",
+  "quiz.slip.showCorrectAnswer": true,
+  "quiz.slip.compactMode": false,
 };
 
 // Settings metadata for UI rendering
@@ -128,7 +182,7 @@ export interface SettingMeta {
   key: keyof WorksheetSettings;
   label: string;
   description: string;
-  type: "boolean" | "number" | "string" | "select";
+  type: "boolean" | "number" | "string" | "select" | "multiselect";
   options?: string[];
   category: string;
   min?: number;
@@ -332,17 +386,157 @@ export const SETTINGS_SCHEMA: SettingMeta[] = [
     type: "boolean",
     category: "Vocab Coach",
   },
+
+  // ===== QUIZ REPORT SETTINGS =====
+  {
+    key: "quiz.report.pageMargin",
+    label: "Page Margin",
+    description: "Margin around the printed page",
+    type: "string",
+    category: "Quiz Report",
+  },
+  {
+    key: "quiz.report.showFeedback",
+    label: "Show Feedback",
+    description: "Display feedback text for questions",
+    type: "boolean",
+    category: "Quiz Report",
+  },
+  {
+    key: "quiz.report.showPoints",
+    label: "Show Points",
+    description: "Display point values per question",
+    type: "boolean",
+    category: "Quiz Report",
+  },
+  {
+    key: "quiz.report.showQuestionType",
+    label: "Show Question Type",
+    description: "Display question type label (MC, T/F, etc.)",
+    type: "boolean",
+    category: "Quiz Report",
+  },
+  {
+    key: "quiz.report.optionsColumns",
+    label: "Options Columns",
+    description: "Number of columns for multiple choice options",
+    type: "number",
+    min: 1,
+    max: 4,
+    category: "Quiz Report",
+  },
+  {
+    key: "quiz.report.headerStyle",
+    label: "Header Style",
+    description: "Style of the student header section",
+    type: "select",
+    options: ["full", "compact", "minimal"],
+    category: "Quiz Report",
+  },
+
+  // ===== QUIZ BLANK SETTINGS =====
+  {
+    key: "quiz.blank.pageMargin",
+    label: "Page Margin",
+    description: "Margin around the printed worksheet",
+    type: "string",
+    category: "Quiz Blank",
+  },
+  {
+    key: "quiz.blank.showInstructions",
+    label: "Show Instructions",
+    description: "Display instruction text at the top",
+    type: "boolean",
+    category: "Quiz Blank",
+  },
+  {
+    key: "quiz.blank.essayLines",
+    label: "Essay Lines",
+    description: "Number of blank lines for essay questions",
+    type: "number",
+    min: 2,
+    max: 10,
+    category: "Quiz Blank",
+  },
+  {
+    key: "quiz.blank.shortAnswerWidth",
+    label: "Short Answer Width",
+    description: "Width of short answer input line",
+    type: "string",
+    category: "Quiz Blank",
+  },
+  {
+    key: "quiz.blank.showPointsPerQuestion",
+    label: "Show Points",
+    description: "Display point value for each question",
+    type: "boolean",
+    category: "Quiz Blank",
+  },
+  {
+    key: "quiz.blank.optionsColumns",
+    label: "Options Columns",
+    description: "Number of columns for MC options",
+    type: "number",
+    min: 1,
+    max: 4,
+    category: "Quiz Blank",
+  },
+
+  // ===== QUIZ SLIP SETTINGS =====
+  {
+    key: "quiz.slip.showCutMarkers",
+    label: "Show Cut Markers",
+    description: "Display cut/scissors indicators",
+    type: "boolean",
+    category: "Quiz Slip",
+  },
+  {
+    key: "quiz.slip.showStudentId",
+    label: "Show Student ID",
+    description: "Display student ID on slip",
+    type: "boolean",
+    category: "Quiz Slip",
+  },
+  {
+    key: "quiz.slip.showFeedback",
+    label: "Show Feedback",
+    description: "Display feedback for incorrect answers",
+    type: "boolean",
+    category: "Quiz Slip",
+  },
+  {
+    key: "quiz.slip.slipBorderStyle",
+    label: "Border Style",
+    description: "Border style for slip container",
+    type: "select",
+    options: ["solid", "double", "dashed"],
+    category: "Quiz Slip",
+  },
+  {
+    key: "quiz.slip.showCorrectAnswer",
+    label: "Show Correct Answer",
+    description: "Display the correct answer on slip",
+    type: "boolean",
+    category: "Quiz Slip",
+  },
+  {
+    key: "quiz.slip.compactMode",
+    label: "Compact Mode",
+    description: "Use smaller font and spacing",
+    type: "boolean",
+    category: "Quiz Slip",
+  },
 ];
 
 // Group settings by category
 export function getSettingsByCategory(): Map<string, SettingMeta[]> {
   const grouped = new Map<string, SettingMeta[]>();
-  
+
   for (const setting of SETTINGS_SCHEMA) {
     const existing = grouped.get(setting.category) || [];
     existing.push(setting);
     grouped.set(setting.category, existing);
   }
-  
+
   return grouped;
 }
