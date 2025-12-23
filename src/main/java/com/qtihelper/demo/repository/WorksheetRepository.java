@@ -1,6 +1,7 @@
 package com.qtihelper.demo.repository;
 
 import com.qtihelper.demo.entity.Worksheet;
+import com.qtihelper.demo.dto.WorksheetSummary;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -28,4 +29,9 @@ public interface WorksheetRepository extends JpaRepository<Worksheet, Long> {
      * Find all autosaves for a specific parent worksheet.
      */
     List<Worksheet> findByParentIdOrderByUpdatedAtDesc(Long parentId);
+
+    /**
+     * Find history summaries (projection) for a parent ID.
+     */
+    List<WorksheetSummary> findSummaryByParentIdOrderByUpdatedAtDesc(Long parentId);
 }

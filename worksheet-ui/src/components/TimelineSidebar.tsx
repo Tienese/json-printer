@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { HistoryEntry } from '../hooks/useAutoSave';
 import { formatTimeAgo, formatFullDateTime } from '../utils/dateUtils';
 import type { WorksheetTemplate } from '../types/worksheet';
+import { worksheetApi } from '../api/worksheets';
 
 interface TimelineSidebarProps {
     history: HistoryEntry[];
@@ -14,6 +15,7 @@ interface TimelineSidebarProps {
 export function TimelineSidebar({ history, onPreview, onRename, isOpen, onToggle }: TimelineSidebarProps) {
     const [editingTimestamp, setEditingTimestamp] = useState<string | null>(null);
     const [editValue, setEditValue] = useState('');
+    const [loadingId, setLoadingId] = useState<string | null>(null);
 
     const handleStartEdit = (entry: HistoryEntry, e: React.MouseEvent) => {
         e.stopPropagation();
@@ -31,6 +33,26 @@ export function TimelineSidebar({ history, onPreview, onRename, isOpen, onToggle
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter') handleSaveEdit();
         if (e.key === 'Escape') setEditingTimestamp(null);
+    };
+
+    const handleEntryClick = async (entry: HistoryEntry) => {
+        if (entry.template) {
+            onPreview(entry.template);
+        } else if (entry.isServer && entry.id) {
+            // Lazy load server content
+            try {
+                setLoadingId(entry.id);
+                const fullWorksheet = await worksheetApi.get(Number(entry.id));
+                const template: WorksheetTemplate = JSON.parse(fullWorksheet.jsonContent);
+                // We should cache this in the parent state ideally, but for now just preview it
+                onPreview(template);
+            } catch (err) {
+                console.error("Failed to load version content", err);
+                alert("Failed to load this version.");
+            } finally {
+                setLoadingId(null);
+            }
+        }
     };
 
     return (
@@ -60,8 +82,8 @@ export function TimelineSidebar({ history, onPreview, onRename, isOpen, onToggle
                         history.map((entry, idx) => (
                             <div
                                 key={entry.id || entry.timestamp}
-                                className="group relative p-2 rounded hover:bg-white hover:shadow-sm border border-transparent hover:border-gray-200 transition-all cursor-pointer"
-                                onClick={() => onPreview(entry.template)}
+                                className={`group relative p-2 rounded hover:bg-white hover:shadow-sm border border-transparent hover:border-gray-200 transition-all cursor-pointer ${loadingId === entry.id ? 'opacity-50 pointer-events-none' : ''}`}
+                                onClick={() => handleEntryClick(entry)}
                             >
                                 {/* Timeline Connector Line */}
                                 {idx < history.length - 1 && (
@@ -96,6 +118,8 @@ export function TimelineSidebar({ history, onPreview, onRename, isOpen, onToggle
                                                     </span>
                                                     <span className="text-[10px] text-gray-400" title={formatFullDateTime(entry.timestamp)}>
                                                         {formatTimeAgo(entry.timestamp)}
+                                                        {entry.isServer && " (Cloud)"}
+                                                        {loadingId === entry.id && " ..."}
                                                     </span>
                                                 </div>
 

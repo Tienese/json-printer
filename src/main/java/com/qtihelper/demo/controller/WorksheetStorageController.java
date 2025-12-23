@@ -1,6 +1,7 @@
 package com.qtihelper.demo.controller;
 
 import com.qtihelper.demo.entity.Worksheet;
+import com.qtihelper.demo.dto.WorksheetSummary;
 import com.qtihelper.demo.entity.WorksheetType;
 import com.qtihelper.demo.repository.WorksheetRepository;
 import org.springframework.http.ResponseEntity;
@@ -52,6 +53,16 @@ public class WorksheetStorageController {
         return worksheetRepository.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    /**
+     * Get history (autosaves and snapshots) for a specific worksheet.
+     * GET /api/worksheets/{id}/history
+     */
+    @GetMapping("/{id}/history")
+    public List<WorksheetSummary> getWorksheetHistory(@PathVariable Long id) {
+        // Return all worksheets where parentId matches this ID (Projection)
+        return worksheetRepository.findSummaryByParentIdOrderByUpdatedAtDesc(id);
     }
 
     /**

@@ -50,6 +50,11 @@ export const worksheetApi = {
     get: (id: number) => api.get<WorksheetFull>(`/api/worksheets/${id}`),
 
     /**
+     * Get history (autosaves + snapshots) for a worksheet
+     */
+    getHistory: (id: number) => api.get<WorksheetSummary[]>(`/api/worksheets/${id}/history`),
+
+    /**
      * Create a new worksheet
      */
     create: (data: WorksheetCreate) => api.post<WorksheetFull>('/api/worksheets', data),
