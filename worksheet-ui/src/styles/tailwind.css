@@ -12,6 +12,23 @@
     print-color-adjust: exact;
   }
 
+  /* Dark Mode - CodeRabbit inspired */
+  .dark body,
+  body.dark {
+    @apply bg-dark-bg text-dark-text;
+  }
+
+  .dark {
+    --color-bg: #0e0b0b;
+    --color-surface: #141111;
+    --color-elevated: #1a1614;
+    --color-text: #e6e1de;
+    --color-text-secondary: #a6a19e;
+    --color-text-muted: #6e6a67;
+    --color-accent: #ff570a;
+    --color-border: rgba(230, 225, 222, 0.1);
+  }
+
   /* Rich Text Printing */
   b, strong { @apply font-bold; }
   i, em { @apply italic; }
