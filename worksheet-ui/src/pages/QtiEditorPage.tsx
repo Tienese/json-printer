@@ -37,6 +37,7 @@ export function QtiEditorPage({ onNavigate }: QtiEditorPageProps) {
       const parsed = JSON.parse(storedData);
       setQuiz(parsed);
     } catch (err) {
+      console.error(err);
       setError('Failed to load quiz data');
     }
   }, []);

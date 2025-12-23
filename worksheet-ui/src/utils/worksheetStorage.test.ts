@@ -33,7 +33,12 @@ describe('worksheetStorage', () => {
     it('should save and load from local storage', () => {
         saveToLocalStorage(mockState);
         const loaded = loadFromLocalStorage();
-        expect(loaded).toEqual(mockState);
+        // Since loadFromLocalStorage normalizes the data (converting items to pages if needed),
+        // we expect the normalized structure.
+        expect(loaded).toHaveProperty('pages');
+        expect(loaded!.pages).toHaveLength(1);
+        expect(loaded!.pages[0].items).toEqual(mockState.items);
+        expect(loaded!.metadata).toEqual(mockState.metadata);
     });
 
     it('should trigger file download in saveWorksheetToFile', () => {

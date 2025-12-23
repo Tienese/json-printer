@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
 import type { WorksheetItem, WorksheetMetadata } from "../types/worksheet";
-import { GridItemEditor } from "./editors/GridItemEditor";
-import { HeaderItemEditor } from "./editors/HeaderItemEditor";
-import { CardItemEditor } from "./editors/CardItemEditor";
-import { VocabItemEditor } from "./editors/VocabItemEditor";
-import { MultipleChoiceEditor } from "./editors/question-editors/MultipleChoiceEditor";
-import { TrueFalseEditor } from "./editors/question-editors/TrueFalseEditor";
-import { MatchingEditor } from "./editors/question-editors/MatchingEditor";
-import { ClozeEditor } from "./editors/question-editors/ClozeEditor";
+import { GridItemEditor } from "./property-editors/GridItemEditor";
+import { HeaderItemEditor } from "./property-editors/HeaderItemEditor";
+import { CardItemEditor } from "./property-editors/CardItemEditor";
+import { VocabItemEditor } from "./property-editors/VocabItemEditor";
+import { MultipleChoiceEditor } from "./property-editors/question-editors/MultipleChoiceEditor";
+import { TrueFalseEditor } from "./property-editors/question-editors/TrueFalseEditor";
+import { MatchingEditor } from "./property-editors/question-editors/MatchingEditor";
+import { ClozeEditor } from "./property-editors/question-editors/ClozeEditor";
 
 import { LayersPanel } from "./LayersPanel";
 

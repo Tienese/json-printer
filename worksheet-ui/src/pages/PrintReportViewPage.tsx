@@ -23,16 +23,16 @@ export function PrintReportViewPage({ onNavigate }: PrintReportViewPageProps) {
   useEffect(() => {
     // Load report data from sessionStorage
     const storedData = sessionStorage.getItem('printReportData');
-    if (!storedData) {
-      setError('No report data found. Please generate a report first.');
-      return;
-    }
-
-    try {
-      const parsed = JSON.parse(storedData);
-      setReportData(Array.isArray(parsed) ? parsed : [parsed]);
-    } catch (err) {
-      setError('Failed to load report data');
+    if (storedData) {
+      try {
+        const parsed = JSON.parse(storedData);
+        setReportData(Array.isArray(parsed) ? parsed : [parsed]);
+      } catch (err) {
+        console.error(err);
+        setError('Failed to load report data');
+      }
+    } else {
+        setError('No report data found. Please generate a report first.');
     }
   }, []);
 

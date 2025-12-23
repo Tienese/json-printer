@@ -14,16 +14,16 @@ export function QtiSuccessPage({ onNavigate }: QtiSuccessPageProps) {
   useEffect(() => {
     // Load result data from sessionStorage
     const storedData = sessionStorage.getItem('qtiProcessResult');
-    if (!storedData) {
-      setError('No import result found.');
-      return;
-    }
-
-    try {
-      const parsed = JSON.parse(storedData);
-      setResult(parsed);
-    } catch (err) {
-      setError('Failed to load import result');
+    if (storedData) {
+      try {
+        const parsed = JSON.parse(storedData);
+        setResult(parsed);
+      } catch (err) {
+        console.error(err);
+        setError('Failed to load import result');
+      }
+    } else {
+        setError('No import result found.');
     }
   }, []);
 

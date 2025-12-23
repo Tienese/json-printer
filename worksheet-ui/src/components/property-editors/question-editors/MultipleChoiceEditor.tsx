@@ -1,4 +1,4 @@
-import { useState, useEffect, type FC } from 'react';
+import type { FC } from 'react';
 import type { MultipleChoiceItem } from '../../../types/worksheet';
 
 interface Props {
@@ -7,16 +7,13 @@ interface Props {
 }
 
 export const MultipleChoiceEditor: FC<Props> = ({ item, onUpdate }) => {
-  const [localOptions, setLocalOptions] = useState(item.options);
-
-  useEffect(() => {
-    setLocalOptions(item.options);
-  }, [item.options]);
+  // Directly use item.options instead of local state to avoid synchronization issues
+  // and set-state-in-effect warning.
+  const localOptions = item.options;
 
   const handleAddOption = () => {
     if (localOptions.length >= 6) return;
     const newOptions = [...localOptions, `Option ${localOptions.length + 1}`];
-    setLocalOptions(newOptions);
     onUpdate({ ...item, options: newOptions });
   };
 
@@ -28,7 +25,6 @@ export const MultipleChoiceEditor: FC<Props> = ({ item, onUpdate }) => {
       : item.correctIndex > index
         ? item.correctIndex - 1
         : item.correctIndex;
-    setLocalOptions(newOptions);
     onUpdate({ ...item, options: newOptions, correctIndex: newCorrectIndex });
   };
 

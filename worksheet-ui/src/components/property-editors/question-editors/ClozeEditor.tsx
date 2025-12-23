@@ -8,22 +8,20 @@ interface Props {
 
 export const ClozeEditor: FC<Props> = ({ item, onUpdate }) => {
   const [localTemplate, setLocalTemplate] = useState(item.template);
-  const [localAnswers, setLocalAnswers] = useState(item.answers);
 
+  // Reset local state when switching items or undo/redo
   useEffect(() => {
     setLocalTemplate(item.template);
-    setLocalAnswers(item.answers);
-  }, [item.id]);
+  }, [item.id, item.template]);
 
   const handleTemplateChange = (value: string) => {
     setLocalTemplate(value);
-    // Don't update parent yet, wait for blur
   };
 
   const handleTemplateBlur = () => {
     // Count blanks
     const blankCount = (localTemplate.match(/\{\{blank\}\}/gi) || []).length;
-    let newAnswers = [...localAnswers];
+    let newAnswers = [...item.answers];
 
     if (blankCount > newAnswers.length) {
         // Add blanks
@@ -33,14 +31,12 @@ export const ClozeEditor: FC<Props> = ({ item, onUpdate }) => {
         newAnswers = newAnswers.slice(0, blankCount);
     }
 
-    setLocalAnswers(newAnswers);
     onUpdate({ ...item, template: localTemplate, answers: newAnswers });
   };
 
   const handleAnswerChange = (index: number, value: string) => {
-    const newAnswers = [...localAnswers];
+    const newAnswers = [...item.answers];
     newAnswers[index] = value;
-    setLocalAnswers(newAnswers);
     onUpdate({ ...item, answers: newAnswers });
   };
 
@@ -78,9 +74,9 @@ export const ClozeEditor: FC<Props> = ({ item, onUpdate }) => {
         data-testid="cloze-template-input"
       />
 
-      <label className="prop-label">Answers ({localAnswers.length})</label>
+      <label className="prop-label">Answers ({item.answers.length})</label>
       <div className="fib-answers-list">
-        {localAnswers.map((answer, index) => (
+        {item.answers.map((answer, index) => (
           <div key={index} className="answer-row" style={{ marginBottom: '5px' }}>
             <label style={{ fontSize: '11px' }}>Blank {index + 1}:</label>
             <input

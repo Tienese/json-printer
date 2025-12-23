@@ -37,9 +37,26 @@ export const MatchingItemComponent: FC<Props> = ({
     const rightItems = item.pairs.map((p, i) => ({ text: p.right, id: i }));
 
     // Simple Fisher-Yates shuffle for randomness on student view load
+    // Note: We use a seeded random based on item.id/content to keep it consistent during re-renders but random-looking
     const scrambled = [...rightItems.map(r => r.text)];
+
+    // Use a simple hash function for consistent shuffling
+    const seed = item.pairs.reduce((acc, pair) => {
+      let hash = acc;
+      for (let i = 0; i < pair.right.length; i++) {
+        hash = ((hash << 5) - hash) + pair.right.charCodeAt(i);
+        hash |= 0; // Convert to 32bit integer
+      }
+      return hash;
+    }, 0);
+    let randomState = seed;
+    const pseudoRandom = () => {
+       randomState = (randomState * 1664525 + 1013904223) % 4294967296;
+       return randomState / 4294967296;
+    };
+
     for (let i = scrambled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
+      const j = Math.floor(pseudoRandom() * (i + 1));
       [scrambled[i], scrambled[j]] = [scrambled[j], scrambled[i]];
     }
 
