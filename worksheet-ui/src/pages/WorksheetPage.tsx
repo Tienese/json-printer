@@ -13,6 +13,7 @@ import { Sidebar } from '../components/Sidebar';
 import { MenuBar } from '../components/MenuBar';
 import { StatusBar } from '../components/StatusBar';
 import { ContextMenuPortal } from '../components/ContextMenuPortal';
+import { CoachSidebar } from '../components/CoachSidebar';
 
 import { saveWorksheetToFile, loadWorksheetFromFile } from '../utils/worksheetStorage';
 import { createMultipleChoiceItem, createTrueFalseItem, createMatchingItem, createClozeItem, createCardItem, createGridItem, createVocabItem } from '../utils/worksheetFactory';
@@ -110,7 +111,8 @@ export function WorksheetPage({ onNavigate, worksheetId }: WorksheetPageProps) {
     worksheetId ? Number(worksheetId) : null
   );
   const { history, triggerManualSave } = useAutoSave(pages, metadata, currentWorksheetId);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);  // Collapsed by default
+  const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(false);  // Collapsed by default
+  const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);  // Coach sidebar collapsed by default
   const [previewTemplate, setPreviewTemplate] = useState<WorksheetTemplate | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [zoom, setZoom] = useState(1);  // 1 = 100%, for printable area readability
@@ -278,9 +280,9 @@ export function WorksheetPage({ onNavigate, worksheetId }: WorksheetPageProps) {
 
 
   return (
-    <div className={`grid grid-rows-[auto_1fr_auto] h-screen w-full bg-app-gray overflow-hidden print:bg-white print:h-auto print:overflow-visible print:block ${isSidebarOpen ? 'grid-cols-[300px_1fr]' : 'grid-cols-[40px_1fr]'}`}>
+    <div className={`grid grid-rows-[auto_1fr_auto] h-screen w-full bg-app-gray overflow-hidden print:bg-white print:h-auto print:overflow-visible print:block ${isLeftSidebarOpen ? 'grid-cols-[300px_1fr_auto]' : 'grid-cols-[40px_1fr_auto]'}`}>
       {/* Top Menu Bar */}
-      <div className="col-span-2 print:hidden">
+      <div className="col-span-3 print:hidden">
         <Navbar
           onBack={() => onNavigate?.(ROUTES.HOME)}
           actions={
@@ -326,8 +328,8 @@ export function WorksheetPage({ onNavigate, worksheetId }: WorksheetPageProps) {
           }}
           onAddVocabTerm={addVocabTerm}
           onAddTFQuestion={addTFQuestion}
-          isOpen={isSidebarOpen}
-          onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+          isOpen={isLeftSidebarOpen}
+          onToggle={() => setIsLeftSidebarOpen(!isLeftSidebarOpen)}
         />
       </div>
 
@@ -451,6 +453,16 @@ export function WorksheetPage({ onNavigate, worksheetId }: WorksheetPageProps) {
           )}
         </section>
       </main>
+
+      {/* Right Sidebar - Coach Panel */}
+      <div className="row-span-1 border-l border-gray-200 bg-white print:hidden h-full overflow-hidden flex flex-col">
+        <CoachSidebar
+          worksheetId={currentWorksheetId}
+          worksheetJson={JSON.stringify({ metadata, pages })}
+          isOpen={isRightSidebarOpen}
+          onToggle={() => setIsRightSidebarOpen(!isRightSidebarOpen)}
+        />
+      </div>
 
       {/* Print-Only: Render ALL pages with page breaks - OUTSIDE main */}
       <div className="hidden print:block print:absolute print:inset-0 print:p-0 print:m-0 print:z-50">

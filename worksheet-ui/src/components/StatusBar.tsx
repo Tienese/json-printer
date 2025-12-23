@@ -26,7 +26,7 @@ export function StatusBar({
     const handleZoomReset = () => onZoomChange(1);
 
     return (
-        <div className="col-span-2 h-8 bg-white border-t border-gray-200 flex items-center justify-between px-4 text-xs text-gray-600 print:hidden">
+        <div className="col-span-3 h-8 bg-white border-t border-gray-200 flex items-center justify-between px-4 text-xs text-gray-600 print:hidden">
             {/* Left: Metadata */}
             <div className="flex items-center gap-4">
                 <span>📄 {totalPages} page{totalPages !== 1 ? 's' : ''}</span>
