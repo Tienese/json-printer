@@ -8,6 +8,7 @@ import { MultipleChoiceEditor } from "./editors/question-editors/MultipleChoiceE
 import { TrueFalseEditor } from "./editors/question-editors/TrueFalseEditor";
 import { MatchingEditor } from "./editors/question-editors/MatchingEditor";
 import { ClozeEditor } from "./editors/question-editors/ClozeEditor";
+import { isVocabItem, isTrueFalseItem } from "../types/typeGuards";
 
 import { LayersPanel } from "./LayersPanel";
 
@@ -54,11 +55,17 @@ export function Sidebar({
             case 'CARD':
               return <CardItemEditor item={selectedItem} onUpdate={onUpdate} />;
             case 'VOCAB':
-              return <VocabItemEditor item={selectedItem as any} onUpdate={onUpdate} onAddTerm={onAddVocabTerm} />;
+              if (isVocabItem(selectedItem)) {
+                return <VocabItemEditor item={selectedItem} onUpdate={onUpdate} onAddTerm={onAddVocabTerm} />;
+              }
+              return null;
             case 'MULTIPLE_CHOICE':
               return <MultipleChoiceEditor item={selectedItem} onUpdate={onUpdate} />;
             case 'TRUE_FALSE':
-              return <TrueFalseEditor item={selectedItem as any} onUpdate={onUpdate} onAddQuestion={onAddTFQuestion} />;
+              if (isTrueFalseItem(selectedItem)) {
+                return <TrueFalseEditor item={selectedItem} onUpdate={onUpdate} onAddQuestion={onAddTFQuestion} />;
+              }
+              return null;
             case 'MATCHING':
               return <MatchingEditor item={selectedItem} onUpdate={onUpdate} />;
             case 'CLOZE':
