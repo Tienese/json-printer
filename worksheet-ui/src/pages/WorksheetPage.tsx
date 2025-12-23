@@ -10,13 +10,11 @@ import { MatchingItemComponent } from '../components/items/MatchingItem';
 import { ClozeItemComponent } from '../components/items/ClozeItem';
 import { useWorksheet } from '../hooks/useWorksheet';
 import { Sidebar } from '../components/Sidebar';
-import { SaveLoadToolbar } from '../components/items/SaveLoadToolbar';
-import { ModeToggle } from '../components/items/ModeToggle';
+import { MenuBar } from '../components/MenuBar';
 
 import { saveWorksheetToFile, loadWorksheetFromFile } from '../utils/worksheetStorage';
 import { createMultipleChoiceItem, createTrueFalseItem, createMatchingItem, createClozeItem, createCardItem, createGridItem, createVocabItem } from '../utils/worksheetFactory';
 import { useAutoSave } from '../hooks/useAutoSave';
-import { TimelineSidebar } from '../components/TimelineSidebar';
 import { Navbar } from '../components/Navbar';
 import { ROUTES } from '../navigation/routes';
 import { aiLog } from '../utils/aiLogger';
@@ -110,7 +108,6 @@ export function WorksheetPage({ onNavigate, worksheetId }: WorksheetPageProps) {
     worksheetId ? Number(worksheetId) : null
   );
   const { history, renameHistoryEntry, triggerManualSave } = useAutoSave(pages, metadata, currentWorksheetId);
-  const [isTimelineOpen, setIsTimelineOpen] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [previewTemplate, setPreviewTemplate] = useState<WorksheetTemplate | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -276,56 +273,29 @@ export function WorksheetPage({ onNavigate, worksheetId }: WorksheetPageProps) {
     setContextMenu(null);
   };
 
+  // Get current worksheet JSON for analysis
+  const worksheetJson = JSON.stringify({ metadata, pages });
+
   return (
-    <div className={`grid grid-rows-[auto_1fr] h-screen w-full bg-app-gray overflow-hidden print:bg-white print:h-auto print:overflow-visible print:block ${isSidebarOpen ? 'grid-cols-[auto_1fr_300px]' : 'grid-cols-[auto_1fr_40px]'}`}>
-      {/* Top Toolbar */}
-      <div className="col-span-3 print:hidden">
+    <div className={`grid grid-rows-[auto_1fr] h-screen w-full bg-app-gray overflow-hidden print:bg-white print:h-auto print:overflow-visible print:block ${isSidebarOpen ? 'grid-cols-[1fr_300px]' : 'grid-cols-[1fr_40px]'}`}>
+      {/* Top Menu Bar */}
+      <div className="col-span-2 print:hidden">
         <Navbar
           onBack={() => onNavigate?.(ROUTES.HOME)}
           actions={
-            <>
-              <div className="h-6 w-px bg-gray-200"></div>
-              <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
-                {[
-                  { label: 'Card', type: 'CARD' },
-                  { label: 'Grid', type: 'GRID' },
-                  { label: 'Vocab', type: 'VOCAB' },
-                  { label: 'MC', type: 'MULTIPLE_CHOICE' },
-                  { label: 'T/F', type: 'TRUE_FALSE' },
-                  { label: 'Match', type: 'MATCHING' },
-                  { label: 'Cloze', type: 'CLOZE' },
-                ].map(opt => (
-                  <button
-                    key={opt.type}
-                    className="px-3 py-1.5 text-xs font-semibold rounded-md text-gray-600"
-                    onClick={() => addItem(createItemByType(opt.type), items.length)}
-                  >
-                    + {opt.label}
-                  </button>
-                ))}
-              </div>
-              <SaveLoadToolbar
-                onSave={handleSave}
-                onLoad={handleLoad}
-                onSnapshot={triggerManualSave}
-                onSaveToCloud={handleSaveToCloud}
-                isSaving={isSaving}
-              />
-              <div className="h-6 w-px bg-gray-200"></div>
-              <ModeToggle mode={mode} onToggle={toggleMode} />
-            </>
+            <MenuBar
+              onSaveToCloud={handleSaveToCloud}
+              onSaveToFile={handleSave}
+              onLoadFromFile={handleLoad}
+              onSnapshot={triggerManualSave}
+              history={history}
+              onPreviewHistory={setPreviewTemplate}
+              isSaving={isSaving}
+              mode={mode}
+              onToggleMode={toggleMode}
+              onAddItem={(type) => addItem(createItemByType(type), items.length)}
+            />
           }
-        />
-      </div>
-
-      {/* Left Sidebar - Timeline */}
-      <div className="row-span-1 border-r border-gray-200 bg-gray-50 print:hidden h-full overflow-hidden flex flex-col">
-        <TimelineSidebar
-          history={history}
-          onPreview={setPreviewTemplate}
-          onRename={renameHistoryEntry}
-          isOpen={isTimelineOpen}
-          onToggle={() => setIsTimelineOpen(!isTimelineOpen)}
         />
       </div>
 
@@ -335,9 +305,8 @@ export function WorksheetPage({ onNavigate, worksheetId }: WorksheetPageProps) {
         onClick={() => !isPreviewMode && handleSelectItem(null)}
         onKeyDown={(e) => { if (e.key === 'Escape') !isPreviewMode && handleSelectItem(null); }}
         onContextMenu={(e) => {
-          if (!isPreviewMode && e.target === e.currentTarget) {
-            handleContextMenu(e, 'ADD');
-          }
+          // Only prevent default, no menu on canvas background
+          e.preventDefault();
         }}
         tabIndex={-1}
       >
@@ -378,13 +347,20 @@ export function WorksheetPage({ onNavigate, worksheetId }: WorksheetPageProps) {
           className={`relative mb-10 bg-white shadow-[0_20px_50px_rgba(0,0,0,0.15)] p-[1.27cm] box-border w-[210mm] min-h-[297mm] flex flex-col origin-top transition-all duration-300 print:hidden outline-none ${isPreviewMode ? 'ring-4 ring-amber-400 pointer-events-none opacity-80 scale-[0.98]' : ''}`}
           onClick={(e) => e.stopPropagation()}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') e.stopPropagation(); }}
+          onContextMenu={(e) => {
+            // Right-click on printing area shows ADD menu
+            if (!isPreviewMode) {
+              e.stopPropagation();
+              handleContextMenu(e, 'ADD');
+            }
+          }}
           aria-label="Worksheet Editor Content"
         >
           {displayItems.length === 0 ? (
             <div className="flex-1 flex flex-col items-center justify-center text-gray-300 border-2 border-dashed border-gray-100 rounded-2xl m-8">
               <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="mb-4 opacity-20"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" /><polyline points="14.5 2 14.5 7.5 20 7.5" /><line x1="12" y1="18" x2="12" y2="12" /><line x1="9" y1="15" x2="15" y2="15" /></svg>
               <p className="text-xl font-medium">Worksheet is empty</p>
-              <p className="text-sm">Right click or use the toolbar to add content</p>
+              <p className="text-sm">Right click or use Insert menu to add content</p>
             </div>
           ) : (
             displayItems.map((item) => {
@@ -413,6 +389,7 @@ export function WorksheetPage({ onNavigate, worksheetId }: WorksheetPageProps) {
                   }}
                   onContextMenu={(e) => {
                     if (!isPreviewMode) {
+                      e.stopPropagation();
                       handleSelectItem(item);
                       handleContextMenu(e, 'DELETE', item);
                     }
@@ -460,7 +437,7 @@ export function WorksheetPage({ onNavigate, worksheetId }: WorksheetPageProps) {
         ))}
       </div>
 
-      {/* Right Sidebar - Properties */}
+      {/* Right Sidebar - Properties with Tabs */}
       <div className="row-span-1 border-l border-gray-200 bg-white print:hidden h-full overflow-hidden flex flex-col">
         <Sidebar
           itemsState={{
@@ -487,6 +464,12 @@ export function WorksheetPage({ onNavigate, worksheetId }: WorksheetPageProps) {
           onAddTFQuestion={addTFQuestion}
           isOpen={isSidebarOpen}
           onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+          // New props for integrated timeline and vocab
+          history={history}
+          onPreviewHistory={setPreviewTemplate}
+          onRenameHistory={renameHistoryEntry}
+          worksheetId={currentWorksheetId}
+          worksheetJson={worksheetJson}
         />
       </div>
 

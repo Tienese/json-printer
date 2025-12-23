@@ -10,6 +10,22 @@ import { MatchingEditor } from "./editors/question-editors/MatchingEditor";
 import { ClozeEditor } from "./editors/question-editors/ClozeEditor";
 
 import { LayersPanel } from "./LayersPanel";
+import { VocabCoachPanel } from "./VocabCoachPanel";
+import { formatTimeAgo, formatFullDateTime } from "../utils/dateUtils";
+import type { HistoryEntry } from "../hooks/useAutoSave";
+import type { WorksheetTemplate } from "../types/worksheet";
+
+type TabType = 'layers' | 'properties' | 'timeline' | 'vocab';
+
+interface ExtendedSidebarProps extends SidebarProps {
+  // Timeline props
+  history?: HistoryEntry[];
+  onPreviewHistory?: (template: WorksheetTemplate) => void;
+  onRenameHistory?: (timestamp: string, newLabel: string) => void;
+  // Vocab props
+  worksheetId?: number | null;
+  worksheetJson?: string;
+}
 
 export function Sidebar({
   itemsState,
@@ -18,20 +34,24 @@ export function Sidebar({
   onAddVocabTerm,
   onAddTFQuestion,
   isOpen,
-  onToggle
-}: SidebarProps) {
-  // Destructure grouped props for easier use
+  onToggle,
+  history = [],
+  onPreviewHistory,
+  onRenameHistory,
+  worksheetId = null,
+  worksheetJson = '',
+}: ExtendedSidebarProps) {
   const { items, selectedItem, onSelectItem, onUpdate, onDelete, onReorderItems } = itemsState;
   const { metadata, onUpdateMetadata } = metadataState;
   const { currentPageIndex, totalPages, onPrevPage, onNextPage, onAddPage, onDeletePage } = pageState;
-  const [activeTab, setActiveTab] = useState<'layers' | 'properties'>('layers');
+  const [activeTab, setActiveTab] = useState<TabType>('layers');
+  const [editingTimestamp, setEditingTimestamp] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState('');
 
-  // Auto-switch tabs based on selection
+  // Auto-switch to properties when item selected
   useEffect(() => {
     if (selectedItem) {
       setActiveTab('properties');
-    } else {
-      setActiveTab('layers');
     }
   }, [selectedItem]);
 
@@ -81,11 +101,31 @@ export function Sidebar({
     );
   };
 
+  const handleStartEdit = (entry: HistoryEntry, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingTimestamp(entry.id || entry.timestamp);
+    setEditValue(entry.label || `Snapshot ${history.length - history.indexOf(entry)}`);
+  };
+
+  const handleSaveEdit = () => {
+    if (editingTimestamp && onRenameHistory) {
+      onRenameHistory(editingTimestamp, editValue);
+      setEditingTimestamp(null);
+    }
+  };
+
+  const tabs = [
+    { id: 'layers' as TabType, label: 'Outline', icon: '☰' },
+    { id: 'properties' as TabType, label: 'Props', icon: '⚙' },
+    { id: 'timeline' as TabType, label: 'History', icon: '📜' },
+    { id: 'vocab' as TabType, label: 'Coach', icon: '📊' },
+  ];
+
   return (
     <div className={`shrink-0 bg-sidebar-bg border-l border-gray-200 flex flex-col h-full relative transition-all duration-300 print:hidden ${isOpen ? 'w-[300px]' : 'w-[40px] items-center'}`}>
       {/* Sidebar Title Bar / Collapse Toggle */}
       <div className="flex items-center justify-between p-3 border-b border-gray-200 h-[45px] w-full">
-        {isOpen && <h2 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Properties</h2>}
+        {isOpen && <h2 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Sidebar</h2>}
         <button
           onClick={onToggle}
           className="p-1 hover:bg-gray-200 rounded text-gray-500"
@@ -101,24 +141,27 @@ export function Sidebar({
 
       {isOpen && (
         <>
-          {/* Tabs Navigation */}
+          {/* Tabs Navigation - 4 tabs */}
           <div className="flex border-b border-gray-200 w-full">
-            <button
-              className={`flex-1 py-3 text-sm font-medium transition-colors ${activeTab === 'layers' ? 'text-primary-blue border-b-2 border-primary-blue bg-blue-50/30' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'}`}
-              onClick={() => setActiveTab('layers')}
-            >
-              Outline
-            </button>
-            <button
-              className={`flex-1 py-3 text-sm font-medium transition-colors ${activeTab === 'properties' ? 'text-primary-blue border-b-2 border-primary-blue bg-blue-50/30' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'}`}
-              onClick={() => setActiveTab('properties')}
-            >
-              Properties
-            </button>
+            {tabs.map(tab => (
+              <button
+                key={tab.id}
+                className={`flex-1 py-2.5 text-xs font-medium transition-colors ${activeTab === tab.id
+                  ? 'text-primary-blue border-b-2 border-primary-blue bg-blue-50/30'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                  }`}
+                onClick={() => setActiveTab(tab.id)}
+                title={tab.label}
+              >
+                <span className="hidden sm:inline">{tab.label}</span>
+                <span className="sm:hidden">{tab.icon}</span>
+              </button>
+            ))}
           </div>
 
           {/* Tab Content */}
           <div className="flex-1 overflow-y-auto w-full">
+            {/* LAYERS TAB */}
             {activeTab === 'layers' && (
               <div className="flex flex-col h-full animate-in fade-in slide-in-from-left-1">
                 {/* Worksheet Title */}
@@ -189,17 +232,92 @@ export function Sidebar({
               </div>
             )}
 
+            {/* PROPERTIES TAB */}
             {activeTab === 'properties' && (
               <div className="p-4 animate-in fade-in slide-in-from-right-1">
                 {renderEditor()}
               </div>
             )}
+
+            {/* TIMELINE TAB */}
+            {activeTab === 'timeline' && (
+              <div className="p-2 animate-in fade-in">
+                {history.length === 0 ? (
+                  <div className="text-center py-12 text-gray-400">
+                    <span className="text-3xl mb-2 block">📜</span>
+                    <p className="text-sm">No history yet</p>
+                    <p className="text-xs mt-1">Snapshots will appear here</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {history.map((entry, idx) => (
+                      <div
+                        key={entry.id || entry.timestamp}
+                        className="group relative p-3 rounded-lg hover:bg-white hover:shadow-sm border border-transparent hover:border-gray-200 transition-all cursor-pointer"
+                        onClick={() => onPreviewHistory?.(entry.template)}
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className={`w-2.5 h-2.5 rounded-full mt-1 shrink-0 ${entry.type === 'manual'
+                            ? 'bg-blue-500 ring-2 ring-blue-100'
+                            : idx === 0
+                              ? 'bg-green-500 ring-2 ring-green-100'
+                              : 'bg-gray-300'
+                            }`} />
+
+                          <div className="flex-1 min-w-0">
+                            {editingTimestamp === (entry.id || entry.timestamp) ? (
+                              <input
+                                autoFocus
+                                className="w-full text-xs border rounded px-1 py-0.5 outline-none focus:border-blue-500"
+                                value={editValue}
+                                onChange={(e) => setEditValue(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') handleSaveEdit();
+                                  if (e.key === 'Escape') setEditingTimestamp(null);
+                                }}
+                                onBlur={handleSaveEdit}
+                                onClick={e => e.stopPropagation()}
+                              />
+                            ) : (
+                              <>
+                                <span className={`text-xs font-medium block ${entry.type === 'manual' ? 'text-blue-700' : 'text-gray-700'}`}>
+                                  {entry.label || (entry.type === 'manual' ? 'Snapshot' : 'Auto-save')}
+                                </span>
+                                <span className="text-[10px] text-gray-400" title={formatFullDateTime(entry.timestamp)}>
+                                  {formatTimeAgo(entry.timestamp)}
+                                </span>
+                              </>
+                            )}
+                          </div>
+
+                          <button
+                            className="opacity-0 group-hover:opacity-100 p-1 hover:bg-gray-100 rounded text-gray-400 hover:text-blue-600 transition-opacity"
+                            onClick={(e) => handleStartEdit(entry, e)}
+                            title="Rename"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /><path d="m15 5 4 4" /></svg>
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* VOCAB COACH TAB */}
+            {activeTab === 'vocab' && (
+              <div className="animate-in fade-in">
+                <VocabCoachPanel worksheetId={worksheetId} worksheetJson={worksheetJson} />
+              </div>
+            )}
           </div>
         </>
       )}
+
       {!isOpen && (
         <div className="flex flex-col items-center py-4 gap-4">
-          <div className={`w-2 h-2 rounded-full ${selectedItem ? 'bg-blue-500' : 'bg-gray-300'}`} title={selectedItem ? "Item Selected" : "No Selection"}></div>
+          <div className={`w-2 h-2 rounded-full ${selectedItem ? 'bg-blue-500' : 'bg-gray-300'}`} title={selectedItem ? "Item Selected" : "No Selection"} />
         </div>
       )}
     </div>
