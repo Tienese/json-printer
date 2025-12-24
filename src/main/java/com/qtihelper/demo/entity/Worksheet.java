@@ -7,7 +7,11 @@ import java.time.LocalDateTime;
  * Worksheet entity for persisting user-created worksheets.
  */
 @Entity
-@Table(name = "worksheets")
+@Table(name = "worksheets", indexes = {
+    @Index(name = "idx_worksheet_type", columnList = "type"),
+    @Index(name = "idx_worksheet_parent_id", columnList = "parentId"),
+    @Index(name = "idx_worksheet_updated_at", columnList = "updatedAt")
+})
 public class Worksheet {
 
     @Id
