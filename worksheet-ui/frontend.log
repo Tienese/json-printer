@@ -1,0 +1,29 @@
+
+> worksheet-ui@0.0.0 dev
+> vite
+
+
+  VITE v7.3.0  ready in 428 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+11:04:13 PM [vite] http proxy error: /api/worksheets/templates
+AggregateError [ECONNREFUSED]:
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)
+11:04:13 PM [vite] http proxy error: /api/worksheets?type=SNAPSHOT
+AggregateError [ECONNREFUSED]:
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)
+11:04:13 PM [vite] http proxy error: /api/worksheets/templates
+AggregateError [ECONNREFUSED]:
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)
+11:04:13 PM [vite] http proxy error: /api/worksheets?type=SNAPSHOT
+AggregateError [ECONNREFUSED]:
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)
+11:11:43 PM [vite] (client) hmr update /src/components/FeatureSidebar.tsx, /src/styles/tailwind.css
+11:12:02 PM [vite] (client) hmr update /src/components/StatusBar.tsx, /src/styles/tailwind.css
+11:13:31 PM [vite] (client) ✨ new dependencies optimized: lucide-react
+11:13:31 PM [vite] (client) ✨ optimized dependencies changed. reloading

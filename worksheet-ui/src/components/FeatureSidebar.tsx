@@ -80,7 +80,7 @@ export function FeatureSidebar({ currentRoute, onNavigate }: Readonly<FeatureSid
                         >
                             <div className="flex items-center justify-between mb-1">
                                 <div className="flex items-center gap-2">
-                                    <span className="text-lg">{feature.icon}</span>
+                                    <span className="text-lg" role="img" aria-label={feature.name}>{feature.icon}</span>
                                     <span className="font-bold text-sm">{feature.name}</span>
                                 </div>
                                 {isOffline && (

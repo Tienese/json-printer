@@ -1,0 +1,142 @@
+[INFO] Scanning for projects...
+[INFO]
+[INFO] -------------------------< com.qtihelper:demo >-------------------------
+[INFO] Building demo 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO]
+[INFO] >>> spring-boot:3.5.8:run (default-cli) > test-compile @ demo >>>
+[INFO]
+[INFO] --- frontend:1.15.1:install-node-and-npm (install-node-and-npm) @ demo ---
+[INFO] Node v22.12.0 is already installed.
+[INFO] NPM 10.9.0 is already installed.
+[INFO]
+[INFO] --- frontend:1.15.1:npm (npm-install) @ demo ---
+[INFO] Running 'npm install' in /app/worksheet-ui
+[INFO]
+[INFO] up to date, audited 335 packages in 2s
+[INFO]
+[INFO] 80 packages are looking for funding
+[INFO]   run `npm fund` for details
+[INFO]
+[INFO] found 0 vulnerabilities
+[INFO]
+[INFO] --- frontend:1.15.1:npm (npm-build) @ demo ---
+[INFO] Running 'npm run build' in /app/worksheet-ui
+[INFO]
+[INFO] > worksheet-ui@0.0.0 build
+[INFO] > tsc -b && vite build
+[INFO]
+[INFO] vite v7.3.0 building client environment for production...
+[INFO] transforming...
+[INFO] ✓ 1772 modules transformed.
+[INFO] [plugin vite:reporter]
+[INFO] [plugin vite:reporter] rendering chunks...
+[INFO] (!) /app/worksheet-ui/src/api/worksheets.ts is dynamically imported by /app/worksheet-ui/src/hooks/useAutoSave.ts, /app/worksheet-ui/src/pages/WorksheetPage.tsx, /app/worksheet-ui/src/pages/WorksheetPage.tsx but also statically imported by /app/worksheet-ui/src/pages/WorksheetDashboardPage.tsx, dynamic import will not move module into another chunk.
+[INFO]
+[INFO] computing gzip size...
+[INFO] dist/index.html                   0.61 kB │ gzip:   0.39 kB
+[INFO] dist/assets/index-DeGZFQn9.css   50.39 kB │ gzip:   9.46 kB
+[INFO] dist/assets/index-B4TIQPj5.js   406.01 kB │ gzip: 110.03 kB
+[INFO] ✓ built in 6.34s
+[INFO]
+[INFO] --- resources:3.3.1:resources (default-resources) @ demo ---
+[INFO] Copying 1 resource from src/main/resources to target/classes
+[INFO] Copying 18 resources from src/main/resources to target/classes
+[INFO]
+[INFO] --- resources:3.3.1:copy-resources (copy-frontend-build) @ demo ---
+[INFO] Copying 4 resources from worksheet-ui/dist to target/classes/static
+[INFO]
+[INFO] --- compiler:3.14.1:compile (default-compile) @ demo ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 76 source files with javac [debug parameters release 21] to target/classes
+[INFO] Annotation processing is enabled because one or more processors were found
+  on the class path. A future release of javac may disable annotation processing
+  unless at least one processor is specified by name (-processor), or a search
+  path is specified (--processor-path, --processor-module-path), or annotation
+  processing is enabled explicitly (-proc:only, -proc:full).
+  Use -Xlint:-options to suppress this message.
+  Use -proc:none to disable annotation processing.
+[INFO] /app/src/main/java/com/qtihelper/demo/service/StudentSubmissionParser.java: /app/src/main/java/com/qtihelper/demo/service/StudentSubmissionParser.java uses or overrides a deprecated API.
+[INFO] /app/src/main/java/com/qtihelper/demo/service/StudentSubmissionParser.java: Recompile with -Xlint:deprecation for details.
+[INFO]
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ demo ---
+[INFO] skip non existing resourceDirectory /app/src/test/resources
+[INFO]
+[INFO] --- compiler:3.14.1:testCompile (default-testCompile) @ demo ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 4 source files with javac [debug parameters release 21] to target/test-classes
+[INFO] Annotation processing is enabled because one or more processors were found
+  on the class path. A future release of javac may disable annotation processing
+  unless at least one processor is specified by name (-processor), or a search
+  path is specified (--processor-path, --processor-module-path), or annotation
+  processing is enabled explicitly (-proc:only, -proc:full).
+  Use -Xlint:-options to suppress this message.
+  Use -proc:none to disable annotation processing.
+[INFO]
+[INFO] <<< spring-boot:3.5.8:run (default-cli) < test-compile @ demo <<<
+[INFO]
+[INFO]
+[INFO] --- spring-boot:3.5.8:run (default-cli) @ demo ---
+[INFO] Attaching agents: []
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.5.8)
+
+2025-12-24T23:12:43.848Z  INFO 4951 --- [demo] [  restartedMain] com.qtihelper.demo.DemoApplication       : Starting DemoApplication using Java 21.0.8 with PID 4951 (/app/target/classes started by jules in /app)
+2025-12-24T23:12:43.850Z DEBUG 4951 --- [demo] [  restartedMain] com.qtihelper.demo.DemoApplication       : Running with Spring Boot v3.5.8, Spring v6.2.14
+2025-12-24T23:12:43.851Z  INFO 4951 --- [demo] [  restartedMain] com.qtihelper.demo.DemoApplication       : No active profile set, falling back to 1 default profile: "default"
+2025-12-24T23:12:43.910Z  INFO 4951 --- [demo] [  restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2025-12-24T23:12:43.911Z  INFO 4951 --- [demo] [  restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2025-12-24T23:12:44.830Z  INFO 4951 --- [demo] [  restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-12-24T23:12:45.020Z  INFO 4951 --- [demo] [  restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 178 ms. Found 4 JPA repository interfaces.
+2025-12-24T23:12:45.641Z  INFO 4951 --- [demo] [  restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2025-12-24T23:12:45.659Z  INFO 4951 --- [demo] [  restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-12-24T23:12:45.660Z  INFO 4951 --- [demo] [  restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.49]
+2025-12-24T23:12:45.702Z  INFO 4951 --- [demo] [  restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-12-24T23:12:45.704Z  INFO 4951 --- [demo] [  restartedMain] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1791 ms
+2025-12-24T23:12:45.911Z  INFO 4951 --- [demo] [  restartedMain] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-12-24T23:12:45.969Z  INFO 4951 --- [demo] [  restartedMain] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.36.Final
+2025-12-24T23:12:46.006Z  INFO 4951 --- [demo] [  restartedMain] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2025-12-24T23:12:46.349Z  INFO 4951 --- [demo] [  restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-12-24T23:12:46.392Z  INFO 4951 --- [demo] [  restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2025-12-24T23:12:46.573Z  INFO 4951 --- [demo] [  restartedMain] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.sqlite.jdbc4.JDBC4Connection@114b8af8
+2025-12-24T23:12:46.575Z  INFO 4951 --- [demo] [  restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2025-12-24T23:12:46.623Z  INFO 4951 --- [demo] [  restartedMain] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 3.45
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2025-12-24T23:12:47.704Z  INFO 4951 --- [demo] [  restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-12-24T23:12:47.763Z  INFO 4951 --- [demo] [  restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-12-24T23:12:48.078Z  INFO 4951 --- [demo] [  restartedMain] c.q.demo.service.CanvasQuizFetcher       : Initializing Canvas API client
+2025-12-24T23:12:48.078Z DEBUG 4951 --- [demo] [  restartedMain] c.q.demo.service.CanvasQuizFetcher       : Canvas URL: https://canvas.instructure.com
+2025-12-24T23:12:48.079Z DEBUG 4951 --- [demo] [  restartedMain] c.q.demo.service.CanvasQuizFetcher       : Canvas token: mock****
+2025-12-24T23:12:48.589Z  INFO 4951 --- [demo] [  restartedMain] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2025-12-24T23:12:49.344Z  INFO 4951 --- [demo] [  restartedMain] c.q.d.service.SudachiTokenizerService    : Initializing Kuromoji Japanese tokenizer...
+2025-12-24T23:12:49.368Z  INFO 4951 --- [demo] [  restartedMain] c.q.d.service.SudachiTokenizerService    : Kuromoji tokenizer initialized in 23ms
+2025-12-24T23:12:49.527Z  WARN 4951 --- [demo] [  restartedMain] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-12-24T23:12:49.558Z  INFO 4951 --- [demo] [  restartedMain] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
+2025-12-24T23:12:49.941Z  INFO 4951 --- [demo] [  restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
+2025-12-24T23:12:49.973Z  INFO 4951 --- [demo] [  restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
+2025-12-24T23:12:49.984Z  INFO 4951 --- [demo] [  restartedMain] com.qtihelper.demo.DemoApplication       : Started DemoApplication in 6.627 seconds (process running for 7.138)
+2025-12-24T23:12:49.997Z  INFO 4951 --- [demo] [  restartedMain] c.q.demo.service.VocabSeederService      : Starting vocabulary CSV seeder...
+2025-12-24T23:12:49.999Z  INFO 4951 --- [demo] [  restartedMain] c.q.demo.service.VocabSeederService      : Processing lesson 1 from file: lesson_1.csv
+2025-12-24T23:12:50.129Z DEBUG 4951 --- [demo] [  restartedMain] c.q.demo.service.VocabSeederService      : Read 36 lines from lesson_1.csv
+2025-12-24T23:12:50.638Z  INFO 4951 --- [demo] [  restartedMain] c.q.demo.service.VocabSeederService      : Loaded 36 words for Lesson 1 (skipped 0 empty/comment lines)
+2025-12-24T23:12:50.640Z  INFO 4951 --- [demo] [  restartedMain] c.q.demo.service.VocabSeederService      : Processing lesson 8 from file: lesson_8.csv
+2025-12-24T23:12:50.659Z DEBUG 4951 --- [demo] [  restartedMain] c.q.demo.service.VocabSeederService      : Read 49 lines from lesson_8.csv
+2025-12-24T23:12:50.697Z  INFO 4951 --- [demo] [  restartedMain] c.q.demo.service.VocabSeederService      : Loaded 49 words for Lesson 8 (skipped 0 empty/comment lines)
+2025-12-24T23:12:50.719Z  INFO 4951 --- [demo] [  restartedMain] c.q.demo.service.VocabSeederService      : Vocabulary seeding complete. Total vocab count: 85
+2025-12-24T23:13:34.077Z  INFO 4951 --- [demo] [nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-12-24T23:13:34.077Z  INFO 4951 --- [demo] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2025-12-24T23:13:34.079Z  INFO 4951 --- [demo] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 2 ms

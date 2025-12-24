@@ -1,3 +1,4 @@
+import { Minus, Plus } from 'lucide-react';
 import type { WorksheetPage } from '../types/worksheet';
 
 interface StatusBarProps {
@@ -43,7 +44,7 @@ export function StatusBar({
                     className="w-6 h-6 flex items-center justify-center theme-text-secondary hover:bg-[var(--color-elevated)] rounded"
                     title="Zoom Out (50% min)"
                 >
-                    −
+                    <Minus size={14} />
                 </button>
                 <button
                     onClick={handleZoomReset}
@@ -57,7 +58,7 @@ export function StatusBar({
                     className="w-6 h-6 flex items-center justify-center theme-text-secondary hover:bg-[var(--color-elevated)] rounded"
                     title="Zoom In (200% max)"
                 >
-                    +
+                    <Plus size={14} />
                 </button>
             </div>
         </div>
