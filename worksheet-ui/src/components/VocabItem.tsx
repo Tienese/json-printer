@@ -1,5 +1,5 @@
 import { useRef, useCallback, useEffect } from 'react';
-import type { VocabItem } from '../types/worksheet';
+import type { VocabItem, CharacterBox } from '../types/worksheet';
 import { sanitizePaste, sanitizeHTML } from '../utils/htmlSanitizer';
 import { CharacterInput } from './CharacterInput';
 import { QuestionNumber } from './shared/QuestionNumber';
@@ -96,6 +96,25 @@ export function VocabItemComponent({ item, onUpdate }: VocabItemProps) {
     }
   }, [handleTermChange, item.terms]);
 
+  // Handle grid box character change - persist to gridBoxes array
+  const handleGridBoxChange = useCallback((termIndex: number, boxIndex: number, value: string) => {
+    const newTerms = [...item.terms];
+    const term = newTerms[termIndex];
+    const boxCount = term.gridBoxCount || 5;
+
+    // Initialize gridBoxes if needed
+    const boxes: CharacterBox[] = [...(term.gridBoxes || Array(boxCount).fill(null).map(() => ({ char: '', furigana: '' })))];
+
+    // Ensure array is correct length
+    while (boxes.length < boxCount) {
+      boxes.push({ char: '', furigana: '' });
+    }
+
+    boxes[boxIndex] = { ...boxes[boxIndex], char: value };
+    newTerms[termIndex] = { ...term, gridBoxes: boxes };
+    onUpdate({ ...item, terms: newTerms });
+  }, [item, onUpdate]);
+
   return (
     <div className="flex items-baseline">
       <QuestionNumber
@@ -191,7 +210,10 @@ export function VocabItemComponent({ item, onUpdate }: VocabItemProps) {
                                   </>
                                 )}
                                 <div className="relative z-10 w-full h-full flex items-center justify-center">
-                                  <CharacterInput value="" onCommit={() => { }} />
+                                  <CharacterInput
+                                    value={term.gridBoxes?.[boxIdx]?.char || ''}
+                                    onCommit={(newChar) => handleGridBoxChange(index, boxIdx, newChar)}
+                                  />
                                 </div>
                               </div>
                             </div>

@@ -105,6 +105,7 @@ export interface VocabTerm {
   // Per-term settings
   termType?: 'text' | 'grid';      // Default: 'text'
   gridBoxCount?: number;           // Default: 5
+  gridBoxes?: CharacterBox[];      // Character data for grid mode
   showTerm?: boolean;              // Default: true
   showTrailingLine?: boolean;      // Default: true
   termLayout?: 'inline' | 'below'; // Default: 'inline' - term position relative to line
