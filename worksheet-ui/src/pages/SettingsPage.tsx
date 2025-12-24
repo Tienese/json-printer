@@ -63,6 +63,10 @@ export function SettingsPage({ onNavigate }: SettingsPageProps) {
             } else {
                 alert('Failed to import settings. Invalid JSON.');
             }
+            // Reset input to allow re-importing the same file
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
         };
         reader.readAsText(file);
     };

@@ -177,12 +177,6 @@ export const MatchingItemComponent: FC<Props> = ({
           onFocus={handleFocus}
           onBlur={handlePromptBlur}
           onPaste={handlePaste}
-          // We added logic for prompt input too but need ref?
-          // Prompt ref is handled in useEffect. We should add onInput for prompt too for consistency
-          onInput={() => {
-            // Quick inline debounce for prompt
-            // ... (omitted for brevity in this replace block, can add if needed, focusing on pairs per bug report)
-          }}
           data-testid="matching-prompt"
         />
 

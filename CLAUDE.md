@@ -1,7 +1,7 @@
 # Claude Code Configuration: `json-printer`
 
 ## 🏁 1.1.1.1 Rule Priority
-**THIS PROJECT FOLLOWS THE [1.1.1.1 RULES](file:///c:/Users/luuht/Desktop/json-printer/1.1.1.1_RULES.md).**
+**THIS PROJECT FOLLOWS THE [1.1.1.1 RULES](./1.1.1.1_RULES.md).**
 
 
 > **🚨 CRITICAL: LOCALHOST PARALLEL EXECUTION**
@@ -135,4 +135,4 @@ cd src/main/frontend && npm run dev
 * **TypeScript:** Strict typing. Interfaces for all API responses.
 * **CSS:** Tailwind classes preferred over custom CSS files.
 * **Simplicity:** If a library isn't needed, don't add it. Keep `pom.xml` and `package.json` lean.
-* **1.1.1.1 Compliance:** Always check [1.1.1.1_RULES.md](file:///c:/Users/luuht/Desktop/json-printer/1.1.1.1_RULES.md) before implementing new features.
+* **1.1.1.1 Compliance:** Always check [1.1.1.1_RULES.md](./1.1.1.1_RULES.md) before implementing new features.

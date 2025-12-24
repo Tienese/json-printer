@@ -166,9 +166,9 @@ export function GridItemComponent({ item, isSelected, onUpdate }: GridItemProps)
     } else {
       const nextBox = boxIndex + 1;
       setActiveBox({ sectionIndex, boxIndex: nextBox });
-      focusGridBox(sectionIndex, nextBox, isFurigana ? 'furigana' : 'char', 0);
+      focusGridBox(sectionIndex, nextBox, isFurigana ? 'furigana' : 'char', 0, item.id);
     }
-  }, [item.sections, addBox]);
+  }, [item.sections, item.id, addBox]);
 
   // Retreat to previous box (or delete current if empty at end)
   const handleRetreat = useCallback((sectionIndex: number, boxIndex: number, isFurigana: boolean) => {
@@ -182,9 +182,9 @@ export function GridItemComponent({ item, isSelected, onUpdate }: GridItemProps)
     } else if (boxIndex > 0) {
       const prevBox = boxIndex - 1;
       setActiveBox({ sectionIndex, boxIndex: prevBox });
-      focusGridBox(sectionIndex, prevBox, isFurigana ? 'furigana' : 'char', 0);
+      focusGridBox(sectionIndex, prevBox, isFurigana ? 'furigana' : 'char', 0, item.id);
     }
-  }, [item.sections, removeEmptyBox]);
+  }, [item.sections, item.id, removeEmptyBox]);
 
   // Handle furigana keydown for spacebar advance and backspace retreat
   const handleFuriganaKeyDown = useCallback((e: React.KeyboardEvent, sectionIndex: number, boxIndex: number) => {
@@ -228,7 +228,7 @@ export function GridItemComponent({ item, isSelected, onUpdate }: GridItemProps)
 
 
   return (
-    <div className="flex flex-col" data-grid-container>
+    <div className="flex flex-col" data-grid-container data-grid-id={item.id}>
       {/* Question Number + Description Row */}
       <div className="flex items-baseline mb-1">
         <QuestionNumber
