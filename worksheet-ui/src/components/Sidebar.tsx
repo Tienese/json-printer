@@ -78,7 +78,7 @@ export function Sidebar({
         <div className="pt-4 border-t border-gray-200">
           <button
             onClick={() => onDelete(selectedItem)}
-            className="w-full py-2 px-4 bg-red-600 hover:bg-red-700 text-white rounded transition-colors text-sm font-medium"
+            className="w-full py-2 px-4 bg-red-600 text-white rounded text-sm font-medium"
           >
             Delete Item
           </button>
@@ -93,13 +93,13 @@ export function Sidebar({
   ];
 
   return (
-    <div className={`shrink-0 theme-surface border-l theme-border flex flex-col h-full relative transition-all duration-300 print:hidden ${isOpen ? 'w-[300px]' : 'w-[40px] items-center'}`}>
+    <div className={`shrink-0 theme-surface border-l theme-border flex flex-col h-full relative print:hidden ${isOpen ? 'w-[300px]' : 'w-[40px] items-center'}`}>
       {/* Sidebar Title Bar / Collapse Toggle */}
       <div className="flex items-center justify-between p-3 border-b theme-border h-[45px] w-full">
         {isOpen && <h2 className="text-xs font-bold theme-text-muted uppercase tracking-wider">Sidebar</h2>}
         <button
           onClick={onToggle}
-          className="p-1 hover:bg-[var(--color-elevated)] rounded theme-text-secondary"
+          className="p-1 rounded theme-text-secondary"
           title={isOpen ? "Collapse Sidebar" : "Expand Sidebar"}
         >
           {isOpen ? (
@@ -117,9 +117,9 @@ export function Sidebar({
             {tabs.map(tab => (
               <button
                 key={tab.id}
-                className={`flex-1 py-2.5 text-xs font-medium transition-colors ${activeTab === tab.id
+                className={`flex-1 py-2.5 text-xs font-medium ${activeTab === tab.id
                   ? 'theme-accent border-b-2 border-[var(--color-accent)] bg-[var(--color-accent)]/10'
-                  : 'theme-text-secondary hover:theme-text hover:bg-[var(--color-elevated)]'
+                  : 'theme-text-secondary'
                   }`}
                 onClick={() => setActiveTab(tab.id)}
                 title={tab.label}
@@ -139,7 +139,7 @@ export function Sidebar({
                 <div className="p-4 border-b theme-border theme-elevated">
                   <label className="text-[10px] font-bold theme-text-muted uppercase tracking-wider mb-2 block">Worksheet Title</label>
                   <input
-                    className="w-full border theme-border rounded px-2 py-1.5 text-sm focus:ring-2 focus:ring-[var(--color-accent)]/30 outline-none transition-all theme-surface theme-text"
+                    className="w-full border theme-border rounded px-2 py-1.5 text-sm focus:ring-2 focus:ring-[var(--color-accent)]/30 outline-none theme-surface theme-text"
                     value={metadata.title}
                     onChange={(e) => onUpdateMetadata({ ...metadata, title: e.target.value })}
                     placeholder="Untitled Worksheet"

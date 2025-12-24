@@ -118,8 +118,8 @@ export const TrueFalseItemComponent: FC<Props> = ({
     const isFalseCorrect = q.correctAnswer === false;
 
     // In teacher mode, highlight the correct answer
-    const trueStyle = mode === 'teacher' && isTrueCorrect ? 'font-bold underline decoration-2 decoration-[#2e7d32]' : '';
-    const falseStyle = mode === 'teacher' && isFalseCorrect ? 'font-bold underline decoration-2 decoration-[#2e7d32]' : '';
+    const trueStyle = mode === 'teacher' && isTrueCorrect ? 'font-bold underline decoration-2 decoration-green-700 print:decoration-black' : '';
+    const falseStyle = mode === 'teacher' && isFalseCorrect ? 'font-bold underline decoration-2 decoration-green-700 print:decoration-black' : '';
 
     return (
       <div className="mt-1">
@@ -176,9 +176,9 @@ export const TrueFalseItemComponent: FC<Props> = ({
                 <div className="font-bold whitespace-nowrap text-right min-w-[80px]">
                   {mode === 'teacher' ? (
                     <span>
-                      <span className={isTrueCorrect ? 'underline decoration-2 decoration-[#2e7d32]' : ''}>{labels.T}</span>
+                      <span className={isTrueCorrect ? 'underline decoration-2 decoration-green-700 print:decoration-black' : ''}>{labels.T}</span>
                       {' / '}
-                      <span className={isFalseCorrect ? 'underline decoration-2 decoration-[#2e7d32]' : ''}>{labels.F}</span>
+                      <span className={isFalseCorrect ? 'underline decoration-2 decoration-green-700 print:decoration-black' : ''}>{labels.F}</span>
                     </span>
                   ) : (
                     `${labels.T} / ${labels.F}`

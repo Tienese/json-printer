@@ -90,7 +90,7 @@ export function LayersPanel({ items, selectedItem, onSelectItem, onReorderItems,
         {items.map((item, index) => (
           <li
             key={item.id}
-            className={`p-2 mb-1.5 theme-surface border theme-border rounded-md cursor-pointer flex items-center justify-between hover:bg-[var(--color-accent)]/10 transition-colors ${selectedItem?.id === item.id ? 'border-[var(--color-accent)] bg-[var(--color-accent)]/10 ring-1 ring-[var(--color-accent)]' : ''}`}
+            className={`p-2 mb-1.5 theme-surface border theme-border rounded-md cursor-pointer flex items-center justify-between ${selectedItem?.id === item.id ? 'border-[var(--color-accent)] bg-[var(--color-accent)]/10 ring-1 ring-[var(--color-accent)]' : ''}`}
             onClick={() => onSelectItem(item)}
             draggable
             onDragStart={(e) => handleDragStart(e, index)}
@@ -120,7 +120,7 @@ export function LayersPanel({ items, selectedItem, onSelectItem, onReorderItems,
                   {item.customLabel || `${TYPE_LABELS[item.type] || item.type} ${index + 1}`}
                 </span>
                 <button
-                  className="opacity-0 hover:opacity-100 p-1 text-gray-400 hover:text-blue-600 transition-opacity"
+                  className="p-1 text-gray-400"
                   onClick={(e) => {
                     e.stopPropagation();
                     startEditing(item);

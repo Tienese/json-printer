@@ -35,7 +35,7 @@ export function Navbar({ onBack, actions }: NavbarProps) {
                 {/* Theme Toggle */}
                 <button
                     onClick={toggleTheme}
-                    className="p-2 rounded-lg theme-elevated hover:bg-[var(--color-border)] theme-text-secondary transition-colors"
+                    className="p-2 rounded-lg theme-elevated theme-text-secondary"
                     title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
                 >
                     {isDark ? (

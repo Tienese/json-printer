@@ -63,10 +63,10 @@ export function MenuBar({
     const menuButtonClass = (menu: MenuType) =>
         `px-3 py-1.5 text-sm font-medium rounded ${openMenu === menu
             ? 'bg-[var(--color-elevated)] theme-text'
-            : 'theme-text-secondary hover:bg-[var(--color-border)]'
+            : 'theme-text-secondary'
         }`;
 
-    const menuItemClass = "w-full text-left px-4 py-2 text-sm theme-text hover:bg-[var(--color-accent)]/10 hover:text-[var(--color-accent)] flex items-center gap-3";
+    const menuItemClass = "w-full text-left px-4 py-2 text-sm theme-text flex items-center gap-3";
 
     return (
         <div ref={menuRef} className="flex items-center gap-1 print:hidden">
@@ -223,7 +223,7 @@ export function MenuBar({
             {/* Settings Cog */}
             <button
                 onClick={() => onNavigate?.('settings')}
-                className="ml-2 p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded"
+                className="ml-2 p-1.5 text-gray-500 rounded"
                 title="Settings"
             >
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

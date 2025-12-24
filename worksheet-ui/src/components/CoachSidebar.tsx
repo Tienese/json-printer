@@ -29,13 +29,13 @@ export function CoachSidebar({
     ];
 
     return (
-        <div className={`shrink-0 theme-surface border-r theme-border flex flex-col h-full relative transition-all duration-300 print:hidden ${isOpen ? 'w-[300px]' : 'w-[40px] items-center'}`}>
+        <div className={`shrink-0 theme-surface border-r theme-border flex flex-col h-full relative print:hidden ${isOpen ? 'w-[300px]' : 'w-[40px] items-center'}`}>
             {/* Sidebar Title Bar / Collapse Toggle */}
             <div className="flex items-center justify-between p-3 border-b theme-border h-[45px] w-full">
                 {isOpen && <h2 className="text-xs font-bold theme-text-muted uppercase tracking-wider">Coach</h2>}
                 <button
                     onClick={onToggle}
-                    className="p-1 hover:bg-[var(--color-elevated)] rounded theme-text-secondary"
+                    className="p-1 rounded theme-text-secondary"
                     title={isOpen ? "Collapse Coach" : "Expand Coach"}
                 >
                     {isOpen ? (
@@ -53,9 +53,9 @@ export function CoachSidebar({
                         {tabs.map(tab => (
                             <button
                                 key={tab.id}
-                                className={`flex-1 py-2.5 text-xs font-medium transition-colors ${activeTab === tab.id
+                                className={`flex-1 py-2.5 text-xs font-medium ${activeTab === tab.id
                                     ? 'theme-accent border-b-2 border-[var(--color-accent)] bg-[var(--color-accent)]/10'
-                                    : 'theme-text-secondary hover:theme-text hover:bg-[var(--color-elevated)]'
+                                    : 'theme-text-secondary'
                                     }`}
                                 onClick={() => setActiveTab(tab.id)}
                                 title={tab.label}

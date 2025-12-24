@@ -110,7 +110,7 @@ export const MultipleChoiceItemComponent: FC<Props> = ({
               <div
                 key={index}
                 className={`flex items-baseline gap-[2mm] text-[10pt] ${showAsCorrect
-                  ? 'font-bold underline decoration-2 decoration-[#2e7d32] print:decoration-black'
+                  ? 'font-bold underline decoration-2 decoration-green-700 print:decoration-black'
                   : ''
                   }`}
                 data-testid={`mc-option-${index}`}
