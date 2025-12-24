@@ -32,6 +32,7 @@ export function useGridSections(
     onUpdate: (item: GridItem) => void,
     setActiveBox: SetActiveBoxFn
 ): UseGridSectionsReturn {
+    const itemId = item.id; // Capture item ID for focus scoping
 
     // Insert a new section before or after the reference section
     const insertSection = useCallback((refIndex: number, position: 'before' | 'after') => {
@@ -51,8 +52,8 @@ export function useGridSections(
 
         onUpdate({ ...item, sections: newSections });
         setActiveBox({ sectionIndex: insertIndex, boxIndex: 0 });
-        focusGridBox(insertIndex, 0, 'char');
-    }, [item, onUpdate, setActiveBox]);
+        focusGridBox(insertIndex, 0, 'char', 50, itemId);
+    }, [item, onUpdate, setActiveBox, itemId]);
 
     // Break section at current position (plain Enter)
     const breakSection = useCallback((sectionIndex: number, boxIndex: number) => {
@@ -94,8 +95,8 @@ export function useGridSections(
         // Focus first box of new section
         const newSectionIndex = sectionIndex + 1;
         setActiveBox({ sectionIndex: newSectionIndex, boxIndex: 0 });
-        focusGridBox(newSectionIndex, 0, 'char');
-    }, [item, onUpdate, setActiveBox]);
+        focusGridBox(newSectionIndex, 0, 'char', 50, itemId);
+    }, [item, onUpdate, setActiveBox, itemId]);
 
     // Add a new box to the end of a section
     const addBox = useCallback((sectionIndex: number) => {
@@ -126,8 +127,8 @@ export function useGridSections(
 
         const newBoxIndex = newSections[sectionIndex].boxes.length - 1;
         setActiveBox({ sectionIndex, boxIndex: newBoxIndex });
-        focusGridBox(sectionIndex, newBoxIndex, 'char');
-    }, [item, onUpdate, setActiveBox]);
+        focusGridBox(sectionIndex, newBoxIndex, 'char', 50, itemId);
+    }, [item, onUpdate, setActiveBox, itemId]);
 
     // Delete a box (forced, even with content). If last box, delete entire section.
     const deleteBox = useCallback((sectionIndex: number, boxIndex: number) => {
@@ -154,7 +155,7 @@ export function useGridSections(
             // Focus previous section (or first if deleting first)
             const newFocusSection = Math.max(0, sectionIndex - 1);
             setActiveBox({ sectionIndex: newFocusSection, boxIndex: 0 });
-            focusGridBox(newFocusSection, 0, 'char');
+            focusGridBox(newFocusSection, 0, 'char', 50, itemId);
         } else {
             // Delete box, keep section
             const newBoxes = [...section.boxes];
@@ -176,9 +177,9 @@ export function useGridSections(
             // Focus previous box (or stay at same index if at start)
             const newIndex = Math.max(0, boxIndex - 1);
             setActiveBox({ sectionIndex, boxIndex: newIndex });
-            focusGridBox(sectionIndex, newIndex, 'char');
+            focusGridBox(sectionIndex, newIndex, 'char', 50, itemId);
         }
-    }, [item, onUpdate, setActiveBox]);
+    }, [item, onUpdate, setActiveBox, itemId]);
 
     // Remove the last empty box from a section (if both char and furigana are empty)
     // Returns true if box was removed
@@ -211,9 +212,9 @@ export function useGridSections(
         // Focus the previous box
         const prevBoxIndex = boxIndex - 1;
         setActiveBox({ sectionIndex, boxIndex: prevBoxIndex });
-        focusGridBox(sectionIndex, prevBoxIndex, 'char');
+        focusGridBox(sectionIndex, prevBoxIndex, 'char', 50, itemId);
         return true;
-    }, [item, onUpdate, setActiveBox]);
+    }, [item, onUpdate, setActiveBox, itemId]);
 
     // Handle multi-character IME confirmation with INSERT-AND-PUSH logic
     const multiCommit = useCallback((sectionIndex: number, insertIndex: number, chars: string[]) => {
@@ -263,9 +264,9 @@ export function useGridSections(
         setActiveBox({ sectionIndex, boxIndex: nextBoxIndex });
 
         if (nextBoxIndex < newBoxes.length) {
-            focusGridBox(sectionIndex, nextBoxIndex, 'char');
+            focusGridBox(sectionIndex, nextBoxIndex, 'char', 50, itemId);
         }
-    }, [item, onUpdate, setActiveBox]);
+    }, [item, onUpdate, setActiveBox, itemId]);
 
     return {
         insertSection,
