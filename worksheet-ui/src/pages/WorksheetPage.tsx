@@ -82,6 +82,15 @@ interface WorksheetPageProps {
   readonly worksheetId?: string;
 }
 
+/**
+ * Render the interactive worksheet editor and preview interface with editing, history, save/load, and print support.
+ *
+ * Renders the full worksheet workspace including top navigation, left coach sidebar, main editable printable area, right properties sidebar, history/preview controls, context menus for adding/deleting items, and a print-only view of all pages.
+ *
+ * @param onNavigate - Optional navigation callback invoked with route constants (e.g., to go back to the app home)
+ * @param worksheetId - Optional worksheet identifier used to load and save the worksheet from/to the server
+ * @returns A React element that provides the worksheet editor UI and its associated controls
+ */
 export function WorksheetPage({ onNavigate, worksheetId }: WorksheetPageProps) {
   const {
     items,

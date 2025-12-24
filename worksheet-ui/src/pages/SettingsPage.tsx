@@ -10,6 +10,12 @@ interface SettingsPageProps {
 
 type ViewMode = 'ui' | 'json';
 
+/**
+ * Render the settings page for the worksheet builder, providing a searchable UI for individual options and a two-panel JSON editor for viewing/applying overrides.
+ *
+ * @param onNavigate - Optional callback invoked with a route string when navigating away (e.g., back to home)
+ * @returns The Settings page React element
+ */
 export function SettingsPage({ onNavigate }: SettingsPageProps) {
     const { settings, updateSetting, resetSettings, exportSettings, importSettings, getUserOverrides } = useSettings();
     const [searchQuery, setSearchQuery] = useState('');

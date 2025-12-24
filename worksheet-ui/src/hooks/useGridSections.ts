@@ -27,6 +27,22 @@ interface SetActiveBoxFn {
     (box: { sectionIndex: number; boxIndex: number } | null): void;
 }
 
+/**
+ * Provides handlers to create, modify, and remove sections and boxes within a GridItem while keeping focus and runtime validation in sync.
+ *
+ * The returned handlers perform updates via `onUpdate`, set the active box via `setActiveBox`, invoke scoped focus updates, and emit devAssert snapshots for runtime validation.
+ *
+ * @param item - The GridItem to operate on; handlers produce updated versions of this item when mutating sections or boxes.
+ * @param onUpdate - Callback invoked with the updated GridItem after any mutating operation.
+ * @param setActiveBox - Function used to mark which box is currently active after operations that change focus.
+ * @returns An object with the following handlers:
+ *   - `insertSection(refIndex, position)`: Insert a new section before or after `refIndex`.
+ *   - `breakSection(sectionIndex, boxIndex)`: Split a section at `boxIndex` into two sections (no-op if `boxIndex` is 0).
+ *   - `addBox(sectionIndex)`: Append a new empty box to the specified section.
+ *   - `deleteBox(sectionIndex, boxIndex)`: Delete the specified box; if it was the last box in a section, remove the section (keeps at least one section).
+ *   - `removeEmptyBox(sectionIndex, boxIndex)`: Remove the last box of a section only if it is empty and the section would still have at least one box; returns `true` if removed, `false` otherwise.
+ *   - `multiCommit(sectionIndex, insertIndex, chars)`: Insert multiple character boxes at `insertIndex` (used for IME multi-character confirmation) and advance focus after the inserted characters.
+ */
 export function useGridSections(
     item: GridItem,
     onUpdate: (item: GridItem) => void,

@@ -39,6 +39,16 @@ interface GridItemProps {
   onUpdate: (item: GridItem) => void;
 }
 
+/**
+ * Render and manage an interactive grid for a single worksheet item with per-box editing, optional furigana, and keyboard navigation.
+ *
+ * The component synchronizes an editable description, maintains focused/active box state, handles keyboard navigation (arrow keys, Tab, Enter/Ctrl+Enter for section insertion, Ctrl+Backspace for box deletion), advances/retreats between boxes (creating or removing boxes as needed), sanitizes pasted description content, and calls `onUpdate` with an updated `item` whenever sections, boxes, or the description change. Layout wraps sections into printable lines according to the configured box size.
+ *
+ * @param item - The grid item data (sections, boxes, presentation settings, description, id, etc.).
+ * @param isSelected - When true the description and boxes become editable and keyboard interactions are active.
+ * @param onUpdate - Callback invoked with the updated `item` whenever the component modifies sections, boxes, or description.
+ * @returns The rendered grid item element.
+ */
 export function GridItemComponent({ item, isSelected, onUpdate }: GridItemProps) {
   const [activeBox, setActiveBox] = useState<{ sectionIndex: number; boxIndex: number } | null>(null);
   const descriptionRef = useRef<HTMLDivElement>(null);

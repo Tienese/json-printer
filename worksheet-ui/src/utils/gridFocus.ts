@@ -8,12 +8,15 @@ const FOCUS_DELAY_MS = 50;
 export type FocusTarget = 'char' | 'furigana';
 
 /**
- * Focus a specific box in the grid.
- * @param sectionIndex - The section index
- * @param boxIndex - The box index within the section
- * @param target - Whether to focus 'char' input or 'furigana' input
- * @param delay - Optional delay in ms before focusing (default: 50)
- * @param itemId - Optional grid item ID to scope focus to correct container
+ * Focuses the input for a specific box in a grid.
+ *
+ * The focus is applied after `delay` milliseconds. When `itemId` is provided, the lookup is restricted to the grid container with a matching `data-grid-id`; otherwise the first element with `data-grid-container` is used.
+ *
+ * @param sectionIndex - Index of the section containing the box
+ * @param boxIndex - Index of the box within the section
+ * @param target - Which input to focus: `'char'` to focus the character input, `'furigana'` to focus the furigana input
+ * @param delay - Milliseconds to wait before applying focus (default: FOCUS_DELAY_MS)
+ * @param itemId - Optional grid item identifier to scope the lookup to a specific container
  */
 export function focusGridBox(
     sectionIndex: number,
