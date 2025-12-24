@@ -38,7 +38,7 @@ describe('MultipleChoiceItemComponent', () => {
         );
 
         const optionB = screen.getByTestId('mc-option-1');
-        expect(optionB).toHaveClass('underline decoration-[#2e7d32]');
+        expect(optionB).toHaveClass('decoration-green-700');
     });
 
     it('does not highlight answer in student mode', () => {
@@ -51,6 +51,6 @@ describe('MultipleChoiceItemComponent', () => {
         );
 
         const optionB = screen.getByTestId('mc-option-1');
-        expect(optionB).not.toHaveClass('underline decoration-[#2e7d32]');
+        expect(optionB).not.toHaveClass('decoration-green-700');
     });
 });

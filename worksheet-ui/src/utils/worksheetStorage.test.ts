@@ -11,10 +11,14 @@ describe('worksheetStorage', () => {
             updatedAt: new Date().toISOString(),
             version: '1.0.0'
         },
-        items: [
-            { id: '1', type: 'HEADER', title: 'Header', showName: true, showDate: true }
-        ],
-        mode: 'teacher'
+        pages: [
+            {
+                id: 'e08b46af-89b0-4d46-9fe1-f4d02cae414a',
+                items: [
+                    { id: '1', type: 'HEADER', title: 'Header', showName: true, showDate: true }
+                ]
+            }
+        ]
     } as any; // Cast to any to handle type overlap if necessary
 
     beforeEach(() => {
