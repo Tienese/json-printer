@@ -52,7 +52,7 @@ export function VocabItemEditor({ item, onUpdate, onAddTerm }: VocabItemEditorPr
       <div className="flex gap-1 mb-2">
         <button
           type="button"
-          className={`px-3 py-1 text-xs font-bold border-2 border-black ${activeTab === 'term' ? 'bg-black text-white' : 'bg-white text-black'
+          className={`px-3 py-1 text-xs font-bold border-2 border-black ${activeTab === 'term' ? 'bg-black text-white' : 'theme-surface theme-text'
             }`}
           onClick={() => handleTabChange('term')}
         >
@@ -60,7 +60,7 @@ export function VocabItemEditor({ item, onUpdate, onAddTerm }: VocabItemEditorPr
         </button>
         <button
           type="button"
-          className={`px-3 py-1 text-xs font-bold border-2 border-black ${activeTab === 'grid' ? 'bg-black text-white' : 'bg-white text-black'
+          className={`px-3 py-1 text-xs font-bold border-2 border-black ${activeTab === 'grid' ? 'bg-black text-white' : 'theme-surface theme-text'
             }`}
           onClick={() => handleTabChange('grid')}
         >
@@ -69,7 +69,7 @@ export function VocabItemEditor({ item, onUpdate, onAddTerm }: VocabItemEditorPr
       </div>
 
       {/* Config Box */}
-      <div className="min-h-[140px] border-2 border-gray-300 p-3 mb-4 bg-gray-50">
+      <div className="min-h-[140px] border-2 theme-border p-3 mb-4 theme-elevated">
         {activeTab === 'term' ? (
           // Term Config
           <>
@@ -104,7 +104,7 @@ export function VocabItemEditor({ item, onUpdate, onAddTerm }: VocabItemEditorPr
               type="range"
               min="10"
               max="16"
-              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+              className="w-full h-2 theme-elevated rounded-lg appearance-none cursor-pointer"
               value={item.fontSize}
               onChange={(e) => handleFontSizeChange(parseInt(e.target.value, 10))}
             />
@@ -141,6 +141,15 @@ export function VocabItemEditor({ item, onUpdate, onAddTerm }: VocabItemEditorPr
               />
               Show Furigana
             </label>
+
+            <label className="checkbox-label">
+              <input
+                type="checkbox"
+                checked={item.gridShowGuides || false}
+                onChange={(e) => onUpdate({ ...item, gridShowGuides: e.target.checked })}
+              />
+              Show Guides
+            </label>
           </>
         )}
       </div>
@@ -150,7 +159,7 @@ export function VocabItemEditor({ item, onUpdate, onAddTerm }: VocabItemEditorPr
       <h5 className="text-[12px] font-semibold mt-4 mb-2">Manage Terms ({item.terms.length})</h5>
       <div className="space-y-1.5">
         {item.terms.map((term, index) => (
-          <div key={term.id || index} className="flex flex-col p-1.5 bg-gray-50 rounded border border-gray-200 gap-2">
+          <div key={term.id || index} className="flex flex-col p-1.5 theme-elevated rounded border theme-border gap-2">
             <div className="flex items-center gap-1.5 ">
               <span className="flex-1 text-xs text-gray-700 truncate font-bold" title={term.term}>
                 {index + 1}. {term.term || <span className="italic text-gray-400 font-normal">Empty</span>}
@@ -168,7 +177,7 @@ export function VocabItemEditor({ item, onUpdate, onAddTerm }: VocabItemEditorPr
               <div className="flex items-center gap-1">
                 <span className="text-[9px] text-gray-500 shrink-0">Type:</span>
                 <select
-                  className="text-[9px] py-0 px-1 border rounded bg-white h-5"
+                  className="text-[9px] py-0 px-1 border rounded theme-surface theme-text h-5"
                   value={term.termType || 'text'}
                   onChange={(e) => {
                     const newTerms = [...item.terms];
@@ -188,7 +197,7 @@ export function VocabItemEditor({ item, onUpdate, onAddTerm }: VocabItemEditorPr
                     type="number"
                     min="1"
                     max="10"
-                    className="text-[9px] py-0 px-1 border rounded bg-white h-5 w-12"
+                    className="text-[9px] py-0 px-1 border rounded theme-surface theme-text h-5 w-12"
                     value={term.gridBoxCount || 5}
                     onChange={(e) => {
                       const newTerms = [...item.terms];
@@ -212,6 +221,23 @@ export function VocabItemEditor({ item, onUpdate, onAddTerm }: VocabItemEditorPr
                 />
                 <span className="text-[9px] text-gray-500">Term</span>
               </div>
+
+              {term.termType !== 'grid' && (
+                <div className="flex items-center gap-1">
+                  <select
+                    className="text-[9px] py-0 px-1 border rounded theme-surface theme-text h-5"
+                    value={term.termLayout || 'inline'}
+                    onChange={(e) => {
+                      const newTerms = [...item.terms];
+                      newTerms[index] = { ...newTerms[index], termLayout: e.target.value as 'inline' | 'below' };
+                      onUpdate({ ...item, terms: newTerms });
+                    }}
+                  >
+                    <option value="inline">Inline</option>
+                    <option value="below">Below</option>
+                  </select>
+                </div>
+              )}
 
               <div className="flex items-center gap-1">
                 <input

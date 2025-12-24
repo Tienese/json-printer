@@ -49,13 +49,13 @@ export const ClozeEditor: FC<Props> = ({ item, onUpdate }) => {
       <h4>Cloze Properties</h4>
 
       <label className="prop-label">Blank Width (Student View)</label>
-      <div className="flex border border-gray-300 rounded overflow-hidden mb-3">
+      <div className="flex border theme-border rounded overflow-hidden mb-3">
         {['2cm', '4cm', '6cm', '8cm'].map((width) => (
           <button
             key={width}
             className={`flex-1 py-1 text-xs ${(item.blankWidth || '4cm') === width
-                ? 'bg-primary-blue text-white'
-                : 'bg-white text-gray-700 hover:bg-gray-100'
+              ? 'bg-[var(--color-accent)] text-white'
+              : 'theme-surface theme-text'
               }`}
             onClick={() => onUpdate({ ...item, blankWidth: width })}
           >
@@ -63,6 +63,19 @@ export const ClozeEditor: FC<Props> = ({ item, onUpdate }) => {
           </button>
         ))}
       </div>
+
+      <label className="prop-label">List Style (Multi-line)</label>
+      <select
+        className="prop-select mb-3"
+        value={item.listStyle || 'none'}
+        onChange={(e) => onUpdate({ ...item, listStyle: e.target.value as any })}
+      >
+        <option value="none">None</option>
+        <option value="number">1. 2. 3. (Numbers)</option>
+        <option value="letter">a. b. c. (Letters)</option>
+        <option value="roman">I. II. III. (Roman)</option>
+        <option value="bullet">• (Bullets)</option>
+      </select>
 
       <label className="prop-label">Template</label>
       <div className="text-[10px] text-muted mb-[5px]">

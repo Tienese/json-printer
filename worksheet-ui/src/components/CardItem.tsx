@@ -8,23 +8,22 @@ interface CardItemProps {
   onUpdate: (item: CardItem) => void;
 }
 
-// Language indicators
-const LANG_INDICATORS = {
-  VI: 'Ghi chú',
-  EN: 'Note',
-  JP: 'メモ',
-};
-
 export function CardItemComponent({ item, onUpdate }: CardItemProps) {
   const editorRef = useRef<HTMLDivElement>(null);
+  const titleRef = useRef<HTMLDivElement>(null);
   const isEditing = useRef(false);
 
-  const style: React.CSSProperties = {
+  const contentStyle: React.CSSProperties = {
     fontSize: item.fontSize || '12pt',
     textAlign: item.textAlign || 'left',
     fontWeight: item.fontWeight || 'normal',
-    marginTop: item.marginTop || '0.05cm',
-    marginBottom: item.marginBottom || '0.05cm',
+    columnCount: item.columns || 1,
+    columnGap: '3mm',
+  };
+
+  const containerStyle: React.CSSProperties = {
+    marginTop: item.marginTop || '0.5mm',
+    marginBottom: item.marginBottom || '0.5mm',
   };
 
   // Sync content from props ONLY if not currently editing to avoid overwriting user input
@@ -35,6 +34,15 @@ export function CardItemComponent({ item, onUpdate }: CardItemProps) {
       }
     }
   }, [item.content]);
+
+  // Sync title from props
+  useEffect(() => {
+    if (titleRef.current && document.activeElement !== titleRef.current) {
+      if (titleRef.current.textContent !== (item.cardHeader || '')) {
+        titleRef.current.textContent = item.cardHeader || '';
+      }
+    }
+  }, [item.cardHeader]);
 
   // Handle paste with HTML sanitization
   const handlePaste = useCallback((e: React.ClipboardEvent) => {
@@ -54,6 +62,16 @@ export function CardItemComponent({ item, onUpdate }: CardItemProps) {
     }
   }, [item, onUpdate]);
 
+  // Handle title blur - save title
+  const handleTitleBlur = useCallback(() => {
+    if (titleRef.current) {
+      const newTitle = titleRef.current.textContent || '';
+      if (newTitle !== item.cardHeader) {
+        onUpdate({ ...item, cardHeader: newTitle });
+      }
+    }
+  }, [item, onUpdate]);
+
   // Handle focus - show toolbar
   const handleFocus = useCallback((e: React.FocusEvent<HTMLDivElement>) => {
     isEditing.current = true;
@@ -67,25 +85,25 @@ export function CardItemComponent({ item, onUpdate }: CardItemProps) {
     selection?.addRange(range);
   }, []);
 
-  // Get language indicator
-  const language = item.language || 'VI'; // Default to Vietnamese
-  const langIndicator = LANG_INDICATORS[language];
-
-  // Card title with underlines (inline with border)
+  // Card title with ASCII indicator - editable inline
   const renderCardTitle = () => {
-    if (!item.cardHeader) return null;
-
-    const titleText = `${langIndicator}: ${item.cardHeader}`;
-
     return (
-      <span className="absolute -top-[0.6em] left-[3mm] bg-white px-[2mm] text-[10pt] font-bold print:bg-white">
-        <span className="border-b-2 border-black">{titleText}</span>
-      </span>
+      <div className="absolute -top-[0.6em] left-[3mm] bg-white px-[2mm] text-[10pt] font-bold print:bg-white flex items-center">
+        <span className="mr-1 text-gray-500">▸</span>
+        <div
+          ref={titleRef}
+          className="editable editable-placeholder min-w-[20mm]"
+          data-placeholder="Card title..."
+          contentEditable
+          suppressContentEditableWarning
+          onBlur={handleTitleBlur}
+        />
+      </div>
     );
   };
 
   return (
-    <div className="flex items-baseline">
+    <div className="flex items-baseline" style={containerStyle}>
       <QuestionNumber
         number={item.promptNumber!}
         show={item.showPromptNumber && !!item.promptNumber}
@@ -106,8 +124,9 @@ export function CardItemComponent({ item, onUpdate }: CardItemProps) {
 
           <div
             ref={editorRef}
-            className="border-none bg-transparent outline-none resize-none overflow-hidden min-h-[1.4em] print:bg-white empty:before:content-['Click_to_add_card_content...'] empty:before:text-gray-400 empty:before:italic focus:empty:before:content-['']"
-            style={style}
+            className="editable editable-placeholder border-none bg-transparent resize-none overflow-hidden min-h-[1.4em] print:bg-white"
+            data-placeholder="Click to add card content..."
+            style={contentStyle}
             contentEditable
             suppressContentEditableWarning
             onFocus={handleFocus}

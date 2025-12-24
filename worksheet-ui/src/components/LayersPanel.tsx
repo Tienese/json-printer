@@ -84,13 +84,13 @@ export function LayersPanel({ items, selectedItem, onSelectItem, onReorderItems,
   }, [editingId]);
 
   return (
-    <div className="p-2.5 border-b border-gray-200">
-      <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Layers</h4>
+    <div className="p-2.5 border-b theme-border">
+      <h4 className="text-xs font-bold theme-text-muted uppercase tracking-wider mb-2">Layers</h4>
       <ul className="list-none p-0 m-0">
         {items.map((item, index) => (
           <li
             key={item.id}
-            className={`p-2 mb-1.5 bg-white border border-gray-300 rounded-md cursor-pointer flex items-center justify-between hover:bg-blue-50 transition-colors ${selectedItem?.id === item.id ? 'border-primary-blue bg-selected-bg ring-1 ring-primary-blue' : ''}`}
+            className={`p-2 mb-1.5 theme-surface border theme-border rounded-md cursor-pointer flex items-center justify-between hover:bg-[var(--color-accent)]/10 transition-colors ${selectedItem?.id === item.id ? 'border-[var(--color-accent)] bg-[var(--color-accent)]/10 ring-1 ring-[var(--color-accent)]' : ''}`}
             onClick={() => onSelectItem(item)}
             draggable
             onDragStart={(e) => handleDragStart(e, index)}
@@ -100,7 +100,7 @@ export function LayersPanel({ items, selectedItem, onSelectItem, onReorderItems,
             data-testid="layer-item"
             data-type={item.type}
           >
-            <span className="w-5 h-5 bg-gray-200 rounded flex items-center justify-center font-bold text-[10px] mr-2 shrink-0 select-none">
+            <span className="w-5 h-5 theme-elevated rounded flex items-center justify-center font-bold text-[10px] mr-2 shrink-0 select-none theme-text-secondary">
               {TYPE_ICONS[item.type] || '?'}
             </span>
 

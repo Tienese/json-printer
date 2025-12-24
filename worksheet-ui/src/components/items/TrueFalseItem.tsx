@@ -125,7 +125,7 @@ export const TrueFalseItemComponent: FC<Props> = ({
       <div className="mt-1">
         <div
           ref={(el) => { questionsRefs.current[0] = el; }}
-          className="mb-2 outline-none focus:outline-dashed focus:outline-1 focus:outline-gray-300 rounded p-[1px] min-h-[1.2em]"
+          className="editable mb-2 rounded p-[1px] min-h-[1.2em]"
           contentEditable={mode === 'teacher'}
           suppressContentEditableWarning
           onFocus={handleFocus}
@@ -163,7 +163,7 @@ export const TrueFalseItemComponent: FC<Props> = ({
                   <span className="font-bold mr-2 text-[10pt]">{String.fromCharCode(97 + idx)})</span>
                   <div
                     ref={(el) => { questionsRefs.current[idx] = el; }}
-                    className="flex-1 outline-none focus:outline-dashed focus:outline-1 focus:outline-gray-300 rounded p-[1px] min-h-[1.2em]"
+                    className="editable flex-1 rounded p-[1px] min-h-[1.2em]"
                     contentEditable={mode === 'teacher'}
                     suppressContentEditableWarning
                     onFocus={handleFocus}
@@ -244,7 +244,8 @@ export const TrueFalseItemComponent: FC<Props> = ({
           {item.layout === 'multiple' && (
             <div
               ref={promptRef}
-              className="mb-1 outline-none focus:outline-dashed focus:outline-1 focus:outline-gray-300 p-[1px] rounded empty:before:content-['Click_to_add_prompt...'] empty:before:text-gray-400 empty:before:italic focus:empty:before:content-['']"
+              className="editable editable-placeholder mb-1 p-[1px] rounded"
+              data-placeholder="Click to add prompt..."
               contentEditable
               suppressContentEditableWarning
               onFocus={handleFocus}

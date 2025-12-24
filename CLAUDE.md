@@ -1,5 +1,9 @@
 # Claude Code Configuration: `json-printer`
 
+## 🏁 1.1.1.1 Rule Priority
+**THIS PROJECT FOLLOWS THE [1.1.1.1 RULES](file:///c:/Users/luuht/Desktop/json-printer/1.1.1.1_RULES.md).**
+
+
 > **🚨 CRITICAL: LOCALHOST PARALLEL EXECUTION**
 > **CONTEXT:** Single-User, Stateless, Local-First (Java + React).
 > **STACK:** Java 21 (Spring Boot 3.5), React (Vite/Tailwind), Maven.
@@ -131,3 +135,4 @@ cd src/main/frontend && npm run dev
 * **TypeScript:** Strict typing. Interfaces for all API responses.
 * **CSS:** Tailwind classes preferred over custom CSS files.
 * **Simplicity:** If a library isn't needed, don't add it. Keep `pom.xml` and `package.json` lean.
+* **1.1.1.1 Compliance:** Always check [1.1.1.1_RULES.md](file:///c:/Users/luuht/Desktop/json-printer/1.1.1.1_RULES.md) before implementing new features.

@@ -1,24 +1,33 @@
 # GEMINI CLI AGENT Configuration: `json-printer`
 
-> **🚨 CRITICAL: LOCALHOST PARALLEL EXECUTION**
+## 1.1.1.1 Rule Priority
+**THIS PROJECT FOLLOWS THE [1.1.1.1 RULES](file:///c:/Users/luuht/Desktop/json-printer/1.1.1.1_RULES.md).**
+ALL CODE CHANGES MUST COMPLY WITH:
+1. **1 Component** (Logic in Hooks)
+2. **1 Style** (Tailwind & Print-first)
+3. **1 Design** (Consistent Primitives)
+4. **1 Architecture** (Feature-based & Stable)
+
+
+> **CRITICAL: LOCALHOST PARALLEL EXECUTION**
 > **CONTEXT:** Single-User, Local-First (Java + React + SQLite).
 > **STACK:** Java 21 (Spring Boot 3.5), React (Vite/Tailwind), SQLite, Maven.
 
 ---
 
-## 🚨 Critical: Hybrid Stack Concurrent Operations
+## Critical: Hybrid Stack Concurrent Operations
 
 **ABSOLUTE RULE:** ALL operations (Backend + Frontend) MUST be batched in a single message to maintain sync between the Spring Boot backend and React frontend.
 
-### 🔴 Mandatory Concurrent Patterns
+### Mandatory Concurrent Patterns
 
 * **Full Stack Updates:** ALWAYS batch Java (Backend) and React (Frontend) changes together if they relate to the same feature.
 * **SQLite Persistence:** Use JPA repositories for worksheet/quiz persistence. No complex migrations.
 * **Build Operations:** ALWAYS use the Maven wrapper, which controls the frontend build.
 
-> ⚡ **GOLDEN RULE:** "1 MESSAGE = FULL FEATURE IMPLEMENTATION (Backend API + Frontend UI)"
+> **GOLDEN RULE:** "1 MESSAGE = FULL FEATURE IMPLEMENTATION (Backend API + Frontend UI)"
 
-### ✅ Example of CORRECT Execution (json-printer)
+### Example of CORRECT Execution (json-printer)
 
 ```yaml
 [Single Message]:
@@ -37,7 +46,7 @@
 
 ---
 
-## 🏗️ Architecture: Stateless Hybrid Web App
+## Architecture: Stateless Hybrid Web App
 
 **Mental Model:**
 
@@ -45,7 +54,7 @@
 * **The Build:** React is built by Maven and embedded into the JAR.
 * **The User:** YOU (Localhost). No login screens. No security tokens (except `application.properties`).
 
-### ❌ BANNED TECHNOLOGIES (Do Not Use)
+### BANNED TECHNOLOGIES (Do Not Use)
 
 * **No Cloud Databases:** PostgreSQL, MySQL, MongoDB (use SQLite only).
 * **No Complex Security:** Spring Security, JWT, OAuth2, Keycloak.
@@ -54,12 +63,12 @@
 
 ---
 
-## ☕ Backend Coordination (Spring Boot 3.5 + Java 21)
+## Backend Coordination (Spring Boot 3.5 + Java 21)
 
 **Role:** Data Orchestrator, Proxy & Persistence.
 **State:** SQLite for worksheets/quizzes, in-memory for transient data.
 
-### 🔌 API & Integration Pattern
+### API & Integration Pattern
 
 * **Canvas Integration:** Use `RestClient` (Java 21 style) for fetching Canvas data.
 * **CSV Processing:** Use `Apache Commons CSV` for parsing student data.
@@ -78,12 +87,12 @@
 
 ---
 
-## ⚛️ Frontend Coordination (React + Vite)
+## Frontend Coordination (React + Vite)
 
 **Role:** Interactive Worksheet Builder (WYSIWYG).
 **State:** LocalStorage (Persistence) + React Context (Runtime).
 
-### 🎨 UI & State Pattern
+### UI & State Pattern
 
 * **Worksheet Builder:** Heavy use of React State/Context.
 * **Styling:** Tailwind CSS (Utility-first, Print-optimized).
@@ -103,12 +112,12 @@
 
 ---
 
-## 🔧 Build & Run Coordination
+## Build & Run Coordination
 
 **The "One Command" Workflow:**
 Since this project uses `frontend-maven-plugin`, you rarely need to run `npm` commands manually in the root context.
 
-### 🚀 Standard Development Cycle
+### Standard Development Cycle
 
 ```bash
 # 1. Clean & Build Everything (Java + Node install + Vite Build)
@@ -125,39 +134,41 @@ cd src/main/frontend && npm run dev
 
 ---
 
-## 💡 Code Quality & Defaults
+## Code Quality & Defaults
 
 * **Java:** Use Java 21 `record` for all DTOs. Use `var` for local variables.
 * **TypeScript:** Strict typing. Interfaces for all API responses.
 * **CSS:** Tailwind classes preferred over custom CSS files.
 * **Simplicity:** If a library isn't needed, don't add it. Keep `pom.xml` and `package.json` lean.
+* **1.1.1.1 Compliance:** Always check [1.1.1.1_RULES.md](file:///c:/Users/luuht/Desktop/json-printer/1.1.1.1_RULES.md) before implementing new features.
+
 
 ---
 
-## 🖨️ Print Design Rules (CRITICAL)
+## Print Design Rules (CRITICAL)
 
 All printable pages MUST follow these strict guidelines:
 
-### 🚫 No Colors in Print
+### No Colors in Print
 - **Black and white ONLY** — color is useless for printed worksheets
 - **Never render background colors** in `@media print`
 - Use `print:bg-white` on all printable elements
 
-### ✏️ Visual Hierarchy Without Color
+### Visual Hierarchy Without Color
 Use these techniques instead of colors:
 - **Border styles:** solid, dashed, double, thick/thin
 - **Text indicators:** `[NOTE]`, `[INFO]`, `[!]`, `[Q1]`, `[A]`/`[B]`/`[C]`
-- **ASCII/Unicode:** `▸`, `•`, `○`, `▪`, `★`, `→`, box-drawing chars
+- **ASCII/Unicode:** box-drawing chars, bullets
 - **Font weight:** bold for emphasis, normal for content
 - **Spacing/indentation:** visual grouping
 
-### 📐 Vertical Space Optimization
+### Vertical Space Optimization
 - **Minimize gaps:** Use smallest practical margins/padding
 - **Goal:** Maximize usable printing area vertically
 - **Compact layouts:** Avoid excessive whitespace between items
 - **Print-break awareness:** Use `break-inside-avoid` strategically
 
-### ✅ Print CSS Pattern
+### Print CSS Pattern
 ```css
 @media print {
   .printable-item {
@@ -170,7 +181,7 @@ Use these techniques instead of colors:
 
 ---
 
-## 🎨 UI Component Standards
+## UI Component Standards
 
 ### Navbar Component
 * **Usage:** Use `<Navbar />` component on ALL pages for consistent navigation
@@ -193,12 +204,12 @@ Use these techniques instead of colors:
 
 ### Button Standards
 ```tsx
-// ✅ CORRECT: Static styling
+// CORRECT: Static styling
 <button className="px-4 py-2 bg-black text-white border-2 border-black font-bold">
   Submit
 </button>
 
-// ❌ WRONG: Hover effects
+// WRONG: Hover effects
 <button className="px-4 py-2 bg-black text-white hover:bg-gray-800 transition-all">
   Submit
 </button>

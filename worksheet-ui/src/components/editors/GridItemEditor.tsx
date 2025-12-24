@@ -68,11 +68,11 @@ export function GridItemEditor({ item, onUpdate }: GridItemEditorProps) {
       </select>
 
       <label className="prop-label">Alignment</label>
-      <div className="flex border border-gray-300 rounded overflow-hidden mb-4">
+      <div className="flex border theme-border rounded overflow-hidden mb-4">
         {(['left', 'center', 'right'] as const).map((align) => (
           <button
             key={align}
-            className={`flex-1 py-1 text-xs capitalize ${(item.alignment || 'left') === align ? 'bg-black text-white' : 'bg-white text-gray-700'}`}
+            className={`flex-1 py-1 text-xs capitalize ${(item.alignment || 'left') === align ? 'bg-black text-white' : 'theme-surface theme-text'}`}
             onClick={() => onUpdate({ ...item, alignment: align })}
           >
             {align}
@@ -120,7 +120,7 @@ export function GridItemEditor({ item, onUpdate }: GridItemEditorProps) {
 
         <div className="space-y-3">
           {item.sections.map((section, sIndex) => (
-            <div key={section.id || sIndex} className="p-2 bg-gray-50 rounded border border-gray-200">
+            <div key={section.id || sIndex} className="p-2 theme-elevated rounded border theme-border">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-bold text-gray-700">Row {sIndex + 1}</span>
                 <div className="flex items-center gap-2">
@@ -141,7 +141,7 @@ export function GridItemEditor({ item, onUpdate }: GridItemEditorProps) {
                 <label className="text-[10px] text-gray-600">Boxes:</label>
                 <div className="flex items-center gap-1">
                   <button
-                    className="w-6 h-6 flex items-center justify-center border border-gray-300 rounded bg-white hover:bg-gray-100"
+                    className="w-6 h-6 flex items-center justify-center border theme-border rounded theme-surface"
                     onClick={() => {
                       const newSections = [...item.sections];
                       if (newSections[sIndex].boxes.length <= 1) return;
@@ -156,7 +156,7 @@ export function GridItemEditor({ item, onUpdate }: GridItemEditorProps) {
                   </button>
                   <span className="w-8 text-center text-xs font-mono">{section.boxes.length}</span>
                   <button
-                    className="w-6 h-6 flex items-center justify-center border border-gray-300 rounded bg-white hover:bg-gray-100"
+                    className="w-6 h-6 flex items-center justify-center border theme-border rounded theme-surface"
                     onClick={() => {
                       const newSections = [...item.sections];
                       if (newSections[sIndex].boxes.length >= maxColumns) return;

@@ -136,10 +136,10 @@ export function Sidebar({
             {activeTab === 'layers' && (
               <div className="flex flex-col h-full animate-in fade-in slide-in-from-left-1">
                 {/* Worksheet Title */}
-                <div className="p-4 border-b border-gray-100 bg-gray-50/50">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 block">Worksheet Title</label>
+                <div className="p-4 border-b theme-border theme-elevated">
+                  <label className="text-[10px] font-bold theme-text-muted uppercase tracking-wider mb-2 block">Worksheet Title</label>
                   <input
-                    className="w-full border border-gray-200 rounded px-2 py-1.5 text-sm focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                    className="w-full border theme-border rounded px-2 py-1.5 text-sm focus:ring-2 focus:ring-[var(--color-accent)]/30 outline-none transition-all theme-surface theme-text"
                     value={metadata.title}
                     onChange={(e) => onUpdateMetadata({ ...metadata, title: e.target.value })}
                     placeholder="Untitled Worksheet"
@@ -147,8 +147,8 @@ export function Sidebar({
                 </div>
 
                 {/* Page Navigation */}
-                <div className="p-3 border-b border-gray-100 bg-white">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 block">Pages</label>
+                <div className="p-3 border-b theme-border theme-surface">
+                  <label className="text-[10px] font-bold theme-text-muted uppercase tracking-wider mb-2 block">Pages</label>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1">
                       <button

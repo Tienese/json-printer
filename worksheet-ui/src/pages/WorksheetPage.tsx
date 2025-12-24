@@ -303,31 +303,11 @@ export function WorksheetPage({ onNavigate, worksheetId }: WorksheetPageProps) {
         />
       </div>
 
-      {/* Left Sidebar - Properties with Tabs */}
+      {/* Left Sidebar - Coach Panel */}
       <div className="row-span-1 border-r theme-border theme-surface print:hidden h-full overflow-hidden flex flex-col">
-        <Sidebar
-          itemsState={{
-            items: displayItems,
-            selectedItem,
-            onSelectItem: handleSelectItem,
-            onUpdate: updateItem,
-            onDelete: deleteItem,
-            onReorderItems: setItems
-          }}
-          metadataState={{
-            metadata: displayMetadata,
-            onUpdateMetadata: updateMetadata
-          }}
-          pageState={{
-            currentPageIndex,
-            totalPages,
-            onPrevPage: prevPage,
-            onNextPage: nextPage,
-            onAddPage: addPage,
-            onDeletePage: deletePage
-          }}
-          onAddVocabTerm={addVocabTerm}
-          onAddTFQuestion={addTFQuestion}
+        <CoachSidebar
+          worksheetId={currentWorksheetId}
+          worksheetJson={JSON.stringify({ metadata, pages })}
           isOpen={isLeftSidebarOpen}
           onToggle={() => setIsLeftSidebarOpen(!isLeftSidebarOpen)}
         />
@@ -433,7 +413,7 @@ export function WorksheetPage({ onNavigate, worksheetId }: WorksheetPageProps) {
                   role="button"
                   tabIndex={isPreviewMode ? -1 : 0}
                   aria-pressed={selectedItem?.id === item.id}
-                  className={`group/item relative rounded-lg mb-[2mm] p-0 min-h-[3mm] box-border print:border-none print:mb-[1.5mm] outline-none text-left w-full block bg-transparent border-none ${selectedItem?.id === item.id ? 'ring-2 ring-primary-blue shadow-lg shadow-blue-50 ring-offset-2 z-10 print:ring-0' : ''}`}>
+                  className={`group/item relative rounded-lg mb-[2mm] p-0 min-h-[3mm] box-border print:border-none print:mb-[1.5mm] outline-none text-left w-full block bg-transparent border-none ${selectedItem?.id === item.id ? 'ring-2 ring-gray-400 shadow-lg shadow-gray-100 ring-offset-2 z-10 print:ring-0' : ''}`}>
                   {worksheetItemRenderer}
 
                   {!isPreviewMode && selectedItem?.id === item.id && (
@@ -454,11 +434,31 @@ export function WorksheetPage({ onNavigate, worksheetId }: WorksheetPageProps) {
         </section>
       </main>
 
-      {/* Right Sidebar - Coach Panel */}
+      {/* Right Sidebar - Properties with Tabs */}
       <div className="row-span-1 border-l theme-border theme-surface print:hidden h-full overflow-hidden flex flex-col">
-        <CoachSidebar
-          worksheetId={currentWorksheetId}
-          worksheetJson={JSON.stringify({ metadata, pages })}
+        <Sidebar
+          itemsState={{
+            items: displayItems,
+            selectedItem,
+            onSelectItem: handleSelectItem,
+            onUpdate: updateItem,
+            onDelete: deleteItem,
+            onReorderItems: setItems
+          }}
+          metadataState={{
+            metadata: displayMetadata,
+            onUpdateMetadata: updateMetadata
+          }}
+          pageState={{
+            currentPageIndex,
+            totalPages,
+            onPrevPage: prevPage,
+            onNextPage: nextPage,
+            onAddPage: addPage,
+            onDeletePage: deletePage
+          }}
+          onAddVocabTerm={addVocabTerm}
+          onAddTFQuestion={addTFQuestion}
           isOpen={isRightSidebarOpen}
           onToggle={() => setIsRightSidebarOpen(!isRightSidebarOpen)}
         />

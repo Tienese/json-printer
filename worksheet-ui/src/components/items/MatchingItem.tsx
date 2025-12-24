@@ -170,7 +170,8 @@ export const MatchingItemComponent: FC<Props> = ({
       <div className="flex-1">
         <div
           ref={promptRef}
-          className="mb-[2mm] text-[11pt] leading-[1.4] outline-none focus:outline-dashed focus:outline-1 focus:outline-gray-300 p-[1px] rounded empty:before:content-['Click_to_add_instructions...'] empty:before:text-gray-400 empty:before:italic focus:empty:before:content-['']"
+          className="editable editable-placeholder mb-[2mm] text-[11pt] leading-[1.4] p-[1px] rounded"
+          data-placeholder="Click to add instructions..."
           contentEditable
           suppressContentEditableWarning
           onFocus={handleFocus}
@@ -193,7 +194,7 @@ export const MatchingItemComponent: FC<Props> = ({
                 <span className="w-[20px] font-bold shrink-0 text-right">{index + 1}.</span>
                 <span
                   ref={el => { leftRefs.current[index] = el; }}
-                  className="flex-1 outline-none focus:outline-dashed focus:outline-1 focus:outline-gray-300 rounded px-[2px] min-w-[20px]"
+                  className="editable flex-1 rounded px-[2px] min-w-[20px]"
                   contentEditable={mode === 'teacher'}
                   suppressContentEditableWarning
                   onFocus={handleFocus}
@@ -219,7 +220,7 @@ export const MatchingItemComponent: FC<Props> = ({
                 <span className="w-[20px] font-medium shrink-0">{pair.rightLetter}.</span>
                 <span
                   ref={el => { rightRefs.current[index] = el; }}
-                  className="flex-1 outline-none focus:outline-dashed focus:outline-1 focus:outline-gray-300 rounded px-[2px] min-w-[20px]"
+                  className="editable flex-1 rounded px-[2px] min-w-[20px]"
                   contentEditable={mode === 'teacher'}
                   suppressContentEditableWarning
                   onFocus={handleFocus}

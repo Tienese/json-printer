@@ -64,13 +64,13 @@ export const MultipleChoiceEditor: FC<Props> = ({ item, onUpdate }) => {
       <h4>Multiple Choice Properties</h4>
 
       <label className="prop-label">Columns</label>
-      <div className="flex border border-gray-300 rounded overflow-hidden mb-3">
+      <div className="flex border theme-border rounded overflow-hidden mb-3">
         {[1, 2, 3, 4].map((num) => (
           <button
             key={num}
             className={`flex-1 py-1 text-xs ${(item.columns || 1) === num
-              ? 'bg-primary-blue text-white'
-              : 'bg-white text-gray-700 hover:bg-gray-100'
+              ? 'bg-[var(--color-accent)] text-white'
+              : 'theme-surface theme-text'
               }`}
             onClick={() => onUpdate({ ...item, columns: num })}
           >
@@ -92,7 +92,7 @@ export const MultipleChoiceEditor: FC<Props> = ({ item, onUpdate }) => {
               data-testid={`mc-correct-radio-${index}`}
               title="Mark as correct answer"
             />
-            <span className="flex-1 text-sm text-gray-700 truncate px-2 py-1 bg-gray-50 rounded border border-gray-200">
+            <span className="flex-1 text-sm theme-text truncate px-2 py-1 theme-elevated rounded border theme-border">
               {String.fromCharCode(65 + index)}. {option}
             </span>
             <button

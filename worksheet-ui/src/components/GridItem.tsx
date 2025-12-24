@@ -308,7 +308,7 @@ export function GridItemComponent({ item, isSelected, onUpdate }: GridItemProps)
 
                             {/* Character Box */}
                             <div
-                              className={`box-border -mr-px -mb-px bg-white flex items-center justify-center font-sans leading-none cursor-text outline-none relative ${isActive ? 'ring-2 ring-primary-blue z-20 print:ring-0' : 'z-0'} ${item.hideBorderOnContent && box.char && box.char.trim() !== '' ? 'border-transparent' : 'border border-black'}`}
+                              className={`box-border -mr-px -mb-px bg-white flex items-center justify-center font-sans leading-none cursor-text outline-none relative ${isActive ? 'ring-2 ring-gray-400 z-20 print:ring-0' : 'z-0'} ${item.hideBorderOnContent && box.char && box.char.trim() !== '' ? 'border-transparent' : 'border border-black'}`}
                               style={{
                                 width: `${boxSizeMm}mm`,
                                 height: `${boxSizeMm}mm`,

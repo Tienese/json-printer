@@ -67,7 +67,8 @@ export function QuestionPrompt({
     return (
         <div
             ref={editorRef}
-            className={`outline-none min-h-[1.4em] ${isEditable ? 'focus:outline-dashed focus:outline-1 focus:outline-gray-300' : ''} empty:before:content-['${placeholder.replace(/'/g, "\\'")}'] empty:before:text-gray-400 empty:before:italic focus:empty:before:content-[''] ${className}`}
+            className={`editable editable-placeholder min-h-[1.4em] ${className}`}
+            data-placeholder={placeholder}
             contentEditable={isEditable}
             suppressContentEditableWarning
             onFocus={handleFocus}

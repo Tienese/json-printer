@@ -9,11 +9,10 @@ interface ModeToggleProps {
 export const ModeToggle: FC<ModeToggleProps> = ({ mode, onToggle }) => {
   const getBtnClass = (btnMode: ViewMode) => {
     const isActive = mode === btnMode;
-    return `flex items-center justify-center px-3 h-8 border border-gray-300 cursor-pointer text-xs font-semibold transition-all duration-200 ${
-      isActive 
-        ? 'bg-gray-800 text-white border-gray-800' 
-        : 'bg-white text-gray-700 hover:bg-gray-50'
-    }`;
+    return `flex items-center justify-center px-3 h-8 border theme-border cursor-pointer text-xs font-semibold transition-all duration-200 ${isActive
+        ? 'bg-[var(--color-accent)] text-white border-[var(--color-accent)]'
+        : 'theme-surface theme-text'
+      }`;
   };
 
   return (

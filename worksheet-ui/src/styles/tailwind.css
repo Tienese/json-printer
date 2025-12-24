@@ -288,6 +288,49 @@
     color: var(--color-text-secondary);
   }
 
+  /* === EDITABLE ELEMENTS (contentEditable) ===
+     "1 Style Rule Them All" - Unified focus for all editable areas
+  */
+  .editable {
+    @apply outline-none;
+    caret-color: var(--color-text);
+  }
+
+  .editable:focus {
+    @apply outline outline-1 outline-gray-300;
+  }
+
+  .editable-placeholder:empty::before {
+    content: attr(data-placeholder);
+    @apply text-gray-400 italic;
+  }
+
+  .editable-placeholder:focus:empty::before {
+    content: '';
+  }
+
+  /* Suppress all browser focus rings on contentEditable */
+  [contenteditable]:focus {
+    outline: none;
+  }
+
+  [contenteditable].editable:focus {
+    @apply outline outline-1 outline-gray-300;
+  }
+
+  /* === GRID BOX (reusable across GridItem, VocabItem) === */
+  .grid-box {
+    @apply box-border border border-black bg-white flex items-center justify-center font-sans leading-none cursor-text relative -mr-px -mb-px;
+  }
+
+  .grid-box--active {
+    @apply ring-2 ring-gray-400 z-20;
+  }
+
+  .grid-box--active.print {
+    @apply ring-0;
+  }
+
   /* === GRID INPUT (for worksheets) === */
   .char-input {
     @apply w-full h-full text-center bg-transparent border-none outline-none p-0 m-0 leading-none font-serif text-black;

@@ -29,7 +29,7 @@ export function CoachSidebar({
     ];
 
     return (
-        <div className={`shrink-0 theme-surface border-l theme-border flex flex-col h-full relative transition-all duration-300 print:hidden ${isOpen ? 'w-[300px]' : 'w-[40px] items-center'}`}>
+        <div className={`shrink-0 theme-surface border-r theme-border flex flex-col h-full relative transition-all duration-300 print:hidden ${isOpen ? 'w-[300px]' : 'w-[40px] items-center'}`}>
             {/* Sidebar Title Bar / Collapse Toggle */}
             <div className="flex items-center justify-between p-3 border-b theme-border h-[45px] w-full">
                 {isOpen && <h2 className="text-xs font-bold theme-text-muted uppercase tracking-wider">Coach</h2>}

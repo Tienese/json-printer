@@ -68,7 +68,7 @@ export function PrintReportBlankPage({ onNavigate }: PrintReportBlankPageProps) 
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-white">
+      <div className="flex flex-col items-center justify-center min-h-screen theme-surface">
         <Spinner text="Formatting Worksheet..." />
       </div>
     );
@@ -76,9 +76,9 @@ export function PrintReportBlankPage({ onNavigate }: PrintReportBlankPageProps) 
 
   if (error) {
     return (
-      <div className="max-w-[800px] mx-auto mt-10 p-10 text-center font-sans bg-white border-4 border-black">
-        <h1 className="text-3xl font-black text-black mb-6 uppercase">Sync Error</h1>
-        <p className="text-lg mb-8">{error}</p>
+      <div className="max-w-[800px] mx-auto mt-10 p-10 text-center font-sans theme-surface border-4 theme-border-strong">
+        <h1 className="text-3xl font-black theme-text mb-6 uppercase">Sync Error</h1>
+        <p className="text-lg mb-8 theme-text-secondary">{error}</p>
         <button className="btn btn-primary" onClick={() => onNavigate(ROUTES.HOME)}>
           &larr; Return to Home
         </button>
@@ -97,9 +97,9 @@ export function PrintReportBlankPage({ onNavigate }: PrintReportBlankPageProps) 
   );
 
   return (
-    <div className="bg-app-gray min-h-screen print:bg-white">
+    <div className="theme-bg min-h-screen print:bg-white">
       {/* Sticky Header */}
-      <div className="fixed top-0 left-0 right-0 bg-white border-b-2 border-black p-3 flex justify-between items-center z-[1000] shadow-md print:hidden">
+      <div className="fixed top-0 left-0 right-0 theme-surface border-b-2 theme-border-strong p-3 flex justify-between items-center z-[1000] shadow-md print:hidden">
         <div className="flex gap-3">
           <button
             onClick={() => onNavigate(ROUTES.HOME)}
@@ -111,10 +111,10 @@ export function PrintReportBlankPage({ onNavigate }: PrintReportBlankPageProps) 
         </div>
 
         <div className="flex gap-3 items-center">
-          <div className="text-[10px] font-black uppercase tracking-widest text-gray-400 mr-4">WORKSHEET PREVIEW</div>
+          <div className="text-[10px] font-black uppercase tracking-widest theme-text-muted mr-4">WORKSHEET PREVIEW</div>
           <button
             onClick={handlePrint}
-            className="toolbar-btn !bg-black !text-white !border-black"
+            className="toolbar-btn !bg-[var(--color-accent)] !text-white !border-[var(--color-accent)]"
             data-testid="print-btn"
           >
             🖨️ Print Worksheet

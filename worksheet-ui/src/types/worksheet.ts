@@ -45,6 +45,7 @@ export interface CardItem {
   cardHeader?: string;
   cardStyle?: 'note' | 'info' | 'warning';
   language?: 'VI' | 'EN' | 'JP';  // Default: VI (Vietnamese)
+  columns?: number;               // Default: 1 (single column)
 }
 
 export interface GridItem {
@@ -92,6 +93,7 @@ export interface VocabItem {
   gridBoxSize?: '8mm' | '10mm' | '12mm';  // Default: 10mm
   gridLayout?: 'inline' | 'below';         // Default: inline
   gridShowFurigana?: boolean;              // Default: false
+  gridShowGuides?: boolean;                // Default: false - inner crosshair guides
 }
 
 export interface VocabTerm {
@@ -105,6 +107,7 @@ export interface VocabTerm {
   gridBoxCount?: number;           // Default: 5
   showTerm?: boolean;              // Default: true
   showTrailingLine?: boolean;      // Default: true
+  termLayout?: 'inline' | 'below'; // Default: 'inline' - term position relative to line
 }
 
 // ===== NEW QUESTION TYPES =====
@@ -167,6 +170,7 @@ export interface ClozeItem {
   promptNumber?: number;
   blankWidth?: string;
   customLabel?: string;
+  listStyle?: 'number' | 'letter' | 'roman' | 'bullet' | 'none'; // Bullet style for multi-line cloze
 }
 
 // ===== WORKSHEET STATE =====

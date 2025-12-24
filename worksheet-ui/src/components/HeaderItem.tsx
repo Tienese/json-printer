@@ -60,7 +60,8 @@ export function HeaderItemComponent({ item, onUpdate }: HeaderItemProps) {
     <div>
       <h1
         ref={editorRef}
-        className="border-none bg-transparent w-full outline-none p-[5px] focus:bg-[#eef] empty:before:content-['Click_to_add_title...'] empty:before:text-gray-400 empty:before:italic focus:empty:before:content-['']"
+        className="editable editable-placeholder border-none bg-transparent w-full p-[5px]"
+        data-placeholder="Click to add title..."
         style={style}
         contentEditable
         suppressContentEditableWarning

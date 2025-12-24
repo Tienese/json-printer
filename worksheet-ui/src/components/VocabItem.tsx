@@ -105,7 +105,8 @@ export function VocabItemComponent({ item, onUpdate }: VocabItemProps) {
       <div className="flex-1">
         <div
           ref={descriptionRef}
-          className="mb-[2mm] text-[11pt] leading-[1.4] outline-none hover:bg-focus-bg focus:bg-focus-bg p-[2px] rounded empty:before:content-['Click_to_add_description...'] empty:before:text-gray-400 empty:before:italic focus:empty:before:content-['']"
+          className="editable editable-placeholder mb-[2mm] text-[11pt] leading-[1.4] p-[2px] rounded"
+          data-placeholder="Click to add description..."
           contentEditable
           suppressContentEditableWarning
           onFocus={() => { isEditingDescription.current = true; }}
@@ -127,6 +128,7 @@ export function VocabItemComponent({ item, onUpdate }: VocabItemProps) {
             const globalGridBoxSize = item.gridBoxSize || '10mm';
             const globalGridLayout = item.gridLayout || 'inline';
             const globalShowFurigana = item.gridShowFurigana || false;
+            const globalShowGuides = item.gridShowGuides || false;
             const boxSizeMm = parseInt(globalGridBoxSize) || 10;
             const furiganaHeightMm = globalShowFurigana ? Math.floor(boxSizeMm * 0.4) : 0;
 
@@ -154,7 +156,7 @@ export function VocabItemComponent({ item, onUpdate }: VocabItemProps) {
               const showTrailingLine = term.showTrailingLine !== false;
 
               return (
-                <div key={term.id || index} className="flex items-baseline flex-grow min-w-0">
+                <div key={term.id || index} className="flex items-baseline flex-grow min-w-0" style={{ fontSize: `${item.fontSize}pt` }}>
                   <span className="mr-1 text-gray-700 font-medium select-none">{label}</span>
 
                   {isGridType ? (
@@ -164,21 +166,30 @@ export function VocabItemComponent({ item, onUpdate }: VocabItemProps) {
                       <div className="flex flex-col">
                         <div className="flex">
                           {Array.from({ length: boxCount }).map((_, boxIdx) => (
-                            <div key={boxIdx} className="flex flex-col relative w-[var(--box-size)]"
-                              style={{ '--box-size': `${boxSizeMm}mm` } as React.CSSProperties}>
+                            <div key={boxIdx} className="flex flex-col relative"
+                              style={{ width: `${boxSizeMm}mm` }}>
                               {globalShowFurigana && (
                                 <input
-                                  className="w-full h-[var(--furigana-height)] text-center text-[8pt] border-none outline-none leading-none text-gray-600 bg-transparent m-0 p-0"
-                                  style={{ '--furigana-height': `${furiganaHeightMm}mm` } as React.CSSProperties}
+                                  className="w-full text-center text-[8pt] border-none outline-none leading-none text-gray-600 bg-transparent m-0 p-0"
+                                  style={{ height: `${furiganaHeightMm}mm` }}
                                 />
                               )}
+                              {/* Unified grid-box styling */}
                               <div
-                                className="w-[var(--box-size)] h-[var(--box-size)] text-[var(--box-font-size)] box-border border border-black -mr-px -mb-px bg-white flex items-center justify-center font-sans leading-none cursor-text outline-none relative print:border-black"
+                                className="grid-box"
                                 style={{
-                                  '--box-size': `${boxSizeMm}mm`,
-                                  '--box-font-size': `${boxSizeMm * 0.75}mm`
-                                } as React.CSSProperties}
+                                  width: `${boxSizeMm}mm`,
+                                  height: `${boxSizeMm}mm`,
+                                  fontSize: `${boxSizeMm * 0.7}mm`
+                                }}
                               >
+                                {/* Guide Lines - same as GridItem */}
+                                {globalShowGuides && (
+                                  <>
+                                    <div className="absolute top-1/2 left-0 right-0 border-t border-dashed border-gray-300 pointer-events-none z-0" />
+                                    <div className="absolute left-1/2 top-0 bottom-0 border-l border-dashed border-gray-300 pointer-events-none z-0" />
+                                  </>
+                                )}
                                 <div className="relative z-10 w-full h-full flex items-center justify-center">
                                   <CharacterInput value="" onCommit={() => { }} />
                                 </div>
@@ -192,7 +203,7 @@ export function VocabItemComponent({ item, onUpdate }: VocabItemProps) {
                       {showTerm && (
                         <div
                           ref={(el) => { termRefs.current[index] = el; }}
-                          className="px-[5px] py-[2px] whitespace-nowrap shrink-0 hover:bg-focus-bg focus-within:bg-focus-bg outline-none min-w-[5mm]"
+                          className="editable px-[5px] py-[2px] whitespace-nowrap shrink-0 min-w-[5mm]"
                           contentEditable
                           suppressContentEditableWarning
                           onFocus={() => { editingTermIndex.current = index; }}
@@ -204,16 +215,16 @@ export function VocabItemComponent({ item, onUpdate }: VocabItemProps) {
 
                       {/* Trailing dashline */}
                       {showTrailingLine && (
-                        <div className="flex-1 border-b-2 border-dashed border-black min-w-[1cm] mr-3"></div>
+                        <div className="flex-1 border-b border-dashed border-black min-w-[1cm] mr-3"></div>
                       )}
                     </div>
                   ) : (
-                    // Text layout with dashline
-                    <>
+                    // Text layout with dashline - supports inline/below
+                    <div className={`flex ${(term.termLayout || 'inline') === 'below' ? 'flex-col gap-1' : 'flex-row items-baseline'} flex-1`}>
                       {showTerm && (
                         <div
                           ref={(el) => { termRefs.current[index] = el; }}
-                          className="mr-2 px-[5px] py-[2px] whitespace-nowrap shrink-0 hover:bg-focus-bg focus-within:bg-focus-bg outline-none min-w-[5mm]"
+                          className="editable mr-2 px-[5px] py-[2px] whitespace-nowrap shrink-0 min-w-[5mm]"
                           contentEditable
                           suppressContentEditableWarning
                           onFocus={() => { editingTermIndex.current = index; }}
@@ -223,9 +234,9 @@ export function VocabItemComponent({ item, onUpdate }: VocabItemProps) {
                         ></div>
                       )}
                       {showTrailingLine && (
-                        <div className="flex-1 border-b-2 border-dashed border-black min-w-[1cm] mr-3"></div>
+                        <div className="flex-1 border-b border-dashed border-black min-w-[1cm] mr-3"></div>
                       )}
-                    </>
+                    </div>
                   )}
                 </div>
               );

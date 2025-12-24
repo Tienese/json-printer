@@ -36,7 +36,7 @@ export function HeaderItemEditor({ item, onUpdate }: HeaderItemEditorProps) {
         <div className="grid grid-cols-2 gap-2">
           <div>
             <label className="prop-label">Font Size</label>
-            <select 
+            <select
               className="prop-select"
               value={item.fontSize || '18pt'}
               onChange={(e) => onUpdate({ ...item, fontSize: e.target.value })}
@@ -50,7 +50,7 @@ export function HeaderItemEditor({ item, onUpdate }: HeaderItemEditorProps) {
           </div>
           <div>
             <label className="prop-label">Font Weight</label>
-            <select 
+            <select
               className="prop-select"
               value={item.fontWeight || 'bold'}
               onChange={(e) => onUpdate({ ...item, fontWeight: e.target.value as 'normal' | 'bold' })}
@@ -63,11 +63,11 @@ export function HeaderItemEditor({ item, onUpdate }: HeaderItemEditorProps) {
 
         <div className="mt-2">
           <label className="prop-label">Alignment</label>
-          <div className="flex border border-gray-300 rounded overflow-hidden">
+          <div className="flex border theme-border rounded overflow-hidden">
             {(['left', 'center', 'right'] as const).map((align) => (
               <button
                 key={align}
-                className={`flex-1 py-1 text-xs capitalize ${item.textAlign === align || (!item.textAlign && align === 'center') ? 'bg-primary-blue text-white' : 'bg-white text-gray-700 hover:bg-gray-100'}`}
+                className={`flex-1 py-1 text-xs capitalize ${item.textAlign === align || (!item.textAlign && align === 'center') ? 'bg-[var(--color-accent)] text-white' : 'theme-surface theme-text'}`}
                 onClick={() => onUpdate({ ...item, textAlign: align })}
               >
                 {align}

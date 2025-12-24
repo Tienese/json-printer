@@ -34,19 +34,19 @@ export function ContextMenuPortal({
 
     return (
         <div
-            className="fixed z-[100] bg-white border border-gray-200 shadow-xl rounded-xl py-1.5 min-w-[180px] animate-in fade-in zoom-in-95 duration-150"
+            className="fixed z-[100] theme-surface border theme-border shadow-xl rounded-xl py-1.5 min-w-[180px] animate-in fade-in zoom-in-95 duration-150"
             style={{ left: position.x, top: position.y }}
         >
             {type === 'ADD' && (
                 <>
-                    <div className="px-4 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Add Element</div>
+                    <div className="px-4 py-2 text-[10px] font-bold theme-text-muted uppercase tracking-widest">Add Element</div>
                     {MENU_ITEMS.map(opt => (
                         <button
                             key={opt.type}
-                            className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-primary-blue flex items-center gap-3 active:bg-blue-100 transition-colors"
+                            className="w-full text-left px-4 py-2.5 text-sm theme-text hover:bg-[var(--color-accent)]/10 hover:text-[var(--color-accent)] flex items-center gap-3 active:bg-[var(--color-accent)]/20 transition-colors"
                             onClick={() => onAddItem(opt.type)}
                         >
-                            <span className="text-gray-400">{opt.icon}</span>
+                            <span className="theme-text-muted">{opt.icon}</span>
                             {opt.label}
                         </button>
                     ))}

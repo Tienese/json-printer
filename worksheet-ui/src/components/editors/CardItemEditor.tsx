@@ -1,5 +1,4 @@
 import type { CardItem } from '../../types/worksheet';
-import { selectOnFocus } from '../../utils/inputUtils';
 
 interface CardItemEditorProps {
   item: CardItem;
@@ -41,7 +40,7 @@ export function CardItemEditor({ item, onUpdate }: CardItemEditorProps) {
               {(['solid', 'double', 'dashed'] as const).map((style) => (
                 <button
                   key={style}
-                  className={`flex-1 py-1 text-xs capitalize ${(item.borderStyle || 'solid') === style ? 'bg-black text-white' : 'bg-white text-gray-700'}`}
+                  className={`flex-1 py-1 text-xs capitalize ${(item.borderStyle || 'solid') === style ? 'bg-black text-white' : 'theme-surface theme-text'}`}
                   onClick={() => onUpdate({ ...item, borderStyle: style })}
                 >
                   {style}
@@ -57,7 +56,7 @@ export function CardItemEditor({ item, onUpdate }: CardItemEditorProps) {
             {(['note', 'info', 'warning'] as const).map((style) => (
               <button
                 key={style}
-                className={`flex-1 py-1 text-xs capitalize ${(item.cardStyle || 'note') === style ? 'bg-black text-white' : 'bg-white text-gray-700'}`}
+                className={`flex-1 py-1 text-xs capitalize ${(item.cardStyle || 'note') === style ? 'bg-black text-white' : 'theme-surface theme-text'}`}
                 onClick={() => onUpdate({ ...item, cardStyle: style })}
               >
                 {style}
@@ -67,31 +66,18 @@ export function CardItemEditor({ item, onUpdate }: CardItemEditorProps) {
         </div>
 
         <div className="mb-4">
-          <label className="prop-label">Language</label>
-          <select
-            className="prop-select"
-            value={item.language || 'VI'}
-            onChange={(e) => onUpdate({ ...item, language: e.target.value as 'VI' | 'EN' | 'JP' })}
-          >
-            <option value="VI">Vietnamese (Tiếng Việt)</option>
-            <option value="EN">English</option>
-            <option value="JP">Japanese (日本語)</option>
-          </select>
-        </div>
-
-        <div className="mb-4">
-          <label className="prop-label">Card Title (optional)</label>
-          <input
-            type="text"
-            className="prop-input"
-            value={item.cardHeader || ''}
-            placeholder="e.g., Ghi chú quan trọng"
-            onChange={(e) => onUpdate({ ...item, cardHeader: e.target.value })}
-            onFocus={selectOnFocus}
-          />
-          <small className="text-xs text-gray-500 mt-1 block">
-            Title will appear with underlines and language indicator
-          </small>
+          <label className="prop-label">Columns</label>
+          <div className="flex border theme-border rounded overflow-hidden">
+            {([1, 2, 3] as const).map((num) => (
+              <button
+                key={num}
+                className={`flex-1 py-1 text-xs ${(item.columns || 1) === num ? 'bg-black text-white' : 'theme-surface theme-text'}`}
+                onClick={() => onUpdate({ ...item, columns: num })}
+              >
+                {num}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="grid grid-cols-2 gap-2">
@@ -129,7 +115,7 @@ export function CardItemEditor({ item, onUpdate }: CardItemEditorProps) {
             {(['left', 'center', 'right', 'justify'] as const).map((align) => (
               <button
                 key={align}
-                className={`flex-1 py-1 text-xs capitalize ${item.textAlign === align || (!item.textAlign && align === 'left') ? 'bg-black text-white' : 'bg-white text-gray-700'}`}
+                className={`flex-1 py-1 text-xs capitalize ${item.textAlign === align || (!item.textAlign && align === 'left') ? 'bg-black text-white' : 'theme-surface theme-text'}`}
                 onClick={() => onUpdate({ ...item, textAlign: align })}
               >
                 {align}
