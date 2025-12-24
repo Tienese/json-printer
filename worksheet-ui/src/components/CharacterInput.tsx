@@ -30,9 +30,30 @@ export const CharacterInput = memo(function CharacterInput({
     }
   }, [value]);
 
-  // ONLY update display value, never commit or advance
+  // Handle change - detect if replacing content and extract only new char
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInternalValue(e.target.value);
+    const newValue = e.target.value;
+
+    // If composing (IME), let it accumulate freely
+    if (isComposingRef.current) {
+      setInternalValue(newValue);
+      return;
+    }
+
+    // If we had content and now have more, user typed on filled box
+    // Extract only the newly typed character (what was added)
+    if (internalValue.length > 0 && newValue.length > internalValue.length) {
+      // Find the new character(s) - typically at the end after selection replacement
+      // or could be at cursor position; simplest: take last char as the new one
+      const newChar = newValue.slice(-1);
+      setInternalValue(newChar);
+      onCommit(newChar);
+      onAdvance?.();
+      return;
+    }
+
+    // Normal case: just update display value
+    setInternalValue(newValue);
   };
 
   const handleCompositionStart = () => {

@@ -13,15 +13,20 @@ export type FocusTarget = 'char' | 'furigana';
  * @param boxIndex - The box index within the section
  * @param target - Whether to focus 'char' input or 'furigana' input
  * @param delay - Optional delay in ms before focusing (default: 50)
+ * @param itemId - Optional grid item ID to scope focus to correct container
  */
 export function focusGridBox(
     sectionIndex: number,
     boxIndex: number,
     target: FocusTarget = 'char',
-    delay: number = FOCUS_DELAY_MS
+    delay: number = FOCUS_DELAY_MS,
+    itemId?: string
 ): void {
     setTimeout(() => {
-        const container = document.querySelector('[data-grid-container]');
+        // If itemId provided, find that specific grid; otherwise fallback to first
+        const container = itemId
+            ? document.querySelector(`[data-grid-id="${itemId}"]`)
+            : document.querySelector('[data-grid-container]');
         if (!container) return;
 
         if (target === 'furigana') {

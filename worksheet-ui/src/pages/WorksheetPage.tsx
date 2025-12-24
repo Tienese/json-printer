@@ -152,11 +152,13 @@ export function WorksheetPage({ onNavigate, worksheetId }: WorksheetPageProps) {
       itemCount: items.length,
       selectedItemId: selectedItem?.id || null
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional mount-only logging
   }, []);
 
   // AI Debug: Log mode changes
   useEffect(() => {
     aiLog.state('WorksheetPage', 'MODE_CHANGED', { mode, itemCount: items.length });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional mode-only logging
   }, [mode]);
 
   const isPreviewMode = !!previewTemplate;
