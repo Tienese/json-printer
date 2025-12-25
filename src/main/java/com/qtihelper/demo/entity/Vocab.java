@@ -21,7 +21,10 @@ public class Vocab {
     private String displayForm; // Original form from CSV (e.g., "学生" or "がくせい")
 
     @Column(nullable = false)
-    private String baseForm; // Sudachi normalized form (dictionary form)
+    private String baseForm; // Kuromoji normalized form (dictionary form)
+
+    @Column
+    private String partOfSpeech; // Kuromoji POS tag (e.g., "名詞-一般", "動詞-自立")
 
     // Constructors
     public Vocab() {
@@ -31,6 +34,13 @@ public class Vocab {
         this.lessonId = lessonId;
         this.displayForm = displayForm;
         this.baseForm = baseForm;
+    }
+
+    public Vocab(Integer lessonId, String displayForm, String baseForm, String partOfSpeech) {
+        this.lessonId = lessonId;
+        this.displayForm = displayForm;
+        this.baseForm = baseForm;
+        this.partOfSpeech = partOfSpeech;
     }
 
     // Getters and Setters
@@ -64,5 +74,13 @@ public class Vocab {
 
     public void setBaseForm(String baseForm) {
         this.baseForm = baseForm;
+    }
+
+    public String getPartOfSpeech() {
+        return partOfSpeech;
+    }
+
+    public void setPartOfSpeech(String partOfSpeech) {
+        this.partOfSpeech = partOfSpeech;
     }
 }

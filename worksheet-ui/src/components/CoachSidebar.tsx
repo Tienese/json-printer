@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { VocabCoachPanel } from './VocabCoachPanel';
 import { StyleCoachPanel } from './StyleCoachPanel';
+import { GrammarCoachPanel } from './GrammarCoachPanel';
 
 interface CoachSidebarProps {
     worksheetId: number | null;
@@ -78,10 +79,8 @@ export function CoachSidebar({
                         )}
 
                         {activeTab === 'grammar' && (
-                            <div className="p-4 text-center theme-text-muted">
-                                <span className="text-3xl mb-2 block">📝</span>
-                                <p className="text-sm font-medium">Grammar Analyzer</p>
-                                <p className="text-xs mt-1">Coming soon</p>
+                            <div className="animate-in fade-in">
+                                <GrammarCoachPanel worksheetId={worksheetId} worksheetJson={worksheetJson} />
                             </div>
                         )}
 
