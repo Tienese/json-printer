@@ -20,10 +20,11 @@ describe('ClozeItemComponent', () => {
             />
         );
 
-        // In teacher mode, the answer is shown in an editable span
-        expect(screen.getByText('beautiful')).toBeInTheDocument();
-        expect(screen.getByText(/Hello/)).toBeInTheDocument();
-        expect(screen.getByText(/world!/)).toBeInTheDocument();
+        // In teacher mode, the blank is editable and shows the answer
+        const blank = screen.getByTestId('cloze-blank-0');
+        expect(blank).toBeInTheDocument();
+        expect(blank).toHaveAttribute('contenteditable', 'true');
+        expect(blank.textContent).toBe('beautiful');
     });
 
     it('renders with blank underline in student mode', () => {
@@ -34,9 +35,9 @@ describe('ClozeItemComponent', () => {
             />
         );
 
-        // In student mode, the blank is an underline (no answer visible)
-        const template = screen.getByTestId('cloze-template');
-        expect(template).toBeInTheDocument();
+        // In student mode, no editable blank - just underline
+        expect(screen.queryByTestId('cloze-blank-0')).not.toBeInTheDocument();
+        // Answer should not be visible
         expect(screen.queryByText('beautiful')).not.toBeInTheDocument();
     });
 
@@ -49,5 +50,25 @@ describe('ClozeItemComponent', () => {
         );
 
         expect(screen.getByTestId('question-number')).toHaveTextContent('1.');
+    });
+
+    it('renders multiple blanks correctly', () => {
+        const multiBlankItem = {
+            ...createClozeItem(),
+            template: 'The {{blank}} is {{blank}}.',
+            answers: ['sky', 'blue'],
+            promptNumber: 1,
+            showPromptNumber: true
+        };
+
+        render(
+            <ClozeItemComponent
+                item={multiBlankItem}
+                mode="teacher"
+            />
+        );
+
+        expect(screen.getByTestId('cloze-blank-0').textContent).toBe('sky');
+        expect(screen.getByTestId('cloze-blank-1').textContent).toBe('blue');
     });
 });

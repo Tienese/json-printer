@@ -53,5 +53,6 @@ describe('MultipleChoiceItemComponent', () => {
 
         const optionB = screen.getByTestId('mc-option-1');
         expect(optionB).not.toHaveClass('underline');
+        expect(optionB).not.toHaveClass('font-bold');
     });
 });

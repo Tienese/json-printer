@@ -1,0 +1,911 @@
+**Actionable comments posted: 5**
+
+<details>
+<summary>🧹 Nitpick comments (16)</summary><blockquote>
+
+<details>
+<summary>docs/ARCHITECTURE.md (1)</summary><blockquote>
+
+`450-457`: **Consider documenting recent service additions (StyleCheckService).**
+
+The PR summary mentions new backend services like `StyleCheckService` and corresponding frontend components (`StyleCoachPanel`, `VocabCoachPanel`). If these are substantive new features beyond the text input unification, they may warrant an addition to the Services section (line 204) with a brief description of their role in the architecture.
+
+
+
+
+As an optional enhancement, you might add under the Services section:
+
+```markdown
+**Style & Content Analysis**
+- `StyleCheckService` - Validates worksheet formatting and content compliance
+- `VocabAnalysisService` - Extracts and suggests vocabulary for worksheets
+```
+
+Verify whether these services are part of Phase 1-4 scope and how prominently they feature in the feature set.
+
+</blockquote></details>
+<details>
+<summary>worksheet-ui/src/components/shared/RichTextEditor.tsx (2)</summary><blockquote>
+
+`56-62`: **Potential edge case with HTML string comparison.**
+
+Direct comparison of `innerHTML` with `content` prop may fail if browsers normalize HTML differently (e.g., attribute ordering, whitespace). Consider sanitizing both sides before comparison, or tracking a "dirty" flag instead.
+
+---
+
+`82-86`: **Replace `document.execCommand('insertHTML')` with Selection and Range APIs for better future compatibility.**
+
+`execCommand('insertHTML')` is deprecated and may be removed in future browser versions. The recommended modern approach is to use the Selection API and Range APIs: get the current selection, create a document fragment from the HTML, insert it with `range.insertNode()`, and restore the selection. However, test undo/redo behavior carefully, as these APIs don't automatically preserve the undo stack like `execCommand` does.
+
+</blockquote></details>
+<details>
+<summary>worksheet-ui/src/components/shared/RichTextEditor.test.tsx (1)</summary><blockquote>
+
+`5-101`: **Good baseline coverage; consider adding tests for debounce and paste.**
+
+The test suite covers core functionality well. Consider adding tests for:
+- `debounceMs` behavior (verify delayed save and cancellation on blur)
+- `selectOnFocus` behavior
+- Paste handling with sanitization
+
+These are optional but would increase confidence in the more complex features.
+
+</blockquote></details>
+<details>
+<summary>worksheet-ui/src/components/items/ClozeItem.tsx (3)</summary><blockquote>
+
+`102-106`: **`document.execCommand` is deprecated.**
+
+Same as in RichTextEditor - `execCommand('insertText')` is deprecated. The component works today, but consider a future-proof approach using Selection/Range APIs.
+
+---
+
+`135-137`: **Simplify answer extraction.**
+
+`sanitizeHTML` followed by `replace(/<[^>]*>/g, '')` to strip tags is redundant. If you only need plain text, use `el.textContent` directly:
+
+<details>
+<summary>🔎 Proposed simplification</summary>
+
+```diff
+-            newAnswers.push(sanitizeHTML(el.innerHTML).replace(/<[^>]*>/g, '').trim());
++            newAnswers.push((el.textContent || '').trim());
+```
+</details>
+
+---
+
+`151-154`: **Empty handler could be removed.**
+
+`handleInput` is a no-op placeholder. Consider removing it and the `onInput` binding until debounce functionality is actually needed.
+
+</blockquote></details>
+<details>
+<summary>worksheet-ui/src/components/items/ClozeItem.test.tsx (1)</summary><blockquote>
+
+`43-52`: **Consider adding a test for the edit-save flow.**
+
+The `onUpdate` callback is a key part of the inline editing feature. Consider adding a test that simulates editing a blank and verifies `onUpdate` is called with the correct template and answers on blur.
+
+</blockquote></details>
+<details>
+<summary>src/main/java/com/qtihelper/demo/dto/StyleCheckResult.java (1)</summary><blockquote>
+
+`8-21`: **Good use of records for DTOs; consider enum for severity.**
+
+Using records aligns with the coding guidelines. For better type safety and IDE support, consider using an enum for `severity` instead of String:
+
+<details>
+<summary>🔎 Proposed enhancement</summary>
+
+```java
+public record StyleCheckResult(
+        List<StyleIssue> issues,
+        int score
+) {
+    public enum Severity { ERROR, WARNING, INFO }
+    
+    public record StyleIssue(
+            Severity severity,
+            String message,
+            String itemId) {
+    }
+}
+```
+</details>
+
+This prevents invalid severity values and provides compile-time safety. The JSON serialization would need `@JsonProperty` annotations or custom naming if you need lowercase output.
+
+</blockquote></details>
+<details>
+<summary>canvas_context_new/a (1)</summary><blockquote>
+
+`1-21`: **Planning document with unusual file path.**
+
+This appears to be implementation notes or a design document rather than production code. Consider:
+1. Moving this to a `docs/` directory with a descriptive name (e.g., `docs/text-input-unification.md`)
+2. Or removing it if it was temporary planning notes not intended for the repository
+
+The content itself is useful documentation of the 1.1.1.1 compliance design decisions.
+
+</blockquote></details>
+<details>
+<summary>worksheet-ui/src/components/StyleCoachPanel.tsx (1)</summary><blockquote>
+
+`21-46`: **Missing request cancellation on unmount.**
+
+If the component unmounts while `runCheck` is in progress, setting state on an unmounted component could cause issues. Consider using `AbortController`:
+
+<details>
+<summary>🔎 Proposed fix with AbortController</summary>
+
+```diff
++import { useState, useRef, useEffect } from 'react';
++
+ export function StyleCoachPanel({ worksheetId }: StyleCoachPanelProps) {
+     const [result, setResult] = useState<StyleCheckResult | null>(null);
+     const [isLoading, setIsLoading] = useState(false);
+     const [error, setError] = useState<string | null>(null);
++    const abortControllerRef = useRef<AbortController | null>(null);
++
++    useEffect(() => {
++        return () => {
++            abortControllerRef.current?.abort();
++        };
++    }, []);
+
+     const runCheck = async () => {
+         if (!worksheetId) {
+             setError('Please save the worksheet first');
+             return;
+         }
+
++        abortControllerRef.current?.abort();
++        abortControllerRef.current = new AbortController();
++
+         setIsLoading(true);
+         setError(null);
+
+         try {
+             const response = await fetch(`/api/worksheets/${worksheetId}/check-style`, {
+                 method: 'POST',
++                signal: abortControllerRef.current.signal,
+             });
+```
+</details>
+
+</blockquote></details>
+<details>
+<summary>src/main/java/com/qtihelper/demo/controller/WorksheetStorageController.java (1)</summary><blockquote>
+
+`172-192`: **LGTM: Style check endpoint follows existing patterns.**
+
+The new `/check-style` endpoint properly:
+- Uses the `Optional.map` pattern consistent with other endpoints
+- Logs progress and result details appropriately
+- Returns `404 Not Found` when worksheet doesn't exist
+
+As per coding guidelines, consider using `var` for local variables. The `result` variable at line 186 could be declared with `var`:
+
+<details>
+<summary>🔎 Optional refactor to align with coding guidelines</summary>
+
+```diff
+                 .map(worksheet -> {
+-                    StyleCheckResult result = styleCheckService.check(worksheet.getJsonContent());
++                    var result = styleCheckService.check(worksheet.getJsonContent());
+                     log.info("Style check complete for worksheet {}: score={}, issues={}",
+```
+</details>
+
+</blockquote></details>
+<details>
+<summary>worksheet-ui/src/components/VocabCoachPanel.tsx (1)</summary><blockquote>
+
+`136-148`: **Consider adding keyboard accessibility for the clickable word items.**
+
+The missing word items are clickable but lack keyboard accessibility. Users navigating with keyboard cannot activate these items.
+
+<details>
+<summary>🔎 Suggested improvement for accessibility</summary>
+
+```diff
+                                 {displayedMissing?.map((word, idx) => (
+                                     <div
+                                         key={idx}
+                                         className="flex items-center justify-between px-3 py-2 bg-gray-50 rounded-lg text-sm cursor-pointer hover:bg-blue-50"
+                                         onClick={() => onInsertWord?.({ term: word.displayForm, meaning: '' })}
++                                        onKeyDown={(e) => {
++                                            if (e.key === 'Enter' || e.key === ' ') {
++                                                onInsertWord?.({ term: word.displayForm, meaning: '' });
++                                            }
++                                        }}
++                                        tabIndex={0}
++                                        role="button"
+                                         title="Click to add to worksheet"
+                                     >
+```
+</details>
+
+</blockquote></details>
+<details>
+<summary>src/main/java/com/qtihelper/demo/service/StyleCheckService.java (2)</summary><blockquote>
+
+`71-77`: **Simplify redundant array validation conditions.**
+
+The checks `terms.isEmpty() || !terms.isArray() || terms.size() == 0` contain redundancy. If `terms.isEmpty()` returns true (meaning `terms` is a missing node), then `terms.size()` would return 0 anyway. Similarly, `terms.size() == 0` is redundant when `terms.isEmpty()` is checked.
+
+<details>
+<summary>🔎 Suggested simplification</summary>
+
+```diff
+         // Check: VOCAB with no terms
+         if ("VOCAB".equals(type)) {
+             var terms = item.path("terms");
+-            if (terms.isEmpty() || !terms.isArray() || terms.size() == 0) {
++            if (!terms.isArray() || terms.isEmpty()) {
+                 issues.add(new StyleIssue("warning", location + ": Vocabulary list has no terms", id));
+             }
+         }
+
+         // Check: GRID with no sections
+         if ("GRID".equals(type)) {
+             var sections = item.path("sections");
+-            if (sections.isEmpty() || !sections.isArray() || sections.size() == 0) {
++            if (!sections.isArray() || sections.isEmpty()) {
+                 issues.add(new StyleIssue("warning", location + ": Grid has no sections", id));
+             }
+         }
+         
+         // Check: TRUE_FALSE with no questions
+         if ("TRUE_FALSE".equals(type)) {
+             var questions = item.path("questions");
+-            if (questions.isEmpty() || !questions.isArray() || questions.size() == 0) {
++            if (!questions.isArray() || questions.isEmpty()) {
+                 issues.add(new StyleIssue("warning", location + ": True/False has no questions", id));
+             }
+         }
+```
+</details>
+
+
+
+
+Also applies to: 79-85, 102-108
+
+---
+
+`94-100`: **Add existence check before size validation for MULTIPLE_CHOICE and MATCHING.**
+
+Unlike VOCAB, GRID, and TRUE_FALSE checks, the MULTIPLE_CHOICE and MATCHING validations only check `isArray() && size() < 2` without verifying the field exists. If `options` or `pairs` is missing, `isArray()` returns false and the warning is skipped—which may be the intended behavior, but it's inconsistent with other checks that explicitly warn about missing/empty arrays.
+
+Consider aligning the validation pattern for consistency:
+
+<details>
+<summary>🔎 Optional: Consistent validation pattern</summary>
+
+```diff
+         // Check: MULTIPLE_CHOICE with less than 2 options
+         if ("MULTIPLE_CHOICE".equals(type)) {
+             var options = item.path("options");
+-            if (options.isArray() && options.size() < 2) {
++            if (!options.isArray() || options.size() < 2) {
+                 issues.add(new StyleIssue("warning", location + ": Multiple choice needs at least 2 options", id));
+             }
+         }
+
+         // Check: MATCHING with less than 2 pairs
+         if ("MATCHING".equals(type)) {
+             var pairs = item.path("pairs");
+-            if (pairs.isArray() && pairs.size() < 2) {
++            if (!pairs.isArray() || pairs.size() < 2) {
+                 issues.add(new StyleIssue("warning", location + ": Matching needs at least 2 pairs", id));
+             }
+         }
+```
+</details>
+
+
+
+
+Also applies to: 110-116
+
+</blockquote></details>
+<details>
+<summary>worksheet-ui/src/components/MenuBar.tsx (1)</summary><blockquote>
+
+`231-280`: **Format menu implementation looks good with one note on keyboard shortcuts.**
+
+The Format menu follows the established patterns of other menus in this component. The shortcuts displayed (⌘B, ⌘I, ⌘U) are Mac-specific. Consider detecting the platform to show appropriate shortcuts (Ctrl+B on Windows/Linux vs ⌘B on Mac) for better cross-platform UX.
+
+<details>
+<summary>🔎 Optional: Platform-aware shortcut display</summary>
+
+```typescript
+// At component level or in a utility
+const isMac = typeof navigator !== 'undefined' && /Mac|iPod|iPhone|iPad/.test(navigator.platform);
+const modKey = isMac ? '⌘' : 'Ctrl+';
+
+// Then in the options array:
+{ label: 'Bold', format: 'bold' as const, shortcut: `${modKey}B`, icon: 'B' },
+```
+</details>
+
+</blockquote></details>
+
+</blockquote></details>
+
+<details>
+<summary>📜 Review details</summary>
+
+**Configuration used**: defaults
+
+**Review profile**: CHILL
+
+**Plan**: Pro
+
+<details>
+<summary>📥 Commits</summary>
+
+Reviewing files that changed from the base of the PR and between 82bbc7febeb774eff5deb307503dc71d98ef4f19 and a67bfba59bb82e36a5f8d9ab53912a86d05859bd.
+
+</details>
+
+<details>
+<summary>📒 Files selected for processing (17)</summary>
+
+* `canvas_context_new/a`
+* `docs/ARCHITECTURE.md`
+* `src/main/java/com/qtihelper/demo/controller/WorksheetStorageController.java`
+* `src/main/java/com/qtihelper/demo/dto/StyleCheckResult.java`
+* `src/main/java/com/qtihelper/demo/service/StyleCheckService.java`
+* `worksheet-ui/src/components/CoachSidebar.tsx`
+* `worksheet-ui/src/components/MenuBar.tsx`
+* `worksheet-ui/src/components/StyleCoachPanel.tsx`
+* `worksheet-ui/src/components/VocabCoachPanel.tsx`
+* `worksheet-ui/src/components/editors/CardItemEditor.tsx`
+* `worksheet-ui/src/components/editors/question-editors/ClozeEditor.tsx`
+* `worksheet-ui/src/components/items/ClozeItem.test.tsx`
+* `worksheet-ui/src/components/items/ClozeItem.tsx`
+* `worksheet-ui/src/components/items/MultipleChoiceItem.test.tsx`
+* `worksheet-ui/src/components/shared/RichTextEditor.test.tsx`
+* `worksheet-ui/src/components/shared/RichTextEditor.tsx`
+* `worksheet-ui/src/pages/WorksheetPage.tsx`
+
+</details>
+
+<details>
+<summary>💤 Files with no reviewable changes (1)</summary>
+
+* worksheet-ui/src/components/editors/CardItemEditor.tsx
+
+</details>
+
+<details>
+<summary>🧰 Additional context used</summary>
+
+<details>
+<summary>📓 Path-based instructions (2)</summary>
+
+<details>
+<summary>src/main/java/**/*.java</summary>
+
+
+**📄 CodeRabbit inference engine (CLAUDE.md)**
+
+> Use `var` for local variables in Java code
+
+Files:
+- `src/main/java/com/qtihelper/demo/dto/StyleCheckResult.java`
+- `src/main/java/com/qtihelper/demo/controller/WorksheetStorageController.java`
+- `src/main/java/com/qtihelper/demo/service/StyleCheckService.java`
+
+</details>
+<details>
+<summary>src/main/java/**/*Service.java</summary>
+
+
+**📄 CodeRabbit inference engine (GEMINI.md)**
+
+> `src/main/java/**/*Service.java`: Use RestClient (Java 21 style) for fetching Canvas data from external APIs
+> Use Apache Commons CSV for parsing student CSV data
+
+Files:
+- `src/main/java/com/qtihelper/demo/service/StyleCheckService.java`
+
+</details>
+
+</details><details>
+<summary>🧠 Learnings (12)</summary>
+
+<details>
+<summary>📓 Common learnings</summary>
+
+```
+Learnt from: CR
+Repo: Tienese/json-printer PR: 0
+File: GEMINI.md:0-0
+Timestamp: 2025-12-24T09:26:37.538Z
+Learning: Applies to src/main/frontend/src/**/*.{ts,tsx} : Use visual hierarchy techniques for printed worksheets: border styles (solid, dashed, double, thick/thin), text indicators (`[NOTE]`, `[INFO]`, `[!]`, `[Q1]`, `[A]`/`[B]`/`[C]`), ASCII/Unicode box-drawing characters, bold font weights, and spacing/indentation instead of colors
+```
+
+</details>
+<details>
+<summary>📚 Learning: 2025-12-24T09:26:37.538Z</summary>
+
+```
+Learnt from: CR
+Repo: Tienese/json-printer PR: 0
+File: GEMINI.md:0-0
+Timestamp: 2025-12-24T09:26:37.538Z
+Learning: Applies to src/main/frontend/src/**/*.{ts,tsx} : Use visual hierarchy techniques for printed worksheets: border styles (solid, dashed, double, thick/thin), text indicators (`[NOTE]`, `[INFO]`, `[!]`, `[Q1]`, `[A]`/`[B]`/`[C]`), ASCII/Unicode box-drawing characters, bold font weights, and spacing/indentation instead of colors
+```
+
+**Applied to files:**
+- `worksheet-ui/src/components/editors/question-editors/ClozeEditor.tsx`
+- `worksheet-ui/src/components/StyleCoachPanel.tsx`
+- `worksheet-ui/src/components/items/MultipleChoiceItem.test.tsx`
+- `worksheet-ui/src/components/shared/RichTextEditor.tsx`
+- `worksheet-ui/src/components/items/ClozeItem.tsx`
+- `worksheet-ui/src/components/MenuBar.tsx`
+- `docs/ARCHITECTURE.md`
+- `worksheet-ui/src/pages/WorksheetPage.tsx`
+
+</details>
+<details>
+<summary>📚 Learning: 2025-12-24T09:26:37.538Z</summary>
+
+```
+Learnt from: CR
+Repo: Tienese/json-printer PR: 0
+File: GEMINI.md:0-0
+Timestamp: 2025-12-24T09:26:37.538Z
+Learning: Applies to src/main/frontend/src/**/*.{ts,tsx} : Use React State/Context for runtime state management in the worksheet builder UI
+```
+
+**Applied to files:**
+- `worksheet-ui/src/components/editors/question-editors/ClozeEditor.tsx`
+- `worksheet-ui/src/components/StyleCoachPanel.tsx`
+- `worksheet-ui/src/components/shared/RichTextEditor.tsx`
+- `worksheet-ui/src/components/CoachSidebar.tsx`
+- `worksheet-ui/src/pages/WorksheetPage.tsx`
+
+</details>
+<details>
+<summary>📚 Learning: 2025-12-24T09:26:37.538Z</summary>
+
+```
+Learnt from: CR
+Repo: Tienese/json-printer PR: 0
+File: GEMINI.md:0-0
+Timestamp: 2025-12-24T09:26:37.538Z
+Learning: Applies to src/main/frontend/src/**/*.{ts,tsx} : Use LocalStorage for persisting draft worksheets and progress in React, storing with keys like 'draft_worksheet'
+```
+
+**Applied to files:**
+- `worksheet-ui/src/components/editors/question-editors/ClozeEditor.tsx`
+- `worksheet-ui/src/components/shared/RichTextEditor.tsx`
+
+</details>
+<details>
+<summary>📚 Learning: 2025-12-24T09:26:37.538Z</summary>
+
+```
+Learnt from: CR
+Repo: Tienese/json-printer PR: 0
+File: GEMINI.md:0-0
+Timestamp: 2025-12-24T09:26:37.538Z
+Learning: Applies to src/main/java/**/*DTO.java : Use Java 21 `record` for all DTOs in the backend
+```
+
+**Applied to files:**
+- `src/main/java/com/qtihelper/demo/dto/StyleCheckResult.java`
+
+</details>
+<details>
+<summary>📚 Learning: 2025-12-24T09:26:12.567Z</summary>
+
+```
+Learnt from: CR
+Repo: Tienese/json-printer PR: 0
+File: CLAUDE.md:0-0
+Timestamp: 2025-12-24T09:26:12.567Z
+Learning: Applies to src/main/java/com/jsonprinter/model/*.java : Use Java 21 `record` for all DTOs in Spring Boot services
+```
+
+**Applied to files:**
+- `src/main/java/com/qtihelper/demo/dto/StyleCheckResult.java`
+
+</details>
+<details>
+<summary>📚 Learning: 2025-12-24T09:26:37.538Z</summary>
+
+```
+Learnt from: CR
+Repo: Tienese/json-printer PR: 0
+File: GEMINI.md:0-0
+Timestamp: 2025-12-24T09:26:37.538Z
+Learning: Applies to src/main/java/**/*Repository.java : Use JPA repositories for worksheet/quiz persistence in SQLite, with no complex migrations
+```
+
+**Applied to files:**
+- `src/main/java/com/qtihelper/demo/controller/WorksheetStorageController.java`
+
+</details>
+<details>
+<summary>📚 Learning: 2025-12-24T09:26:12.567Z</summary>
+
+```
+Learnt from: CR
+Repo: Tienese/json-printer PR: 0
+File: CLAUDE.md:0-0
+Timestamp: 2025-12-24T09:26:12.567Z
+Learning: Applies to src/main/frontend/src/{components,hooks}/**/*.{ts,tsx} : Use `localStorage.setItem()` for persisting worksheet drafts to client storage
+```
+
+**Applied to files:**
+- `worksheet-ui/src/components/shared/RichTextEditor.tsx`
+- `worksheet-ui/src/pages/WorksheetPage.tsx`
+
+</details>
+<details>
+<summary>📚 Learning: 2025-12-24T09:26:12.567Z</summary>
+
+```
+Learnt from: CR
+Repo: Tienese/json-printer PR: 0
+File: CLAUDE.md:0-0
+Timestamp: 2025-12-24T09:26:12.567Z
+Learning: Applies to src/main/frontend/src/components/**/*.{tsx} : React components should be used for generating Printable Reports with client-side rendering optimized for printing
+```
+
+**Applied to files:**
+- `worksheet-ui/src/components/shared/RichTextEditor.tsx`
+
+</details>
+<details>
+<summary>📚 Learning: 2025-12-24T09:26:37.538Z</summary>
+
+```
+Learnt from: CR
+Repo: Tienese/json-printer PR: 0
+File: GEMINI.md:0-0
+Timestamp: 2025-12-24T09:26:37.538Z
+Learning: Applies to src/main/frontend/src/**/*.{ts,tsx} : Minimize gaps and maximize usable printing area vertically by using smallest practical margins/padding and compact layouts with `break-inside-avoid` CSS strategically placed
+```
+
+**Applied to files:**
+- `worksheet-ui/src/components/items/ClozeItem.tsx`
+- `docs/ARCHITECTURE.md`
+
+</details>
+<details>
+<summary>📚 Learning: 2025-12-24T09:26:37.538Z</summary>
+
+```
+Learnt from: CR
+Repo: Tienese/json-printer PR: 0
+File: GEMINI.md:0-0
+Timestamp: 2025-12-24T09:26:37.538Z
+Learning: ALL CODE CHANGES MUST COMPLY WITH 1.1.1.1 RULES: 1 Component (Logic in Hooks), 1 Style (Tailwind & Print-first), 1 Design (Consistent Primitives), 1 Architecture (Feature-based & Stable)
+```
+
+**Applied to files:**
+- `docs/ARCHITECTURE.md`
+- `canvas_context_new/a`
+
+</details>
+<details>
+<summary>📚 Learning: 2025-12-24T09:26:37.538Z</summary>
+
+```
+Learnt from: CR
+Repo: Tienese/json-printer PR: 0
+File: GEMINI.md:0-0
+Timestamp: 2025-12-24T09:26:37.538Z
+Learning: Always check the 1.1.1.1_RULES.md file before implementing new features to ensure compliance with project architecture standards
+```
+
+**Applied to files:**
+- `docs/ARCHITECTURE.md`
+
+</details>
+
+</details><details>
+<summary>🧬 Code graph analysis (3)</summary>
+
+<details>
+<summary>worksheet-ui/src/components/shared/RichTextEditor.tsx (2)</summary><blockquote>
+
+<details>
+<summary>worksheet-ui/src/utils/htmlSanitizer.ts (2)</summary>
+
+* `sanitizeHTML` (19-37)
+* `sanitizePaste` (87-103)
+
+</details>
+<details>
+<summary>worksheet-ui/src/utils/inputUtils.ts (2)</summary>
+
+* `selectOnFocus` (9-11)
+* `selectAllContentOnFocus` (17-26)
+
+</details>
+
+</blockquote></details>
+<details>
+<summary>worksheet-ui/src/components/CoachSidebar.tsx (2)</summary><blockquote>
+
+<details>
+<summary>worksheet-ui/src/components/VocabCoachPanel.tsx (1)</summary>
+
+* `VocabCoachPanel` (16-171)
+
+</details>
+<details>
+<summary>worksheet-ui/src/components/StyleCoachPanel.tsx (1)</summary>
+
+* `StyleCoachPanel` (16-142)
+
+</details>
+
+</blockquote></details>
+<details>
+<summary>worksheet-ui/src/pages/WorksheetPage.tsx (1)</summary><blockquote>
+
+<details>
+<summary>worksheet-ui/src/components/items/ClozeItem.tsx (1)</summary>
+
+* `ClozeItemComponent` (54-180)
+
+</details>
+
+</blockquote></details>
+
+</details><details>
+<summary>🪛 markdownlint-cli2 (0.18.1)</summary>
+
+<details>
+<summary>docs/ARCHITECTURE.md</summary>
+
+34-34: Fenced code blocks should have a language specified
+
+(MD040, fenced-code-language)
+
+---
+
+119-119: Fenced code blocks should have a language specified
+
+(MD040, fenced-code-language)
+
+---
+
+206-206: Emphasis used instead of a heading
+
+(MD036, no-emphasis-as-heading)
+
+---
+
+211-211: Emphasis used instead of a heading
+
+(MD036, no-emphasis-as-heading)
+
+---
+
+216-216: Emphasis used instead of a heading
+
+(MD036, no-emphasis-as-heading)
+
+---
+
+222-222: Emphasis used instead of a heading
+
+(MD036, no-emphasis-as-heading)
+
+---
+
+228-228: Emphasis used instead of a heading
+
+(MD036, no-emphasis-as-heading)
+
+---
+
+468-468: Emphasis used instead of a heading
+
+(MD036, no-emphasis-as-heading)
+
+</details>
+
+</details>
+
+</details>
+
+<details>
+<summary>🔇 Additional comments (20)</summary><blockquote>
+
+<details>
+<summary>docs/ARCHITECTURE.md (1)</summary><blockquote>
+
+`1-485`: **Comprehensive and well-structured architecture documentation.**
+
+The guide provides excellent coverage of system overview, tech stack, architecture patterns, project structure, backend/frontend layers, data models, features, and build process. The inclusion of Mermaid diagrams and explicit design principles (1.1.1.1 rules, print-first mindset) is especially valuable for onboarding and maintenance.
+
+</blockquote></details>
+<details>
+<summary>worksheet-ui/src/components/items/MultipleChoiceItem.test.tsx (1)</summary><blockquote>
+
+`41-42`: **LGTM! Improved print accessibility.**
+
+The change from color-based decoration to `font-bold` and `underline` classes aligns well with the learning about using visual hierarchy techniques (bold font weights, spacing) instead of colors for printed worksheets. This ensures the correct answer is clearly distinguishable when printed in black and white.
+
+
+
+Based on learnings: Use visual hierarchy techniques for printed worksheets instead of colors.
+
+</blockquote></details>
+<details>
+<summary>worksheet-ui/src/components/editors/question-editors/ClozeEditor.tsx (2)</summary><blockquote>
+
+`1-18`: **LGTM - Clean refactor to display-only editor.**
+
+The type-only import and updated JSDoc clearly communicate the new responsibility of this component. Moving template/answer editing to the canvas aligns with the 1.1.1.1 compliance goal of single-responsibility components.
+
+---
+
+`58-61`: **Helpful user guidance for the new editing workflow.**
+
+The tip section nicely guides users to the new inline editing approach with clear `{{blank}}` syntax documentation.
+
+</blockquote></details>
+<details>
+<summary>worksheet-ui/src/components/shared/RichTextEditor.tsx (1)</summary><blockquote>
+
+`41-50`: **Well-structured editing lifecycle with proper cleanup.**
+
+Good use of refs for mutable state (`isEditing`, `debounceTimer`) that shouldn't trigger re-renders. The blur handler correctly clears pending debounce before final save, preventing stale updates.
+
+
+
+
+Also applies to: 73-80, 95-103
+
+</blockquote></details>
+<details>
+<summary>worksheet-ui/src/components/items/ClozeItem.tsx (1)</summary><blockquote>
+
+`12-37`: **Clean template parser implementation.**
+
+The `parseTemplate` function correctly handles the global regex with `exec()` and properly tracks `lastIndex`. The parts array structure is clear and well-typed.
+
+</blockquote></details>
+<details>
+<summary>worksheet-ui/src/components/items/ClozeItem.test.tsx (1)</summary><blockquote>
+
+`15-27`: **Tests correctly updated for new rendering behavior.**
+
+The assertions properly validate that teacher mode shows the answer text in editable form while student mode hides it with blank underlines.
+
+
+
+
+Also applies to: 29-41
+
+</blockquote></details>
+<details>
+<summary>worksheet-ui/src/components/StyleCoachPanel.tsx (2)</summary><blockquote>
+
+`48-68`: **Good use of visual hierarchy with text indicators.**
+
+The `[!]`, `[?]`, `[i]` indicators align well with the coding guidelines for visual hierarchy techniques using text indicators instead of relying solely on colors. Based on learnings, this approach works well for printed worksheets.
+
+---
+
+`70-141`: **Well-structured UI with appropriate conditional rendering.**
+
+The component handles all states cleanly (loading, error, results, empty worksheetId) and provides clear user feedback. The BETA badge appropriately sets user expectations.
+
+</blockquote></details>
+<details>
+<summary>src/main/java/com/qtihelper/demo/controller/WorksheetStorageController.java (1)</summary><blockquote>
+
+`5-10`: **LGTM: Constructor injection for StyleCheckService is properly implemented.**
+
+The new service dependency is correctly declared and injected via constructor following the existing pattern in this controller.
+
+
+
+Also applies to: 30-43
+
+</blockquote></details>
+<details>
+<summary>worksheet-ui/src/components/VocabCoachPanel.tsx (1)</summary><blockquote>
+
+`10-16`: **LGTM: Optional callback prop is correctly typed and destructured.**
+
+The `onInsertWord` prop follows React patterns for optional callbacks with proper typing.
+
+</blockquote></details>
+<details>
+<summary>src/main/java/com/qtihelper/demo/service/StyleCheckService.java (1)</summary><blockquote>
+
+`31-56`: **LGTM: Main check method structure is sound.**
+
+The method correctly parses JSON, iterates through pages/items, and handles exceptions gracefully. The score calculation with `Math.max(0, ...)` properly prevents negative scores.
+
+</blockquote></details>
+<details>
+<summary>worksheet-ui/src/components/CoachSidebar.tsx (3)</summary><blockquote>
+
+`3-3`: **LGTM: New imports and props are properly defined.**
+
+The `onInsertVocabWord` callback prop is correctly typed and destructured, following React patterns.
+
+
+
+Also applies to: 10-10, 24-24
+
+---
+
+`74-77`: **LGTM: Vocab panel integration with insert callback.**
+
+The prop is correctly forwarded from `onInsertVocabWord` to `onInsertWord`, enabling the insertion workflow from the vocab coach.
+
+---
+
+`88-92`: **LGTM: StyleCoachPanel integration replaces placeholder content.**
+
+The Style tab now renders the actual `StyleCoachPanel` component with proper animation styling, matching the Vocab tab pattern.
+
+</blockquote></details>
+<details>
+<summary>worksheet-ui/src/components/MenuBar.tsx (1)</summary><blockquote>
+
+`23-27`: **LGTM: Format menu props are correctly typed.**
+
+The new optional props follow existing patterns and enable the Format menu functionality.
+
+</blockquote></details>
+<details>
+<summary>worksheet-ui/src/pages/WorksheetPage.tsx (4)</summary><blockquote>
+
+`72-73`: **LGTM: ClozeItem now receives the update handler.**
+
+This change enables inline editing of Cloze items on the canvas, aligning with Phase 3 of the PR objectives.
+
+---
+
+`283-296`: **LGTM: Vocab insertion handler creates properly structured items.**
+
+The handler correctly:
+- Uses `crypto.randomUUID()` for unique IDs
+- Creates a complete VOCAB item with required properties
+- Adds the item at the end of the items list
+- Logs the action for debugging
+
+One consideration: the hardcoded defaults (columns=1, fontSize=12, listStyle='number') work for single-word insertions. If users frequently insert vocab words, they may want these to match their current selection or a user preference.
+
+---
+
+`321-327`: **LGTM: Column updates and vocab insertion callback are properly wired.**
+
+The `onSetColumns` callback correctly validates that the selected item supports columns before updating. The `onInsertVocabWord` callback is properly passed to `CoachSidebar`.
+
+
+
+Also applies to: 341-341
+
+---
+
+`317-320`: **`document.execCommand` is deprecated but functional.**
+
+The `document.execCommand` API is deprecated and may be removed in future browser versions. However, it remains implemented in modern browsers (Chrome, Edge, Firefox, Safari) as of December 2025 and works reliably for basic formatting commands (bold, italic, underline).
+
+Since the PR introduces a `RichTextEditor` component (per PR objectives), consider eventually routing these format commands through that shared component's API instead of direct execCommand calls at the page level.
+
+</blockquote></details>
+
+</blockquote></details>
+
+</details>
+
+<!-- This is an auto-generated comment by CodeRabbit for review status -->

@@ -10,6 +10,7 @@ JSON-Printer acts as a hybrid bridge between online Learning Management Systems 
 - **Frontend**: React 19, TypeScript, Vite, Tailwind CSS.
 - **Database**: SQLite (Local file-based).
 - **Build System**: Maven (integrated frontend build via `frontend-maven-plugin`).
+- **Platform**: Windows only (Chrome/Edge recommended).
 
 ## 🏗 Architecture
 The system follows a **Layered Monolith** pattern:

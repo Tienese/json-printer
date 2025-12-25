@@ -31,7 +31,7 @@ JSON-Printer acts as a **bridge between online Learning Management Systems (Canv
 
 ### Mental Model
 
-```
+```text
 ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
 │  Canvas LMS     │────▶│  Spring Boot    │────▶│  React SPA      │
 │  (Quiz JSON)    │     │  (Orchestrator) │     │  (Builder UI)   │
@@ -116,7 +116,7 @@ graph TB
 
 ## Project Structure
 
-```
+```text
 json-printer/
 ├── pom.xml                         # Maven configuration (builds both backend + frontend)
 ├── GEMINI.md                       # AI agent configuration
@@ -203,29 +203,29 @@ json-printer/
 
 ### Services (18)
 
-**Canvas Integration**
+### Canvas Integration
 - `CanvasCacheService` - Caches Canvas API responses
 - `CanvasMigrationService` - Handles Canvas data migration
 - `CanvasQuizFetcher` - Fetches quizzes from Canvas API
 
-**Data Processing**
+### Data Processing
 - `CsvSubmissionParser` - Parses student submission CSV files
 - `StudentSubmissionParser` - Processes student answer data
 - `JsonQuizParserService` - Parses Canvas quiz JSON
 
-**QTI Generation**
+### QTI Generation
 - `QtiContentGeneratorService` - Generates QTI question content
 - `QtiMetaGeneratorService` - Generates QTI metadata files
 - `ManifestGeneratorService` - Creates IMS manifest
 - `ZipArchiveService` - Packages QTI into ZIP
 
-**Worksheet & Print**
+### Worksheet & Print
 - `WorksheetGeneratorService` - Creates worksheet templates
 - `WorksheetAnalysisService` - Analyzes worksheet content
 - `PrintReportGenerator` - Generates printable reports
 - `QuizPrintViewModelMapper` - Maps quiz data to print models
 
-**Statistics & Vocabulary**
+### Statistics & Vocabulary
 - `StatisticsService` - Calculates student performance stats
 - `SudachiTokenizerService` - Japanese text tokenization
 - `VocabSeederService` - Seeds vocabulary data
@@ -465,12 +465,12 @@ sequenceDiagram
 
 ### Code Conventions
 
-**Java**
+#### Java
 - Use `record` for DTOs
 - Use `var` for local variables
 - Use `RestClient` for HTTP calls
 
-**TypeScript**  
+#### TypeScript  
 - Strict typing with interfaces
 - Custom hooks for all logic
 - No inline styles; only Tailwind
