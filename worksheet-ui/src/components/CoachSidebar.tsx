@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { VocabCoachPanel } from './VocabCoachPanel';
+import { StyleCoachPanel } from './StyleCoachPanel';
 
 interface CoachSidebarProps {
     worksheetId: number | null;
     worksheetJson: string;
     isOpen: boolean;
     onToggle: () => void;
+    onInsertVocabWord?: (word: { term: string; meaning: string }) => void;
 }
 
 type CoachTab = 'vocab' | 'grammar' | 'style';
@@ -19,6 +21,7 @@ export function CoachSidebar({
     worksheetJson,
     isOpen,
     onToggle,
+    onInsertVocabWord,
 }: CoachSidebarProps) {
     const [activeTab, setActiveTab] = useState<CoachTab>('vocab');
 
@@ -70,7 +73,7 @@ export function CoachSidebar({
                     <div className="flex-1 overflow-y-auto w-full">
                         {activeTab === 'vocab' && (
                             <div className="animate-in fade-in">
-                                <VocabCoachPanel worksheetId={worksheetId} worksheetJson={worksheetJson} />
+                                <VocabCoachPanel worksheetId={worksheetId} worksheetJson={worksheetJson} onInsertWord={onInsertVocabWord} />
                             </div>
                         )}
 
@@ -83,10 +86,8 @@ export function CoachSidebar({
                         )}
 
                         {activeTab === 'style' && (
-                            <div className="p-4 text-center theme-text-muted">
-                                <span className="text-3xl mb-2 block">✨</span>
-                                <p className="text-sm font-medium">Style Checker</p>
-                                <p className="text-xs mt-1">Coming soon</p>
+                            <div className="animate-in fade-in">
+                                <StyleCoachPanel worksheetId={worksheetId} />
                             </div>
                         )}
                     </div>

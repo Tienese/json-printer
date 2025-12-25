@@ -1,4 +1,4 @@
-import { useState, useEffect, type FC } from 'react';
+import type { FC } from 'react';
 import type { ClozeItem } from '../../../types/worksheet';
 
 interface Props {
@@ -6,47 +6,16 @@ interface Props {
   onUpdate: (item: ClozeItem) => void;
 }
 
+/**
+ * ClozeEditor - Sidebar editor for Cloze item DISPLAY OPTIONS only.
+ * 
+ * Template and answers are now edited inline on the canvas.
+ * This editor controls how blanks are rendered (width, list style, etc.)
+ */
 export const ClozeEditor: FC<Props> = ({ item, onUpdate }) => {
-  const [localTemplate, setLocalTemplate] = useState(item.template);
-  const [localAnswers, setLocalAnswers] = useState(item.answers);
-
-  useEffect(() => {
-    setLocalTemplate(item.template);
-    setLocalAnswers(item.answers);
-  }, [item.id]);
-
-  const handleTemplateChange = (value: string) => {
-    setLocalTemplate(value);
-    // Don't update parent yet, wait for blur
-  };
-
-  const handleTemplateBlur = () => {
-    // Count blanks
-    const blankCount = (localTemplate.match(/\{\{blank\}\}/gi) || []).length;
-    let newAnswers = [...localAnswers];
-
-    if (blankCount > newAnswers.length) {
-      // Add blanks
-      newAnswers = [...newAnswers, ...Array(blankCount - newAnswers.length).fill('')];
-    } else if (blankCount < newAnswers.length) {
-      // Trim answers
-      newAnswers = newAnswers.slice(0, blankCount);
-    }
-
-    setLocalAnswers(newAnswers);
-    onUpdate({ ...item, template: localTemplate, answers: newAnswers });
-  };
-
-  const handleAnswerChange = (index: number, value: string) => {
-    const newAnswers = [...localAnswers];
-    newAnswers[index] = value;
-    setLocalAnswers(newAnswers);
-    onUpdate({ ...item, answers: newAnswers });
-  };
-
   return (
     <div className="prop-group" data-testid="cloze-editor">
-      <h4>Cloze Properties</h4>
+      <h4>Cloze Display Options</h4>
 
       <label className="prop-label">Blank Width (Student View)</label>
       <div className="flex border theme-border rounded overflow-hidden mb-3">
@@ -77,35 +46,6 @@ export const ClozeEditor: FC<Props> = ({ item, onUpdate }) => {
         <option value="bullet">• (Bullets)</option>
       </select>
 
-      <label className="prop-label">Template</label>
-      <div className="text-[10px] text-muted mb-[5px]">
-        Use <code>{`{{blank}}`}</code> to insert a blank space.
-      </div>
-      <textarea
-        className="prop-input"
-        value={localTemplate}
-        onChange={(e) => handleTemplateChange(e.target.value)}
-        onBlur={handleTemplateBlur}
-        rows={5}
-        data-testid="cloze-template-input"
-      />
-
-      <label className="prop-label">Answers ({localAnswers.length})</label>
-      <div className="fib-answers-list">
-        {localAnswers.map((answer, index) => (
-          <div key={index} className="mb-[5px]">
-            <label className="text-[11px]">Blank {index + 1}:</label>
-            <input
-              className="prop-input"
-              value={answer}
-              onChange={(e) => handleAnswerChange(index, e.target.value)}
-              placeholder={`Answer for blank ${index + 1}`}
-              data-testid={`cloze-answer-input-${index}`}
-            />
-          </div>
-        ))}
-      </div>
-
       <label className="prop-label checkbox-label mt-[10px]">
         <input
           type="checkbox"
@@ -114,6 +54,11 @@ export const ClozeEditor: FC<Props> = ({ item, onUpdate }) => {
         />
         Show question number
       </label>
+
+      <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-800 rounded text-xs text-gray-600 dark:text-gray-400">
+        <strong>Tip:</strong> Edit the template directly on the canvas.
+        Type <code className="bg-gray-200 dark:bg-gray-700 px-1 rounded">{`{{blank}}`}</code> to create a new blank.
+      </div>
     </div>
   );
 };

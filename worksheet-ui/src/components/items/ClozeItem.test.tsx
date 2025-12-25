@@ -12,7 +12,7 @@ describe('ClozeItemComponent', () => {
         showPromptNumber: true
     };
 
-    it('renders with answer in teacher mode', () => {
+    it('renders with editable blank in teacher mode', () => {
         render(
             <ClozeItemComponent
                 item={mockItem}
@@ -20,12 +20,13 @@ describe('ClozeItemComponent', () => {
             />
         );
 
-        expect(screen.getByText('[beautiful]')).toBeInTheDocument();
-        expect(screen.getByText('Hello')).toBeInTheDocument();
-        expect(screen.getByText('world!')).toBeInTheDocument();
+        // In teacher mode, the answer is shown in an editable span
+        expect(screen.getByText('beautiful')).toBeInTheDocument();
+        expect(screen.getByText(/Hello/)).toBeInTheDocument();
+        expect(screen.getByText(/world!/)).toBeInTheDocument();
     });
 
-    it('renders with blank in student mode', () => {
+    it('renders with blank underline in student mode', () => {
         render(
             <ClozeItemComponent
                 item={mockItem}
@@ -33,8 +34,20 @@ describe('ClozeItemComponent', () => {
             />
         );
 
-        const blank = screen.getByTestId('cloze-blank-0');
-        expect(blank).toHaveClass('text-transparent');
-        expect(screen.queryByText('[beautiful]')).not.toBeInTheDocument();
+        // In student mode, the blank is an underline (no answer visible)
+        const template = screen.getByTestId('cloze-template');
+        expect(template).toBeInTheDocument();
+        expect(screen.queryByText('beautiful')).not.toBeInTheDocument();
+    });
+
+    it('shows question number when enabled', () => {
+        render(
+            <ClozeItemComponent
+                item={mockItem}
+                mode="student"
+            />
+        );
+
+        expect(screen.getByTestId('question-number')).toHaveTextContent('1.');
     });
 });

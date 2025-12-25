@@ -70,7 +70,7 @@ function WorksheetItemRenderer({
     case 'MATCHING':
       return <MatchingItemComponent key={item.id} item={item as any} mode={mode} onUpdate={updateHandler} />;
     case 'CLOZE':
-      return <ClozeItemComponent key={item.id} item={item as any} mode={mode} />;
+      return <ClozeItemComponent key={item.id} item={item as any} mode={mode} onUpdate={updateHandler} />;
     default:
       return <div>Unknown item type: {(item as any).type}</div>;
   }
@@ -280,6 +280,21 @@ export function WorksheetPage({ onNavigate, worksheetId }: WorksheetPageProps) {
     setContextMenu(null);
   };
 
+  // Handler for click-to-insert from Vocab Coach
+  const handleInsertVocabWord = (word: { term: string; meaning: string }) => {
+    aiLog.action('WorksheetPage', 'INSERT_VOCAB_FROM_COACH', { term: word.term });
+    const newItem = {
+      id: crypto.randomUUID(),
+      type: 'VOCAB' as const,
+      columns: 1,
+      fontSize: 12,
+      terms: [{ id: crypto.randomUUID(), term: word.term, meaning: word.meaning, showTerm: true, showTrailingLine: true }],
+      showPromptNumber: true,
+      listStyle: 'number' as const,
+    };
+    addItem(newItem, items.length);
+  };
+
 
   return (
     <div className={`grid grid-rows-[auto_1fr_auto] h-screen w-full theme-bg overflow-hidden print:bg-white print:h-auto print:overflow-visible print:block ${isLeftSidebarOpen ? 'grid-cols-[300px_1fr_auto]' : 'grid-cols-[40px_1fr_auto]'}`}>
@@ -299,6 +314,17 @@ export function WorksheetPage({ onNavigate, worksheetId }: WorksheetPageProps) {
               mode={mode}
               onToggleMode={toggleMode}
               onAddItem={(type) => addItem(createItemByType(type), items.length)}
+              onFormatText={(format) => {
+                // Apply text formatting to current selection using execCommand
+                document.execCommand(format, false);
+              }}
+              onSetColumns={(columns) => {
+                // Update columns on selected item if it supports columns
+                if (selectedItem && 'columns' in selectedItem) {
+                  updateItem({ ...selectedItem, columns });
+                }
+              }}
+              selectedItemType={selectedItem?.type}
               onNavigate={onNavigate}
             />
           }
@@ -312,6 +338,7 @@ export function WorksheetPage({ onNavigate, worksheetId }: WorksheetPageProps) {
           worksheetJson={JSON.stringify({ metadata, pages })}
           isOpen={isLeftSidebarOpen}
           onToggle={() => setIsLeftSidebarOpen(!isLeftSidebarOpen)}
+          onInsertVocabWord={handleInsertVocabWord}
         />
       </div>
 

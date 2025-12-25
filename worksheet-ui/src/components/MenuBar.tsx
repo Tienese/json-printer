@@ -20,11 +20,16 @@ interface MenuBarProps {
     // Insert menu
     onAddItem: (type: string) => void;
 
+    // Format menu (NEW)
+    onFormatText?: (format: 'bold' | 'italic' | 'underline') => void;
+    onSetColumns?: (columns: number) => void;
+    selectedItemType?: string; // To show/hide column option
+
     // Navigation
     onNavigate?: (route: string) => void;
 }
 
-type MenuType = 'save' | 'view' | 'insert' | null;
+type MenuType = 'save' | 'view' | 'insert' | 'format' | null;
 
 export function MenuBar({
     onSaveToCloud,
@@ -37,6 +42,9 @@ export function MenuBar({
     mode,
     onToggleMode,
     onAddItem,
+    onFormatText,
+    onSetColumns,
+    selectedItemType,
     onNavigate,
 }: MenuBarProps) {
     const [openMenu, setOpenMenu] = useState<MenuType>(null);
@@ -216,6 +224,57 @@ export function MenuBar({
                                 {opt.label}
                             </button>
                         ))}
+                    </div>
+                )}
+            </div>
+
+            {/* FORMAT Menu */}
+            <div className="relative">
+                <button
+                    className={menuButtonClass('format')}
+                    onClick={() => toggleMenu('format')}
+                >
+                    Format ▾
+                </button>
+                {openMenu === 'format' && (
+                    <div className="absolute right-0 top-full mt-1 theme-surface border theme-border rounded-lg shadow-xl py-1 min-w-[160px] z-50">
+                        <div className="px-4 py-1.5 text-[10px] font-bold theme-text-muted uppercase tracking-wider">Text</div>
+                        {[
+                            { label: 'Bold', format: 'bold' as const, shortcut: '⌘B', icon: 'B' },
+                            { label: 'Italic', format: 'italic' as const, shortcut: '⌘I', icon: 'I' },
+                            { label: 'Underline', format: 'underline' as const, shortcut: '⌘U', icon: 'U' },
+                        ].map(opt => (
+                            <button
+                                key={opt.format}
+                                className={menuItemClass}
+                                onClick={() => { onFormatText?.(opt.format); setOpenMenu(null); }}
+                            >
+                                <span className={`w-4 text-center font-serif ${opt.format === 'bold' ? 'font-bold' : ''} ${opt.format === 'italic' ? 'italic' : ''} ${opt.format === 'underline' ? 'underline' : ''}`}>
+                                    {opt.icon}
+                                </span>
+                                <span className="flex-1">{opt.label}</span>
+                                <span className="text-[10px] theme-text-muted">{opt.shortcut}</span>
+                            </button>
+                        ))}
+
+                        {/* Show columns option for supported item types */}
+                        {selectedItemType && ['CARD', 'VOCAB', 'MULTIPLE_CHOICE'].includes(selectedItemType) && (
+                            <>
+                                <div className="border-t theme-border my-1" />
+                                <div className="px-4 py-1.5 text-[10px] font-bold theme-text-muted uppercase tracking-wider">Layout</div>
+                                <div className="px-4 py-2 flex gap-1">
+                                    {[1, 2, 3].map(num => (
+                                        <button
+                                            key={num}
+                                            className="flex-1 py-1.5 text-xs border theme-border rounded"
+                                            onClick={() => { onSetColumns?.(num); setOpenMenu(null); }}
+                                        >
+                                            {num} col{num > 1 ? 's' : ''}
+                                        </button>
+                                    ))}
+                                </div>
+                            </>
+                        )}
                     </div>
                 )}
             </div>

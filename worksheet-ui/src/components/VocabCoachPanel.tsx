@@ -10,9 +10,10 @@ interface VocabAnalysisResult {
 interface VocabCoachPanelProps {
     worksheetId: number | null;
     worksheetJson: string;
+    onInsertWord?: (word: { term: string; meaning: string }) => void;
 }
 
-export function VocabCoachPanel({ worksheetId, worksheetJson: _worksheetJson }: VocabCoachPanelProps) {
+export function VocabCoachPanel({ worksheetId, worksheetJson: _worksheetJson, onInsertWord }: VocabCoachPanelProps) {
     const [lessonId, setLessonId] = useState(1);
     const [analysis, setAnalysis] = useState<VocabAnalysisResult | null>(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -135,7 +136,9 @@ export function VocabCoachPanel({ worksheetId, worksheetJson: _worksheetJson }: 
                                 {displayedMissing?.map((word, idx) => (
                                     <div
                                         key={idx}
-                                        className="flex items-center justify-between px-3 py-2 bg-gray-50 rounded-lg text-sm"
+                                        className="flex items-center justify-between px-3 py-2 bg-gray-50 rounded-lg text-sm cursor-pointer hover:bg-blue-50"
+                                        onClick={() => onInsertWord?.({ term: word.displayForm, meaning: '' })}
+                                        title="Click to add to worksheet"
                                     >
                                         <span className="font-medium">{word.displayForm}</span>
                                         {word.displayForm !== word.baseForm && (

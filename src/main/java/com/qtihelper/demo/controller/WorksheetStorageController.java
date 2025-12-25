@@ -2,10 +2,12 @@ package com.qtihelper.demo.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.qtihelper.demo.dto.StyleCheckResult;
 import com.qtihelper.demo.dto.VocabAnalysisResult;
 import com.qtihelper.demo.entity.Worksheet;
 import com.qtihelper.demo.entity.WorksheetType;
 import com.qtihelper.demo.repository.WorksheetRepository;
+import com.qtihelper.demo.service.StyleCheckService;
 import com.qtihelper.demo.service.WorksheetAnalysisService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,15 +27,18 @@ public class WorksheetStorageController {
 
     private final WorksheetRepository worksheetRepository;
     private final WorksheetAnalysisService analysisService;
+    private final StyleCheckService styleCheckService;
     private final ObjectMapper objectMapper;
     private static final int MAX_AUTOSAVES = 10;
 
     public WorksheetStorageController(
             WorksheetRepository worksheetRepository,
             WorksheetAnalysisService analysisService,
+            StyleCheckService styleCheckService,
             ObjectMapper objectMapper) {
         this.worksheetRepository = worksheetRepository;
         this.analysisService = analysisService;
+        this.styleCheckService = styleCheckService;
         this.objectMapper = objectMapper;
     }
 
@@ -162,6 +167,28 @@ public class WorksheetStorageController {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.notFound().build();
+    }
+
+    // ===== STYLE CHECK ENDPOINTS =====
+
+    /**
+     * Check worksheet for style issues.
+     * POST /api/worksheets/{id}/check-style
+     *
+     * Response: StyleCheckResult JSON with issues list and score
+     */
+    @PostMapping("/{id}/check-style")
+    public ResponseEntity<StyleCheckResult> checkStyle(@PathVariable Long id) {
+        log.info("Checking style for worksheet {}", id);
+
+        return worksheetRepository.findById(id)
+                .map(worksheet -> {
+                    StyleCheckResult result = styleCheckService.check(worksheet.getJsonContent());
+                    log.info("Style check complete for worksheet {}: score={}, issues={}",
+                            id, result.score(), result.issues().size());
+                    return ResponseEntity.ok(result);
+                })
+                .orElse(ResponseEntity.notFound().build());
     }
 
     // ===== VOCABULARY ANALYSIS ENDPOINTS =====

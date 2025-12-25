@@ -65,21 +65,6 @@ export function CardItemEditor({ item, onUpdate }: CardItemEditorProps) {
           </div>
         </div>
 
-        <div className="mb-4">
-          <label className="prop-label">Columns</label>
-          <div className="flex border theme-border rounded overflow-hidden">
-            {([1, 2, 3] as const).map((num) => (
-              <button
-                key={num}
-                className={`flex-1 py-1 text-xs ${(item.columns || 1) === num ? 'bg-black text-white' : 'theme-surface theme-text'}`}
-                onClick={() => onUpdate({ ...item, columns: num })}
-              >
-                {num}
-              </button>
-            ))}
-          </div>
-        </div>
-
         <div className="grid grid-cols-2 gap-2">
           <div>
             <label className="prop-label">Font Size</label>

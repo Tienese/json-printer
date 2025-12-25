@@ -1,0 +1,21 @@
+# Unify and 1.1.1.1 compliant
+
+## unify text input in content edit able 
+### rich text for all text // 1.1.1.1 compliant 
+no longer exclusive to card item component, now all text editable area can be rich text.
+### cloze
+1. editable area changes
+1.1 remove
+- remove cloze item text input inside of side bar 
+- side bar now only mission is to change how elements on print area is being rendered. // 1.1.1.1 1 component, 1 mission
+1.2 add new
+- cloze item now can be directed edit on the page, cloze item can be editted directly {{cloze item}} and on view change it turn blank // // 1.1.1.1 compliant cloze now can be edited on the same page 
+### side bar and print area text handling
+side bar and printable area text syncing, currently some data is being render on the sidebar for data that is on canvas, remove this, now sidebar only mission is to change how elements on print area is being rendered. // 1.1.1.1 1 component, 1 mission
+#### print area
+- holding data inside of template
+#### side bar 
+- Change how template being display.
+### Tool bar 
+- tool bar now have a dropdown list "format" is to format rich text and column
+- remove column format inside of comonent and add it to the new format dropdown list on tool bar 
