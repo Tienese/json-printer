@@ -13,6 +13,7 @@ import { QtiSuccessPage } from './pages/QtiSuccessPage';
 import { AnalyticsPage } from './pages/AnalyticsPage';
 import { LandingPage } from './pages/LandingPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { TagManagementPage } from './pages/TagManagementPage';
 
 import { ErrorBoundary } from './components/ErrorBoundary';
 
@@ -63,6 +64,9 @@ function App() {
 
       case ROUTES.SETTINGS:
         return <SettingsPage onNavigate={navigate} />;
+
+      case ROUTES.TAG_MANAGEMENT:
+        return <TagManagementPage onNavigate={navigate} />;
 
       default:
         return <LandingPage onNavigate={navigate} />;

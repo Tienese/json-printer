@@ -14,6 +14,7 @@ export const ROUTES = {
   WORKSHEET_EDIT: 'worksheet/edit',
   ANALYTICS: 'analytics',
   SETTINGS: 'settings',
+  TAG_MANAGEMENT: 'admin/tags',
 } as const;
 
 export type Route = typeof ROUTES[keyof typeof ROUTES];
