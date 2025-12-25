@@ -7,7 +7,10 @@ import jakarta.persistence.*;
  * Used for gap analysis to compare worksheet content against lesson vocabulary.
  */
 @Entity
-@Table(name = "vocab")
+@Table(name = "vocab", indexes = {
+    @Index(name = "idx_vocab_lesson_id", columnList = "lessonId"),
+    @Index(name = "idx_vocab_base_form", columnList = "baseForm")
+})
 public class Vocab {
 
     @Id
