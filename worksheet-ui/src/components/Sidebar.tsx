@@ -11,8 +11,20 @@ import { ClozeEditor } from "./editors/question-editors/ClozeEditor";
 import { isVocabItem, isTrueFalseItem } from "../types/typeGuards";
 
 import { LayersPanel } from "./LayersPanel";
+import { TimelinePanel } from "./TimelinePanel";
+import { VocabCoachPanel } from "./VocabCoachPanel";
+import type { HistoryEntry } from "../hooks/useAutoSave";
+import type { WorksheetTemplate } from "../types/worksheet";
 
-type TabType = 'layers' | 'properties';
+type TabType = 'properties' | 'layers' | 'timeline' | 'vocab';
+
+interface ExtendedSidebarProps extends SidebarProps {
+  history: HistoryEntry[];
+  onSnapshot: () => void;
+  onPreviewHistory: (template: WorksheetTemplate) => void;
+  onRenameHistoryEntry: (id: string, newLabel: string) => void;
+  currentWorksheetId: number | null;
+}
 
 export function Sidebar({
   itemsState,
@@ -22,11 +34,16 @@ export function Sidebar({
   onAddTFQuestion,
   isOpen,
   onToggle,
-}: SidebarProps) {
+  history,
+  onSnapshot,
+  onPreviewHistory,
+  onRenameHistoryEntry,
+  currentWorksheetId
+}: ExtendedSidebarProps) {
   const { items, selectedItem, onSelectItem, onUpdate, onDelete, onReorderItems } = itemsState;
   const { metadata, onUpdateMetadata } = metadataState;
   const { currentPageIndex, totalPages, onPrevPage, onNextPage, onAddPage, onDeletePage } = pageState;
-  const [activeTab, setActiveTab] = useState<TabType>('layers');
+  const [activeTab, setActiveTab] = useState<TabType>('properties');
 
   // Auto-switch to properties when item selected
   useEffect(() => {
@@ -88,8 +105,10 @@ export function Sidebar({
   };
 
   const tabs = [
-    { id: 'layers' as TabType, label: 'Layers', icon: '☰' },
     { id: 'properties' as TabType, label: 'Props', icon: '⚙' },
+    { id: 'layers' as TabType, label: 'Layers', icon: '☰' },
+    { id: 'timeline' as TabType, label: 'Timeline', icon: '⏱' },
+    { id: 'vocab' as TabType, label: 'Vocab', icon: '📖' },
   ];
 
   return (
@@ -112,26 +131,33 @@ export function Sidebar({
 
       {isOpen && (
         <>
-          {/* Tabs Navigation - 4 tabs */}
+          {/* Tabs Navigation */}
           <div className="flex border-b theme-border w-full">
             {tabs.map(tab => (
               <button
                 key={tab.id}
-                className={`flex-1 py-2.5 text-xs font-medium ${activeTab === tab.id
+                className={`flex-1 py-2.5 text-xs font-medium flex items-center justify-center gap-1 ${activeTab === tab.id
                   ? 'theme-accent border-b-2 border-[var(--color-accent)] bg-[var(--color-accent)]/10'
-                  : 'theme-text-secondary'
+                  : 'theme-text-secondary hover:bg-gray-50'
                   }`}
                 onClick={() => setActiveTab(tab.id)}
                 title={tab.label}
               >
-                <span className="hidden sm:inline">{tab.label}</span>
-                <span className="sm:hidden">{tab.icon}</span>
+                <span className="text-sm">{tab.icon}</span>
+                <span className="hidden lg:inline">{tab.label}</span>
               </button>
             ))}
           </div>
 
           {/* Tab Content */}
           <div className="flex-1 overflow-y-auto w-full">
+            {/* PROPERTIES TAB */}
+            {activeTab === 'properties' && (
+              <div className="p-4 animate-in fade-in slide-in-from-right-1">
+                {renderEditor()}
+              </div>
+            )}
+
             {/* LAYERS TAB */}
             {activeTab === 'layers' && (
               <div className="flex flex-col h-full animate-in fade-in slide-in-from-left-1">
@@ -203,11 +229,22 @@ export function Sidebar({
               </div>
             )}
 
-            {/* PROPERTIES TAB */}
-            {activeTab === 'properties' && (
-              <div className="p-4 animate-in fade-in slide-in-from-right-1">
-                {renderEditor()}
-              </div>
+            {/* TIMELINE TAB */}
+            {activeTab === 'timeline' && (
+              <TimelinePanel
+                history={history}
+                onSnapshot={onSnapshot}
+                onPreviewHistory={onPreviewHistory}
+                onRenameHistoryEntry={onRenameHistoryEntry}
+              />
+            )}
+
+            {/* VOCAB COACH TAB */}
+            {activeTab === 'vocab' && (
+              <VocabCoachPanel
+                worksheetId={currentWorksheetId}
+                onRefresh={() => {}}
+              />
             )}
           </div>
         </>

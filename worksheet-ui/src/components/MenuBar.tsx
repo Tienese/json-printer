@@ -1,295 +1,253 @@
-import { useState, useRef, useEffect } from 'react';
-import type { HistoryEntry } from '../hooks/useAutoSave';
+import React, { useState, useRef, useEffect } from 'react';
+import {
+  Cloud, FileDown, FileUp, Camera, History,
+  User, GraduationCap,
+  Plus, Type, Grid3X3, BookOpen, ListTodo, CheckSquare, ArrowLeftRight, MoreHorizontal,
+  ChevronDown, Check
+} from 'lucide-react';
 import type { WorksheetTemplate, ViewMode } from '../types/worksheet';
-import { formatTimeAgo } from '../utils/dateUtils';
+import type { HistoryEntry } from '../hooks/useAutoSave';
 
 interface MenuBarProps {
-    // Save menu
-    onSaveToCloud: () => void;
-    onSaveToFile: () => void;
-    onLoadFromFile: () => void;
-    onSnapshot: () => void;
-    history: HistoryEntry[];
-    onPreviewHistory: (template: WorksheetTemplate) => void;
-    isSaving: boolean;
+  // Save menu
+  onSaveToCloud: () => void;
+  onSaveToFile: () => void;
+  onLoadFromFile: () => void;
+  onSnapshot: () => void;
+  history: HistoryEntry[];
+  onPreviewHistory: (template: WorksheetTemplate) => void;
 
-    // View menu
-    mode: ViewMode;
-    onToggleMode: () => void;
+  // View menu
+  mode: ViewMode;
+  onToggleMode: () => void;
 
-    // Insert menu
-    onAddItem: (type: string) => void;
+  // Insert menu
+  onAddItem: (type: string) => void;
 
-    // Format menu (NEW)
-    onFormatText?: (format: 'bold' | 'italic' | 'underline') => void;
-    onSetColumns?: (columns: number) => void;
-    selectedItemType?: string; // To show/hide column option
-
-    // Navigation
-    onNavigate?: (route: string) => void;
+  isSaving: boolean;
 }
 
-type MenuType = 'save' | 'view' | 'insert' | 'format' | null;
+export const MenuBar: React.FC<MenuBarProps> = ({
+  onSaveToCloud,
+  onSaveToFile,
+  onLoadFromFile,
+  onSnapshot,
+  history,
+  onPreviewHistory,
+  mode,
+  onToggleMode,
+  onAddItem,
+  isSaving
+}) => {
+  const [openMenu, setOpenMenu] = useState<'save' | 'view' | 'insert' | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
-export function MenuBar({
-    onSaveToCloud,
-    onSaveToFile,
-    onLoadFromFile,
-    onSnapshot,
-    history,
-    onPreviewHistory,
-    isSaving,
-    mode,
-    onToggleMode,
-    onAddItem,
-    onFormatText,
-    onSetColumns,
-    selectedItemType,
-    onNavigate,
-}: MenuBarProps) {
-    const [openMenu, setOpenMenu] = useState<MenuType>(null);
-    const [showTimeline, setShowTimeline] = useState(false);
-    const menuRef = useRef<HTMLDivElement>(null);
+  // Close menu when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setOpenMenu(null);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
-    // Close menu on outside click
-    useEffect(() => {
-        const handleClickOutside = (e: MouseEvent) => {
-            if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-                setOpenMenu(null);
-                setShowTimeline(false);
-            }
-        };
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
+  const toggleMenu = (menu: 'save' | 'view' | 'insert') => {
+    setOpenMenu(openMenu === menu ? null : menu);
+  };
 
-    const toggleMenu = (menu: MenuType) => {
-        setOpenMenu(openMenu === menu ? null : menu);
-        setShowTimeline(false);
-    };
+  const closeMenu = () => setOpenMenu(null);
 
-    const menuButtonClass = (menu: MenuType) =>
-        `px-3 py-1.5 text-sm font-medium rounded ${openMenu === menu
-            ? 'bg-[var(--color-elevated)] theme-text'
-            : 'theme-text-secondary'
-        }`;
+  const handleAction = (action: () => void) => {
+    action();
+    closeMenu();
+  };
 
-    const menuItemClass = "w-full text-left px-4 py-2 text-sm theme-text flex items-center gap-3";
+  const handleAddItem = (type: string) => {
+    onAddItem(type);
+    closeMenu();
+  };
 
-    return (
-        <div ref={menuRef} className="flex items-center gap-1 print:hidden">
-            {/* SAVE Menu */}
-            <div className="relative">
-                <button
-                    className={menuButtonClass('save')}
-                    onClick={() => toggleMenu('save')}
-                >
-                    Save ▾
-                </button>
-                {openMenu === 'save' && (
-                    <div className="absolute right-0 top-full mt-1 theme-surface border theme-border rounded-lg shadow-xl py-1 min-w-[200px] z-50">
-                        <button className={menuItemClass} onClick={() => { onSaveToCloud(); setOpenMenu(null); }} disabled={isSaving}>
-                            <span>☁</span>
-                            {isSaving ? 'Saving...' : 'Save to Cloud'}
-                        </button>
-                        <button className={menuItemClass} onClick={() => { onSaveToFile(); setOpenMenu(null); }}>
-                            <span>↓</span>
-                            Download JSON
-                        </button>
-                        <button className={menuItemClass} onClick={() => { onLoadFromFile(); setOpenMenu(null); }}>
-                            <span>↑</span>
-                            Load from File
-                        </button>
+  const handleToggleMode = (newMode: ViewMode) => {
+    if (mode !== newMode) {
+      onToggleMode();
+    }
+    closeMenu();
+  };
 
-                        <div className="border-t theme-border my-1" />
+  return (
+    <div className="bg-white border-b border-gray-200 px-4 py-2 flex items-center gap-2 select-none shadow-sm h-12 relative z-50" ref={menuRef}>
+      {/* Back Button Placeholder - Handled by Parent or layout, but consistent spacing is nice */}
 
-                        <button className={menuItemClass} onClick={() => { onSnapshot(); setOpenMenu(null); }}>
-                            <span>📸</span>
-                            Create Snapshot
-                        </button>
+      {/* Save Menu */}
+      <div className="relative">
+        <button
+          className={`flex items-center gap-1 px-3 py-1.5 rounded text-sm font-medium transition-colors
+            ${openMenu === 'save' ? 'bg-indigo-50 text-indigo-700' : 'hover:bg-gray-100 text-gray-700'}`}
+          onClick={() => toggleMenu('save')}
+        >
+          <Cloud size={18} className={isSaving ? "animate-pulse" : ""} />
+          <span>Save</span>
+          <ChevronDown size={14} />
+        </button>
 
-                        <div className="border-t theme-border my-1" />
-
-                        {/* Timeline Submenu */}
-                        <div className="relative">
-                            <button
-                                className={`${menuItemClass} justify-between`}
-                                onClick={() => setShowTimeline(!showTimeline)}
-                            >
-                                <span className="flex items-center gap-3">
-                                    <span>📜</span>
-                                    Timeline
-                                </span>
-                                <span className="theme-text-muted">▸</span>
-                            </button>
-                            {showTimeline && (
-                                <div className="absolute left-full top-0 ml-1 theme-surface border theme-border rounded-lg shadow-xl py-1 min-w-[180px] max-h-[300px] overflow-y-auto">
-                                    {history.length === 0 ? (
-                                        <div className="px-4 py-3 text-sm theme-text-muted italic">No history yet</div>
-                                    ) : (
-                                        history.slice(0, 10).map((entry) => (
-                                            <button
-                                                key={entry.id || entry.timestamp}
-                                                className={menuItemClass}
-                                                onClick={() => {
-                                                    onPreviewHistory(entry.template);
-                                                    setOpenMenu(null);
-                                                    setShowTimeline(false);
-                                                }}
-                                            >
-                                                <span className={`w-2 h-2 rounded-full ${entry.type === 'manual' ? 'bg-blue-500' : 'bg-gray-300'}`} />
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="text-xs truncate">{entry.label || (entry.type === 'manual' ? 'Snapshot' : 'Auto-save')}</div>
-                                                    <div className="text-[10px] text-gray-400">{formatTimeAgo(entry.timestamp)}</div>
-                                                </div>
-                                            </button>
-                                        ))
-                                    )}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                )}
+        {openMenu === 'save' && (
+          <div className="absolute top-full left-0 mt-1 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-1 animate-in fade-in slide-in-from-top-2">
+            <div className="px-3 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              Sync & Storage
             </div>
 
-            {/* VIEW Menu */}
-            <div className="relative">
-                <button
-                    className={menuButtonClass('view')}
-                    onClick={() => toggleMenu('view')}
-                >
-                    View ▾
-                </button>
-                {openMenu === 'view' && (
-                    <div className="absolute right-0 top-full mt-1 theme-surface border theme-border rounded-lg shadow-xl py-1 min-w-[180px] z-50">
-                        <button
-                            className={menuItemClass}
-                            onClick={() => { if (mode !== 'student') onToggleMode(); setOpenMenu(null); }}
-                        >
-                            <span className={`w-3 h-3 rounded-full border-2 ${mode === 'student' ? 'bg-[var(--color-accent)] border-[var(--color-accent)]' : 'theme-border-strong'}`} />
-                            Student View
-                        </button>
-                        <button
-                            className={menuItemClass}
-                            onClick={() => { if (mode !== 'teacher') onToggleMode(); setOpenMenu(null); }}
-                        >
-                            <span className={`w-3 h-3 rounded-full border-2 ${mode === 'teacher' ? 'bg-[var(--color-accent)] border-[var(--color-accent)]' : 'theme-border-strong'}`} />
-                            Teacher View
-                        </button>
-                    </div>
-                )}
-            </div>
-
-            {/* INSERT Menu */}
-            <div className="relative">
-                <button
-                    className={menuButtonClass('insert')}
-                    onClick={() => toggleMenu('insert')}
-                >
-                    Insert ▾
-                </button>
-                {openMenu === 'insert' && (
-                    <div className="absolute right-0 top-full mt-1 theme-surface border theme-border rounded-lg shadow-xl py-1 min-w-[180px] z-50">
-                        <div className="px-4 py-1.5 text-[10px] font-bold theme-text-muted uppercase tracking-wider">Content</div>
-                        {[
-                            { label: 'Card Block', type: 'CARD', icon: '📝' },
-                            { label: 'Writing Grid', type: 'GRID', icon: '🔲' },
-                            { label: 'Vocabulary', type: 'VOCAB', icon: '📖' },
-                        ].map(opt => (
-                            <button
-                                key={opt.type}
-                                className={menuItemClass}
-                                onClick={() => { onAddItem(opt.type); setOpenMenu(null); }}
-                            >
-                                <span>{opt.icon}</span>
-                                {opt.label}
-                            </button>
-                        ))}
-
-                        <div className="border-t theme-border my-1" />
-                        <div className="px-4 py-1.5 text-[10px] font-bold theme-text-muted uppercase tracking-wider">Questions</div>
-
-                        {[
-                            { label: 'Multiple Choice', type: 'MULTIPLE_CHOICE', icon: '✓' },
-                            { label: 'True / False', type: 'TRUE_FALSE', icon: '✓✗' },
-                            { label: 'Matching', type: 'MATCHING', icon: '↔' },
-                            { label: 'Cloze / Fill-in', type: 'CLOZE', icon: '___' },
-                        ].map(opt => (
-                            <button
-                                key={opt.type}
-                                className={menuItemClass}
-                                onClick={() => { onAddItem(opt.type); setOpenMenu(null); }}
-                            >
-                                <span className="w-4 text-center text-xs">{opt.icon}</span>
-                                {opt.label}
-                            </button>
-                        ))}
-                    </div>
-                )}
-            </div>
-
-            {/* FORMAT Menu */}
-            <div className="relative">
-                <button
-                    className={menuButtonClass('format')}
-                    onClick={() => toggleMenu('format')}
-                >
-                    Format ▾
-                </button>
-                {openMenu === 'format' && (
-                    <div className="absolute right-0 top-full mt-1 theme-surface border theme-border rounded-lg shadow-xl py-1 min-w-[160px] z-50">
-                        <div className="px-4 py-1.5 text-[10px] font-bold theme-text-muted uppercase tracking-wider">Text</div>
-                        {[
-                            { label: 'Bold', format: 'bold' as const, shortcut: '⌘B', icon: 'B' },
-                            { label: 'Italic', format: 'italic' as const, shortcut: '⌘I', icon: 'I' },
-                            { label: 'Underline', format: 'underline' as const, shortcut: '⌘U', icon: 'U' },
-                        ].map(opt => (
-                            <button
-                                key={opt.format}
-                                className={menuItemClass}
-                                onClick={() => { onFormatText?.(opt.format); setOpenMenu(null); }}
-                            >
-                                <span className={`w-4 text-center font-serif ${opt.format === 'bold' ? 'font-bold' : ''} ${opt.format === 'italic' ? 'italic' : ''} ${opt.format === 'underline' ? 'underline' : ''}`}>
-                                    {opt.icon}
-                                </span>
-                                <span className="flex-1">{opt.label}</span>
-                                <span className="text-[10px] theme-text-muted">{opt.shortcut}</span>
-                            </button>
-                        ))}
-
-                        {/* Show columns option for supported item types */}
-                        {selectedItemType && ['CARD', 'VOCAB', 'MULTIPLE_CHOICE'].includes(selectedItemType) && (
-                            <>
-                                <div className="border-t theme-border my-1" />
-                                <div className="px-4 py-1.5 text-[10px] font-bold theme-text-muted uppercase tracking-wider">Layout</div>
-                                <div className="px-4 py-2 flex gap-1">
-                                    {[1, 2, 3].map(num => (
-                                        <button
-                                            key={num}
-                                            className="flex-1 py-1.5 text-xs border theme-border rounded"
-                                            onClick={() => { onSetColumns?.(num); setOpenMenu(null); }}
-                                        >
-                                            {num} col{num > 1 ? 's' : ''}
-                                        </button>
-                                    ))}
-                                </div>
-                            </>
-                        )}
-                    </div>
-                )}
-            </div>
-
-            {/* Settings Cog */}
-            <button
-                onClick={() => onNavigate?.('settings')}
-                className="ml-2 p-1.5 text-gray-500 rounded"
-                title="Settings"
-            >
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
-                    <circle cx="12" cy="12" r="3" />
-                </svg>
+            <button onClick={() => handleAction(onSaveToCloud)} disabled={isSaving} className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center gap-3 text-sm text-gray-700 disabled:opacity-50">
+              <Cloud size={16} className="text-blue-500" />
+              <span>{isSaving ? 'Saving...' : 'Save to Cloud'}</span>
             </button>
-        </div>
-    );
-}
+
+            <button onClick={() => handleAction(onSaveToFile)} className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center gap-3 text-sm text-gray-700">
+              <FileDown size={16} className="text-gray-500" />
+              <span>Download JSON</span>
+            </button>
+
+            <button onClick={() => handleAction(onLoadFromFile)} className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center gap-3 text-sm text-gray-700">
+              <FileUp size={16} className="text-gray-500" />
+              <span>Load from File</span>
+            </button>
+
+            <div className="my-1 border-t border-gray-100"></div>
+
+            <div className="px-3 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              History
+            </div>
+
+            <button onClick={() => handleAction(onSnapshot)} className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center gap-3 text-sm text-gray-700">
+              <Camera size={16} className="text-purple-500" />
+              <span>Create Snapshot</span>
+            </button>
+
+            <div className="max-h-60 overflow-y-auto">
+              {history.slice(0, 5).map(entry => (
+                <button
+                  key={entry.id || entry.timestamp}
+                  onClick={() => handleAction(() => onPreviewHistory(entry.template))}
+                  className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center gap-3 text-sm text-gray-600 group"
+                >
+                  <History size={14} className="text-gray-400 group-hover:text-gray-600" />
+                  <div className="flex-1 truncate">
+                    <span className="block truncate">{entry.label || 'Autosave'}</span>
+                    <span className="text-xs text-gray-400">
+                      {new Date(entry.timestamp).toLocaleTimeString()}
+                    </span>
+                  </div>
+                </button>
+              ))}
+              {history.length > 5 && (
+                <div className="px-4 py-2 text-xs text-center text-gray-400 italic">
+                  + {history.length - 5} more in Timeline tab
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* View Menu */}
+      <div className="relative">
+        <button
+          className={`flex items-center gap-1 px-3 py-1.5 rounded text-sm font-medium transition-colors
+            ${openMenu === 'view' ? 'bg-indigo-50 text-indigo-700' : 'hover:bg-gray-100 text-gray-700'}`}
+          onClick={() => toggleMenu('view')}
+        >
+          {mode === 'teacher' ? <GraduationCap size={18} /> : <User size={18} />}
+          <span>View</span>
+          <ChevronDown size={14} />
+        </button>
+
+        {openMenu === 'view' && (
+          <div className="absolute top-full left-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 animate-in fade-in slide-in-from-top-2">
+            <button
+              onClick={() => handleToggleMode('teacher')}
+              className={`w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center gap-3 text-sm
+                ${mode === 'teacher' ? 'bg-indigo-50 text-indigo-700 font-medium' : 'text-gray-700'}`}
+            >
+              <GraduationCap size={16} />
+              <span className="flex-1">Teacher Mode</span>
+              {mode === 'teacher' && <Check size={14} />}
+            </button>
+
+            <button
+              onClick={() => handleToggleMode('student')}
+              className={`w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center gap-3 text-sm
+                ${mode === 'student' ? 'bg-indigo-50 text-indigo-700 font-medium' : 'text-gray-700'}`}
+            >
+              <User size={16} />
+              <span className="flex-1">Student Mode</span>
+              {mode === 'student' && <Check size={14} />}
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Insert Menu */}
+      <div className="relative">
+        <button
+          className={`flex items-center gap-1 px-3 py-1.5 rounded text-sm font-medium transition-colors
+            ${openMenu === 'insert' ? 'bg-indigo-50 text-indigo-700' : 'hover:bg-gray-100 text-gray-700'}`}
+          onClick={() => toggleMenu('insert')}
+        >
+          <Plus size={18} />
+          <span>Insert</span>
+          <ChevronDown size={14} />
+        </button>
+
+        {openMenu === 'insert' && (
+          <div className="absolute top-full left-0 mt-1 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-1 animate-in fade-in slide-in-from-top-2">
+            <div className="px-3 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              Basic Elements
+            </div>
+
+            <button onClick={() => handleAddItem('CARD')} className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center gap-3 text-sm text-gray-700">
+              <Type size={16} className="text-gray-500" />
+              <span>Text Card</span>
+            </button>
+
+            <button onClick={() => handleAddItem('GRID')} className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center gap-3 text-sm text-gray-700">
+              <Grid3X3 size={16} className="text-gray-500" />
+              <span>Writing Grid</span>
+            </button>
+
+            <button onClick={() => handleAddItem('VOCAB')} className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center gap-3 text-sm text-gray-700">
+              <BookOpen size={16} className="text-gray-500" />
+              <span>Vocabulary</span>
+            </button>
+
+            <div className="my-1 border-t border-gray-100"></div>
+
+            <div className="px-3 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              Questions
+            </div>
+
+            <button onClick={() => handleAddItem('MULTIPLE_CHOICE')} className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center gap-3 text-sm text-gray-700">
+              <ListTodo size={16} className="text-gray-500" />
+              <span>Multiple Choice</span>
+            </button>
+
+            <button onClick={() => handleAddItem('TRUE_FALSE')} className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center gap-3 text-sm text-gray-700">
+              <CheckSquare size={16} className="text-gray-500" />
+              <span>True / False</span>
+            </button>
+
+            <button onClick={() => handleAddItem('MATCHING')} className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center gap-3 text-sm text-gray-700">
+              <ArrowLeftRight size={16} className="text-gray-500" />
+              <span>Matching</span>
+            </button>
+
+            <button onClick={() => handleAddItem('CLOZE')} className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center gap-3 text-sm text-gray-700">
+              <MoreHorizontal size={16} className="text-gray-500" />
+              <span>Cloze / Fill-in</span>
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};

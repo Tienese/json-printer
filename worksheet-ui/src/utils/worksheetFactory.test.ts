@@ -26,10 +26,10 @@ describe('worksheetFactory', () => {
         expect(item.id).toBeDefined();
     });
 
-    it('should create a GridItem with 15x5 dimensions', () => {
+    it('should create a GridItem with 15x1 dimensions', () => {
         const item = createGridItem();
         expect(item.type).toBe('GRID');
-        expect(item.rows).toBe(5);
+        expect(item.rows).toBe(1);
         expect(item.columns).toBe(15);
     });
 

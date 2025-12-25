@@ -13,7 +13,6 @@ import { Sidebar } from '../components/Sidebar';
 import { MenuBar } from '../components/MenuBar';
 import { StatusBar } from '../components/StatusBar';
 import { ContextMenuPortal } from '../components/ContextMenuPortal';
-import { CoachSidebar } from '../components/CoachSidebar';
 
 import { saveWorksheetToFile, loadWorksheetFromFile } from '../utils/worksheetStorage';
 import { createMultipleChoiceItem, createTrueFalseItem, createMatchingItem, createClozeItem, createCardItem, createGridItem, createVocabItem } from '../utils/worksheetFactory';
@@ -110,9 +109,8 @@ export function WorksheetPage({ onNavigate, worksheetId }: WorksheetPageProps) {
   const [currentWorksheetId, setCurrentWorksheetId] = useState<number | null>(
     worksheetId ? Number(worksheetId) : null
   );
-  const { history, triggerManualSave } = useAutoSave(pages, metadata, currentWorksheetId);
-  const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(false);  // Collapsed by default
-  const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);  // Coach sidebar collapsed by default
+  const { history, triggerManualSave, renameHistoryEntry } = useAutoSave(pages, metadata, currentWorksheetId);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [previewTemplate, setPreviewTemplate] = useState<WorksheetTemplate | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [zoom, setZoom] = useState(1);  // 1 = 100%, for printable area readability
@@ -280,26 +278,11 @@ export function WorksheetPage({ onNavigate, worksheetId }: WorksheetPageProps) {
     setContextMenu(null);
   };
 
-  // Handler for click-to-insert from Vocab Coach
-  const handleInsertVocabWord = (word: { term: string; meaning: string }) => {
-    aiLog.action('WorksheetPage', 'INSERT_VOCAB_FROM_COACH', { term: word.term });
-    const newItem = {
-      id: crypto.randomUUID(),
-      type: 'VOCAB' as const,
-      columns: 1,
-      fontSize: 12,
-      terms: [{ id: crypto.randomUUID(), term: word.term, meaning: word.meaning, showTerm: true, showTrailingLine: true }],
-      showPromptNumber: true,
-      listStyle: 'number' as const,
-    };
-    addItem(newItem, items.length);
-  };
-
 
   return (
-    <div className={`grid grid-rows-[auto_1fr_auto] h-screen w-full theme-bg overflow-hidden print:bg-white print:h-auto print:overflow-visible print:block ${isLeftSidebarOpen ? 'grid-cols-[300px_1fr_auto]' : 'grid-cols-[40px_1fr_auto]'}`}>
+    <div className={`grid grid-rows-[auto_1fr_auto] h-screen w-full theme-bg overflow-hidden print:bg-white print:h-auto print:overflow-visible print:block ${isSidebarOpen ? 'grid-cols-[1fr_300px]' : 'grid-cols-[1fr_40px]'}`}>
       {/* Top Menu Bar */}
-      <div className="col-span-3 print:hidden">
+      <div className="col-span-2 print:hidden">
         <Navbar
           onBack={() => onNavigate?.(ROUTES.HOME)}
           actions={
@@ -314,31 +297,8 @@ export function WorksheetPage({ onNavigate, worksheetId }: WorksheetPageProps) {
               mode={mode}
               onToggleMode={toggleMode}
               onAddItem={(type) => addItem(createItemByType(type), items.length)}
-              onFormatText={(format) => {
-                // Apply text formatting to current selection using execCommand
-                document.execCommand(format, false);
-              }}
-              onSetColumns={(columns) => {
-                // Update columns on selected item if it supports columns
-                if (selectedItem && 'columns' in selectedItem) {
-                  updateItem({ ...selectedItem, columns });
-                }
-              }}
-              selectedItemType={selectedItem?.type}
-              onNavigate={onNavigate}
             />
           }
-        />
-      </div>
-
-      {/* Left Sidebar - Coach Panel */}
-      <div className="row-span-1 border-r theme-border theme-surface print:hidden h-full overflow-hidden flex flex-col">
-        <CoachSidebar
-          worksheetId={currentWorksheetId}
-          worksheetJson={JSON.stringify({ metadata, pages })}
-          isOpen={isLeftSidebarOpen}
-          onToggle={() => setIsLeftSidebarOpen(!isLeftSidebarOpen)}
-          onInsertVocabWord={handleInsertVocabWord}
         />
       </div>
 
@@ -384,8 +344,6 @@ export function WorksheetPage({ onNavigate, worksheetId }: WorksheetPageProps) {
             </div>
           </div>
         )}
-
-
 
         <section
           className={`relative mb-10 bg-white shadow-[0_20px_50px_rgba(0,0,0,0.15)] p-[1.27cm] box-border w-[210mm] min-h-[297mm] flex flex-col origin-top transition-transform duration-200 outline-none print:hidden ${isPreviewMode ? 'ring-4 ring-amber-400 pointer-events-none opacity-80' : ''}`}
@@ -464,7 +422,7 @@ export function WorksheetPage({ onNavigate, worksheetId }: WorksheetPageProps) {
       </main>
 
       {/* Right Sidebar - Properties with Tabs */}
-      <div className="row-span-1 border-l theme-border theme-surface print:hidden h-full overflow-hidden flex flex-col">
+      <div className="row-span-1 border-l theme-border theme-surface print:hidden h-full overflow-hidden flex flex-col col-start-2">
         <Sidebar
           itemsState={{
             items: displayItems,
@@ -488,8 +446,13 @@ export function WorksheetPage({ onNavigate, worksheetId }: WorksheetPageProps) {
           }}
           onAddVocabTerm={addVocabTerm}
           onAddTFQuestion={addTFQuestion}
-          isOpen={isRightSidebarOpen}
-          onToggle={() => setIsRightSidebarOpen(!isRightSidebarOpen)}
+          isOpen={isSidebarOpen}
+          onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+          history={history}
+          onSnapshot={triggerManualSave}
+          onPreviewHistory={setPreviewTemplate}
+          onRenameHistoryEntry={renameHistoryEntry}
+          currentWorksheetId={currentWorksheetId}
         />
       </div>
 
@@ -524,13 +487,15 @@ export function WorksheetPage({ onNavigate, worksheetId }: WorksheetPageProps) {
       )}
 
       {/* Bottom Status Bar */}
-      <StatusBar
-        pages={pages}
-        currentPageIndex={currentPageIndex}
-        totalPages={totalPages}
-        zoom={zoom}
-        onZoomChange={setZoom}
-      />
+      <div className="col-span-2 print:hidden">
+        <StatusBar
+          pages={pages}
+          currentPageIndex={currentPageIndex}
+          totalPages={totalPages}
+          zoom={zoom}
+          onZoomChange={setZoom}
+        />
+      </div>
     </div>
   );
 }
