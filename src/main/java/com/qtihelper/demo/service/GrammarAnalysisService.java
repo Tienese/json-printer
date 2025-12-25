@@ -122,8 +122,12 @@ public class GrammarAnalysisService {
     }
 
     /**
-     * Detect overused words using statistical analysis.
-     * A word is flagged if its count > mean + 1.5 * standard deviation.
+     * Detect overused words using FIXED threshold.
+     * IMPORTANT: Threshold does NOT move with the data!
+     * 
+     * Algorithm v2.0:
+     * - threshold = MAX(3, 15% of unique vocab words)
+     * - Any word appearing more than threshold is flagged
      */
     private List<RuleViolation> detectOveruseStatistically(Map<String, Integer> wordCounts) {
         List<RuleViolation> violations = new ArrayList<>();
@@ -132,35 +136,29 @@ public class GrammarAnalysisService {
             return violations;
         }
 
-        // Calculate mean
-        double sum = wordCounts.values().stream().mapToInt(Integer::intValue).sum();
-        double mean = sum / wordCounts.size();
+        // FIXED threshold calculation (v2.0)
+        // - Absolute minimum: 3 (no word should appear > 3 times in small worksheets)
+        // - Scales with size: 15% of unique words for larger worksheets
+        int uniqueWords = wordCounts.size();
+        int percentageThreshold = (int) Math.ceil(uniqueWords * 0.15);
+        int absoluteMinimum = 3;
+        int threshold = Math.max(absoluteMinimum, percentageThreshold);
 
-        // Calculate standard deviation
-        double varianceSum = wordCounts.values().stream()
-                .mapToDouble(count -> Math.pow(count - mean, 2))
-                .sum();
-        double stddev = Math.sqrt(varianceSum / wordCounts.size());
-
-        // Threshold: mean + 1.5 * stddev (at least 2 to avoid flagging single uses)
-        double threshold = Math.max(2, mean + 1.5 * stddev);
-        int thresholdInt = (int) Math.ceil(threshold);
-
-        log.debug("Statistical threshold: mean={}, stddev={}, threshold={}",
-                String.format("%.2f", mean), String.format("%.2f", stddev), thresholdInt);
+        log.info("FIXED threshold: {} (uniqueWords={}, 15%={}, min={})",
+                threshold, uniqueWords, percentageThreshold, absoluteMinimum);
 
         // Find words above threshold
         for (Map.Entry<String, Integer> entry : wordCounts.entrySet()) {
-            if (entry.getValue() > thresholdInt) {
+            if (entry.getValue() > threshold) {
                 violations.add(new RuleViolation(
                         null, // No rule ID for statistical detection
-                        "statistical_overuse",
+                        "overuse_threshold",
                         "OVERUSE",
                         entry.getKey(),
                         entry.getValue(),
-                        thresholdInt,
-                        String.format("'%s' appears %d times (threshold: %d based on distribution)",
-                                entry.getKey(), entry.getValue(), thresholdInt),
+                        threshold,
+                        String.format("'%s' appears %d times (max allowed: %d)",
+                                entry.getKey(), entry.getValue(), threshold),
                         List.of() // No suggestions for statistical detection
                 ));
             }
