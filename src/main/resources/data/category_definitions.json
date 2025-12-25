@@ -1,0 +1,26 @@
+[
+    {
+        "name": "person",
+        "description": "Human beings, roles, pronouns"
+    },
+    {
+        "name": "thing",
+        "description": "Physical objects"
+    },
+    {
+        "name": "place",
+        "description": "Locations, buildings"
+    },
+    {
+        "name": "time",
+        "description": "Time expressions"
+    },
+    {
+        "name": "action",
+        "description": "Verbs (masu form)"
+    },
+    {
+        "name": "descriptor",
+        "description": "Adjectives (i and na)"
+    }
+]
