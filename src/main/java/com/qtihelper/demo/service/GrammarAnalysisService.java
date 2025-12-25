@@ -5,6 +5,8 @@ import com.qtihelper.demo.dto.GrammarAnalysisResult.PosCount;
 import com.qtihelper.demo.dto.GrammarAnalysisResult.RuleViolation;
 import com.qtihelper.demo.entity.GrammarRule;
 import com.qtihelper.demo.entity.RuleSuggestion;
+import com.qtihelper.demo.entity.Vocab;
+import com.qtihelper.demo.repository.VocabRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -16,6 +18,8 @@ import java.util.stream.Collectors;
  * Core analysis engine for the Language Coach.
  * Scans worksheet content, tokenizes Japanese text, and evaluates grammar
  * rules.
+ * Only counts words that exist in the vocab database (from lesson CSVs).
+ * Uses statistical threshold (mean + 1.5*stddev) for overuse detection.
  */
 @Service
 public class GrammarAnalysisService {
@@ -25,18 +29,22 @@ public class GrammarAnalysisService {
     private final WorksheetScannerService scannerService;
     private final SudachiTokenizerService tokenizerService;
     private final GrammarRuleService ruleService;
+    private final VocabRepository vocabRepository;
 
     public GrammarAnalysisService(
             WorksheetScannerService scannerService,
             SudachiTokenizerService tokenizerService,
-            GrammarRuleService ruleService) {
+            GrammarRuleService ruleService,
+            VocabRepository vocabRepository) {
         this.scannerService = scannerService;
         this.tokenizerService = tokenizerService;
         this.ruleService = ruleService;
+        this.vocabRepository = vocabRepository;
     }
 
     /**
      * Analyze worksheet JSON for grammar issues.
+     * Only counts words that exist in the vocab database.
      *
      * @param worksheetJson Full worksheet JSON string
      * @return Analysis result with violations and suggestions
@@ -44,61 +52,121 @@ public class GrammarAnalysisService {
     public GrammarAnalysisResult analyze(String worksheetJson) {
         log.info("Starting grammar analysis on worksheet");
 
-        // Step 1: Extract all text from worksheet
+        // Step 1: Load vocab base forms from database for filtering
+        Set<String> vocabBaseForms = vocabRepository.findAll().stream()
+                .map(Vocab::getBaseForm)
+                .collect(Collectors.toSet());
+        log.debug("Loaded {} vocab words from database for filtering", vocabBaseForms.size());
+
+        // Step 2: Extract all text from worksheet (all pages, all items)
         List<String> textBlocks = scannerService.extractAllText(worksheetJson);
         log.debug("Extracted {} text blocks from worksheet", textBlocks.size());
 
-        // Step 2: Tokenize all text and count words/POS
+        // Step 3: Tokenize and count ONLY words that exist in vocab database
         Map<String, Integer> wordCounts = new HashMap<>();
         Map<String, Integer> posCounts = new HashMap<>();
-        int totalWords = 0;
+        int totalVocabWords = 0;
+        int totalTokens = 0;
 
         for (String text : textBlocks) {
             List<SudachiTokenizerService.TokenResult> tokens = tokenizerService.tokenizeWithPos(text);
             for (SudachiTokenizerService.TokenResult token : tokens) {
-                // Count word occurrences (use base form for normalization)
-                wordCounts.merge(token.baseForm(), 1, Integer::sum);
+                totalTokens++;
 
-                // Count POS occurrences (simplify to main category)
-                String posCategory = simplifyPos(token.pos());
-                if (posCategory != null) {
-                    posCounts.merge(posCategory, 1, Integer::sum);
+                // ONLY count words that exist in vocab database
+                if (vocabBaseForms.contains(token.baseForm())) {
+                    wordCounts.merge(token.baseForm(), 1, Integer::sum);
+                    totalVocabWords++;
+
+                    // Count POS for vocab words only
+                    String posCategory = simplifyPos(token.pos());
+                    if (posCategory != null) {
+                        posCounts.merge(posCategory, 1, Integer::sum);
+                    }
                 }
-
-                totalWords++;
             }
         }
 
-        log.debug("Tokenized {} total words, {} unique", totalWords, wordCounts.size());
+        log.info("Found {} vocab words (from {} total tokens), {} unique",
+                totalVocabWords, totalTokens, wordCounts.size());
 
-        // Step 3: Evaluate grammar rules
+        // Step 4: Calculate statistical threshold for overuse
+        List<RuleViolation> violations = detectOveruseStatistically(wordCounts);
+
+        // Step 5: Also check explicit rules from database
         List<GrammarRule> enabledRules = ruleService.getEnabledRules();
-        List<RuleViolation> violations = new ArrayList<>();
-
         for (GrammarRule rule : enabledRules) {
             RuleViolation violation = evaluateRule(rule, wordCounts);
-            if (violation != null) {
+            if (violation != null && violations.stream().noneMatch(v -> v.targetWord().equals(rule.getTargetWord()))) {
                 violations.add(violation);
             }
         }
 
-        log.info("Found {} rule violations", violations.size());
+        log.info("Found {} total violations", violations.size());
 
-        // Step 4: Calculate score (100 - penalty for each violation)
-        int score = calculateScore(violations, totalWords);
+        // Step 6: Calculate score
+        int score = calculateScore(violations, totalVocabWords);
 
-        // Step 5: Build POS count list
+        // Step 7: Build POS count list
         List<PosCount> posCountList = posCounts.entrySet().stream()
                 .map(e -> new PosCount(e.getKey(), e.getValue()))
                 .sorted((a, b) -> Integer.compare(b.count(), a.count()))
                 .toList();
 
         return new GrammarAnalysisResult(
-                totalWords,
+                totalVocabWords,
                 wordCounts.size(),
                 posCountList,
                 violations,
                 score);
+    }
+
+    /**
+     * Detect overused words using statistical analysis.
+     * A word is flagged if its count > mean + 1.5 * standard deviation.
+     */
+    private List<RuleViolation> detectOveruseStatistically(Map<String, Integer> wordCounts) {
+        List<RuleViolation> violations = new ArrayList<>();
+
+        if (wordCounts.isEmpty()) {
+            return violations;
+        }
+
+        // Calculate mean
+        double sum = wordCounts.values().stream().mapToInt(Integer::intValue).sum();
+        double mean = sum / wordCounts.size();
+
+        // Calculate standard deviation
+        double varianceSum = wordCounts.values().stream()
+                .mapToDouble(count -> Math.pow(count - mean, 2))
+                .sum();
+        double stddev = Math.sqrt(varianceSum / wordCounts.size());
+
+        // Threshold: mean + 1.5 * stddev (at least 2 to avoid flagging single uses)
+        double threshold = Math.max(2, mean + 1.5 * stddev);
+        int thresholdInt = (int) Math.ceil(threshold);
+
+        log.debug("Statistical threshold: mean={}, stddev={}, threshold={}",
+                String.format("%.2f", mean), String.format("%.2f", stddev), thresholdInt);
+
+        // Find words above threshold
+        for (Map.Entry<String, Integer> entry : wordCounts.entrySet()) {
+            if (entry.getValue() > thresholdInt) {
+                violations.add(new RuleViolation(
+                        null, // No rule ID for statistical detection
+                        "statistical_overuse",
+                        "OVERUSE",
+                        entry.getKey(),
+                        entry.getValue(),
+                        thresholdInt,
+                        String.format("'%s' appears %d times (threshold: %d based on distribution)",
+                                entry.getKey(), entry.getValue(), thresholdInt),
+                        List.of() // No suggestions for statistical detection
+                ));
+            }
+        }
+
+        return violations;
     }
 
     /**
