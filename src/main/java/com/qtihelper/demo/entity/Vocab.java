@@ -26,6 +26,15 @@ public class Vocab {
     @Column
     private String partOfSpeech; // Kuromoji POS tag (e.g., "名詞-一般", "動詞-自立")
 
+    // v3.0: Category for grammar coach (person, thing, place, time, action,
+    // descriptor)
+    @Column
+    private String category;
+
+    // v3.0: JSON array of aspects (e.g., ["buyable", "school_related"])
+    @Column(columnDefinition = "TEXT")
+    private String aspects;
+
     // Constructors
     public Vocab() {
     }
@@ -82,5 +91,21 @@ public class Vocab {
 
     public void setPartOfSpeech(String partOfSpeech) {
         this.partOfSpeech = partOfSpeech;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public String getAspects() {
+        return aspects;
+    }
+
+    public void setAspects(String aspects) {
+        this.aspects = aspects;
     }
 }

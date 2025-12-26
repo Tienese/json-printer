@@ -60,6 +60,15 @@ FINAL: Update LANGUAGE_COACH_AUDIT_stage_1.md
 ### Golden Rule
 **1 Message = 1 Full Feature Implementation (Backend + Frontend)**
 
+### Important Clarifications
+
+| Topic | Decision |
+|-------|----------|
+| **API Endpoint** | Keep same URL `/api/grammar/analyze` - replacing v2.0 response structure |
+| **Tokenizer Naming** | `SudachiTokenizerService` uses Kuromoji internally (naming is legacy) |
+| **Test Data** | Use Lesson 1 and Lesson 8 vocabulary (matches existing database) |
+| **TypeScript = Truth** | When Scanner and TypeScript types disagree, fix Scanner to match TypeScript |
+
 ### File Naming Conventions
 - Java: `PascalCase.java` (e.g., `SlotDefinition.java`)
 - TypeScript: `PascalCase.tsx` for components, `camelCase.ts` for hooks/utils
@@ -110,6 +119,31 @@ FINAL: Update LANGUAGE_COACH_AUDIT_stage_1.md
 ---
 
 ## Phase 1: Foundation (MUST COMPLETE FIRST)
+
+### Step 1.0: Fix Scanner Field Name Mismatches (DO THIS FIRST)
+
+**File:** `src/main/java/com/qtihelper/demo/service/WorksheetScannerService.java`
+
+**CRITICAL:** Fix these before other work - everything depends on correct extraction.
+
+| Item Type | Scanner Currently Uses | Should Use (TypeScript is source of truth) |
+|-----------|------------------------|---------------------------------------------|
+| GRID | `boxes[].value` | `sections[].boxes[].char` |
+| CLOZE | `passage` | `template` |
+| MATCHING | `pairs[].match` | `pairs[].left` and `pairs[].right` |
+
+**Steps:**
+1. Read actual worksheet JSON from database to verify field names
+2. Update Scanner extraction methods to match TypeScript types
+3. Test extraction with existing worksheets
+
+**Acceptance Criteria:**
+- [ ] GRID extracts from `sections[].boxes[].char`
+- [ ] CLOZE extracts from `template`
+- [ ] MATCHING extracts from `pairs[].left` and `pairs[].right`
+- [ ] Existing worksheets still parse correctly
+
+---
 
 ### Step 1.1: Update Vocab Entity
 

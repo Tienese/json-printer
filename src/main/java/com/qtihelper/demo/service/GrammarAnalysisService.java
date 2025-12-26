@@ -1,10 +1,7 @@
 package com.qtihelper.demo.service;
 
-import com.qtihelper.demo.dto.GrammarAnalysisResult;
-import com.qtihelper.demo.dto.GrammarAnalysisResult.PosCount;
-import com.qtihelper.demo.dto.GrammarAnalysisResult.RuleViolation;
-import com.qtihelper.demo.entity.GrammarRule;
-import com.qtihelper.demo.entity.RuleSuggestion;
+import com.qtihelper.demo.dto.*;
+import com.qtihelper.demo.dto.GrammarCoachResult.*;
 import com.qtihelper.demo.entity.Vocab;
 import com.qtihelper.demo.repository.VocabRepository;
 import org.slf4j.Logger;
@@ -15,11 +12,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Core analysis engine for the Language Coach.
- * Scans worksheet content, tokenizes Japanese text, and evaluates grammar
- * rules.
- * Only counts words that exist in the vocab database (from lesson CSVs).
- * Uses statistical threshold (mean + 1.5*stddev) for overuse detection.
+ * Grammar Coach v3.0 - Core analysis orchestrator.
+ * Coordinates all analysis services to produce comprehensive grammar analysis.
  */
 @Service
 public class GrammarAnalysisService {
@@ -28,216 +22,193 @@ public class GrammarAnalysisService {
 
     private final WorksheetScannerService scannerService;
     private final SudachiTokenizerService tokenizerService;
-    private final GrammarRuleService ruleService;
+    private final SlotDetectionService slotDetectionService;
+    private final DistributionAnalysisService distributionService;
+    private final ValidityCalculationService validityService;
+    private final DiagnosticGeneratorService diagnosticService;
     private final VocabRepository vocabRepository;
 
     public GrammarAnalysisService(
             WorksheetScannerService scannerService,
             SudachiTokenizerService tokenizerService,
-            GrammarRuleService ruleService,
+            SlotDetectionService slotDetectionService,
+            DistributionAnalysisService distributionService,
+            ValidityCalculationService validityService,
+            DiagnosticGeneratorService diagnosticService,
             VocabRepository vocabRepository) {
         this.scannerService = scannerService;
         this.tokenizerService = tokenizerService;
-        this.ruleService = ruleService;
+        this.slotDetectionService = slotDetectionService;
+        this.distributionService = distributionService;
+        this.validityService = validityService;
+        this.diagnosticService = diagnosticService;
         this.vocabRepository = vocabRepository;
     }
 
     /**
-     * Analyze worksheet JSON for grammar issues.
-     * Only counts words that exist in the vocab database.
+     * Analyze worksheet JSON for grammar patterns (v3.0).
      *
      * @param worksheetJson Full worksheet JSON string
-     * @return Analysis result with violations and suggestions
+     * @param lessonScope   Optional lesson scope for filtering
+     * @return Grammar Coach analysis result
      */
-    public GrammarAnalysisResult analyze(String worksheetJson) {
-        log.info("Starting grammar analysis on worksheet");
+    public GrammarCoachResult analyzeV3(String worksheetJson, LessonScope lessonScope) {
+        log.info("Starting Grammar Coach v3.0 analysis");
 
-        // Step 1: Load vocab base forms from database for filtering
-        Set<String> vocabBaseForms = vocabRepository.findAll().stream()
-                .map(Vocab::getBaseForm)
-                .collect(Collectors.toSet());
-        log.debug("Loaded {} vocab words from database for filtering", vocabBaseForms.size());
+        try {
+            // Step 1: Get vocab pool for the scope
+            List<Vocab> vocabPool = getVocabPool(lessonScope);
+            Set<String> poolBaseForms = vocabPool.stream()
+                    .map(Vocab::getBaseForm)
+                    .collect(Collectors.toSet());
 
-        // Step 2: Extract all text from worksheet (all pages, all items)
-        List<String> textBlocks = scannerService.extractAllText(worksheetJson);
-        log.debug("Extracted {} text blocks from worksheet", textBlocks.size());
+            if (vocabPool.isEmpty()) {
+                return GrammarCoachResult.empty("No vocabulary found for the specified lesson scope.");
+            }
 
-        // Step 3: Tokenize and count ONLY words that exist in vocab database
-        Map<String, Integer> wordCounts = new HashMap<>();
-        Map<String, Integer> posCounts = new HashMap<>();
-        int totalVocabWords = 0;
-        int totalTokens = 0;
+            // Step 2: Extract text from worksheet
+            List<String> textBlocks = scannerService.extractAllText(worksheetJson);
+            if (textBlocks.isEmpty()) {
+                return GrammarCoachResult.empty("No Japanese content found in worksheet.");
+            }
 
-        for (String text : textBlocks) {
-            List<SudachiTokenizerService.TokenResult> tokens = tokenizerService.tokenizeWithPos(text);
-            for (SudachiTokenizerService.TokenResult token : tokens) {
-                totalTokens++;
+            // Step 3: Tokenize and count words, track locations
+            Map<String, Integer> wordCounts = new HashMap<>();
+            Map<String, List<WordLocation>> wordLocations = new HashMap<>();
+            List<SlotAssignment> allSlotAssignments = new ArrayList<>();
+            int totalVocabWords = 0;
+            int itemIndex = 0;
 
-                // ONLY count words that exist in vocab database
-                if (vocabBaseForms.contains(token.baseForm())) {
-                    wordCounts.merge(token.baseForm(), 1, Integer::sum);
-                    totalVocabWords++;
+            for (String text : textBlocks) {
+                List<SudachiTokenizerService.TokenResult> tokens = tokenizerService.tokenizeWithPos(text);
 
-                    // Count POS for vocab words only
-                    String posCategory = simplifyPos(token.pos());
-                    if (posCategory != null) {
-                        posCounts.merge(posCategory, 1, Integer::sum);
+                // Count words in vocab pool
+                for (SudachiTokenizerService.TokenResult token : tokens) {
+                    if (poolBaseForms.contains(token.baseForm())) {
+                        wordCounts.merge(token.baseForm(), 1, Integer::sum);
+                        totalVocabWords++;
+
+                        // Track locations
+                        wordLocations.computeIfAbsent(token.baseForm(), k -> new ArrayList<>())
+                                .add(new WordLocation(itemIndex, "TEXT", truncate(text, 30)));
                     }
                 }
+
+                // Detect slots
+                List<SlotAssignment> slots = slotDetectionService.detectSlots(tokens, itemIndex);
+                allSlotAssignments.addAll(slots);
+
+                itemIndex++;
             }
+
+            log.info("Analyzed {} text blocks, found {} vocab words ({} unique)",
+                    textBlocks.size(), totalVocabWords, wordCounts.size());
+
+            // Step 4: Calculate validity
+            ValidityCalculationService.ValidityResult validity = validityService.calculate(wordCounts, lessonScope);
+
+            // Step 5: Analyze distribution
+            DistributionAnalysisService.DistributionResult distribution = distributionService.analyze(wordCounts,
+                    lessonScope);
+
+            // Step 6: Generate diagnostics
+            List<Diagnostic> diagnostics = new ArrayList<>();
+
+            // Overuse diagnostics
+            diagnostics.addAll(diagnosticService.generateOveruseDiagnostics(
+                    distribution.overused(), wordCounts, wordLocations, lessonScope, distribution.stdDev()));
+
+            // Category imbalance diagnostics
+            diagnostics.addAll(diagnosticService.generateCategoryDiagnostics(distribution.categoryBreakdown()));
+
+            // Step 7: Analyze slots
+            SlotDetectionService.SlotAnalysisSummary slotSummary = slotDetectionService
+                    .analyzeSlotUsage(allSlotAssignments);
+            String slotSummaryText = slotDetectionService.generateSlotSummary(slotSummary);
+
+            // Step 8: Calculate score
+            int scoreValue = diagnosticService.calculateScore(diagnostics, validity.level());
+            String interpretation = diagnosticService.getScoreInterpretation(scoreValue);
+
+            // Build result
+            return new GrammarCoachResult(
+                    new Meta(
+                            validity.level(),
+                            validity.note(),
+                            lessonScope,
+                            vocabPool.size(),
+                            totalVocabWords),
+                    new Distribution(
+                            distribution.totalWords(),
+                            distribution.uniqueWords(),
+                            distribution.mean(),
+                            distribution.stdDev(),
+                            distribution.overuseThreshold(),
+                            convertCategoryBreakdown(distribution.categoryBreakdown())),
+                    diagnostics,
+                    new SlotAnalysis(
+                            slotSummary.slotCounts(),
+                            slotSummary.missingSlots(),
+                            slotSummaryText),
+                    new Score(scoreValue, interpretation));
+
+        } catch (Exception e) {
+            log.error("Grammar analysis failed: {}", e.getMessage(), e);
+            return GrammarCoachResult.empty("Analysis failed: " + e.getMessage());
         }
+    }
 
-        log.info("Found {} vocab words (from {} total tokens), {} unique",
-                totalVocabWords, totalTokens, wordCounts.size());
+    /**
+     * Legacy v2.0 analyze method for backward compatibility.
+     */
+    public GrammarAnalysisResult analyze(String worksheetJson) {
+        log.info("Starting grammar analysis (v2.0 compatibility mode)");
 
-        // Step 4: Calculate statistical threshold for overuse
-        List<RuleViolation> violations = detectOveruseStatistically(wordCounts);
+        // Use v3.0 internally and convert to v2.0 format
+        GrammarCoachResult v3Result = analyzeV3(worksheetJson, null);
 
-        // Step 5: Also check explicit rules from database
-        List<GrammarRule> enabledRules = ruleService.getEnabledRules();
-        for (GrammarRule rule : enabledRules) {
-            RuleViolation violation = evaluateRule(rule, wordCounts);
-            if (violation != null && violations.stream().noneMatch(v -> v.targetWord().equals(rule.getTargetWord()))) {
-                violations.add(violation);
-            }
-        }
-
-        log.info("Found {} total violations", violations.size());
-
-        // Step 6: Calculate score
-        int score = calculateScore(violations, totalVocabWords);
-
-        // Step 7: Build POS count list
-        List<PosCount> posCountList = posCounts.entrySet().stream()
-                .map(e -> new PosCount(e.getKey(), e.getValue()))
-                .sorted((a, b) -> Integer.compare(b.count(), a.count()))
+        // Convert to v2.0 format
+        List<GrammarAnalysisResult.RuleViolation> violations = v3Result.diagnostics().stream()
+                .filter(d -> "OVERUSE".equals(d.type()))
+                .map(d -> new GrammarAnalysisResult.RuleViolation(
+                        null,
+                        d.type(),
+                        d.severity(),
+                        d.targetWord(),
+                        d.actualCount(),
+                        d.threshold(),
+                        d.message(),
+                        d.primarySuggestions().stream().map(Suggestion::word).toList()))
                 .toList();
 
         return new GrammarAnalysisResult(
-                totalVocabWords,
-                wordCounts.size(),
-                posCountList,
+                v3Result.meta().wordsAnalyzed(),
+                v3Result.distribution().uniqueWords(),
+                List.of(), // POS counts not in v3.0
                 violations,
-                score);
+                v3Result.score().value());
     }
 
-    /**
-     * Detect overused words using FIXED threshold.
-     * IMPORTANT: Threshold does NOT move with the data!
-     * 
-     * Algorithm v2.0:
-     * - threshold = MAX(3, 15% of unique vocab words)
-     * - Any word appearing more than threshold is flagged
-     */
-    private List<RuleViolation> detectOveruseStatistically(Map<String, Integer> wordCounts) {
-        List<RuleViolation> violations = new ArrayList<>();
-
-        if (wordCounts.isEmpty()) {
-            return violations;
+    private List<Vocab> getVocabPool(LessonScope scope) {
+        if (scope == null) {
+            return vocabRepository.findAll();
         }
-
-        // FIXED threshold calculation (v2.0)
-        // - Absolute minimum: 3 (no word should appear > 3 times in small worksheets)
-        // - Scales with size: 15% of unique words for larger worksheets
-        int uniqueWords = wordCounts.size();
-        int percentageThreshold = (int) Math.ceil(uniqueWords * 0.15);
-        int absoluteMinimum = 3;
-        int threshold = Math.max(absoluteMinimum, percentageThreshold);
-
-        log.info("FIXED threshold: {} (uniqueWords={}, 15%={}, min={})",
-                threshold, uniqueWords, percentageThreshold, absoluteMinimum);
-
-        // Find words above threshold
-        for (Map.Entry<String, Integer> entry : wordCounts.entrySet()) {
-            if (entry.getValue() > threshold) {
-                violations.add(new RuleViolation(
-                        null, // No rule ID for statistical detection
-                        "overuse_threshold",
-                        "OVERUSE",
-                        entry.getKey(),
-                        entry.getValue(),
-                        threshold,
-                        String.format("'%s' appears %d times (max allowed: %d)",
-                                entry.getKey(), entry.getValue(), threshold),
-                        List.of() // No suggestions for statistical detection
-                ));
-            }
-        }
-
-        return violations;
+        return vocabRepository.findByLessonIdIn(scope.getLessonIds());
     }
 
-    /**
-     * Evaluate a single rule against word counts.
-     */
-    private RuleViolation evaluateRule(GrammarRule rule, Map<String, Integer> wordCounts) {
-        switch (rule.getRuleType()) {
-            case OVERUSE -> {
-                String target = rule.getTargetWord();
-                if (target == null || target.isBlank()) {
-                    return null;
-                }
-
-                int count = wordCounts.getOrDefault(target, 0);
-                Integer threshold = rule.getThreshold();
-
-                if (threshold != null && count > threshold) {
-                    List<String> suggestions = ruleService.getSuggestionsForRule(rule.getId())
-                            .stream()
-                            .map(RuleSuggestion::getSuggestedWord)
-                            .toList();
-
-                    return new RuleViolation(
-                            rule.getId(),
-                            rule.getName(),
-                            rule.getRuleType().name(),
-                            target,
-                            count,
-                            threshold,
-                            rule.getSuggestionText(),
-                            suggestions);
-                }
-            }
-            case MISSING -> {
-                // TODO: Implement missing pattern detection
-                // Check if a required tag/pattern is missing from worksheet
-            }
-            case REQUIRES -> {
-                // TODO: Implement requires rule
-                // Check if using X requires also using Y
-            }
+    private Map<String, CategoryBreakdown> convertCategoryBreakdown(
+            Map<String, DistributionAnalysisService.CategoryStats> stats) {
+        Map<String, CategoryBreakdown> result = new HashMap<>();
+        for (Map.Entry<String, DistributionAnalysisService.CategoryStats> entry : stats.entrySet()) {
+            DistributionAnalysisService.CategoryStats s = entry.getValue();
+            result.put(entry.getKey(), new CategoryBreakdown(s.poolSize(), s.used(), s.coverage()));
         }
-        return null;
+        return result;
     }
 
-    /**
-     * Simplify POS tag to main category.
-     * Example: "名詞-一般" -> "名詞"
-     */
-    private String simplifyPos(String pos) {
-        if (pos == null || pos.isBlank()) {
-            return null;
-        }
-        int dashIndex = pos.indexOf('-');
-        return dashIndex > 0 ? pos.substring(0, dashIndex) : pos;
-    }
-
-    /**
-     * Calculate score based on violations.
-     */
-    private int calculateScore(List<RuleViolation> violations, int totalWords) {
-        if (totalWords == 0) {
-            return 100;
-        }
-
-        // Start with 100, deduct points for each violation
-        int score = 100;
-        for (RuleViolation v : violations) {
-            // Deduct more for higher threshold breaches
-            int severity = Math.min(20, (v.actualCount() - v.threshold()) * 5);
-            score -= severity;
-        }
-
-        return Math.max(0, Math.min(100, score));
+    private String truncate(String text, int maxLen) {
+        if (text == null)
+            return "";
+        return text.length() > maxLen ? text.substring(0, maxLen) + "..." : text;
     }
 }

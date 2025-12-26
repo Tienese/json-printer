@@ -118,7 +118,8 @@ public class WorksheetScannerService {
                 JsonNode boxes = section.path("boxes");
                 if (boxes.isArray()) {
                     for (JsonNode box : boxes) {
-                        addIfJapanese(box.path("value").asText(), textContent);
+                        // TypeScript uses 'char', not 'value'
+                        addIfJapanese(box.path("char").asText(), textContent);
                     }
                 }
             }
@@ -150,8 +151,9 @@ public class WorksheetScannerService {
         JsonNode pairs = item.path("pairs");
         if (pairs.isArray()) {
             for (JsonNode pair : pairs) {
-                // Skip prompt - extract match only
-                addIfJapanese(pair.path("match").asText(), textContent);
+                // TypeScript uses 'left' and 'right', not 'match'
+                addIfJapanese(pair.path("left").asText(), textContent);
+                addIfJapanese(pair.path("right").asText(), textContent);
             }
         }
     }
@@ -160,7 +162,8 @@ public class WorksheetScannerService {
      * CLOZE: Extract passage content.
      */
     private void extractClozePassage(JsonNode item, List<String> textContent) {
-        addIfJapanese(item.path("passage").asText(), textContent);
+        // TypeScript uses 'template', not 'passage'
+        addIfJapanese(item.path("template").asText(), textContent);
     }
 
     /**

@@ -1,6 +1,8 @@
 package com.qtihelper.demo.controller;
 
 import com.qtihelper.demo.dto.GrammarAnalysisResult;
+import com.qtihelper.demo.dto.GrammarCoachResult;
+import com.qtihelper.demo.dto.LessonScope;
 import com.qtihelper.demo.entity.GrammarRule;
 import com.qtihelper.demo.entity.Worksheet;
 import com.qtihelper.demo.repository.WorksheetRepository;
@@ -56,6 +58,21 @@ public class GrammarRuleController {
     @PostMapping("/grammar/analyze")
     public ResponseEntity<GrammarAnalysisResult> analyzeJson(@RequestBody AnalyzeRequest request) {
         GrammarAnalysisResult result = analysisService.analyze(request.worksheetJson());
+        return ResponseEntity.ok(result);
+    }
+
+    /**
+     * Grammar Coach v3.0 analysis endpoint.
+     * POST /api/grammar/analyze-v3
+     * Returns comprehensive analysis with diagnostics, slots, and validity.
+     */
+    @PostMapping("/grammar/analyze-v3")
+    public ResponseEntity<GrammarCoachResult> analyzeV3(@RequestBody AnalyzeV3Request request) {
+        LessonScope scope = null;
+        if (request.lessonScope() != null) {
+            scope = request.lessonScope();
+        }
+        GrammarCoachResult result = analysisService.analyzeV3(request.worksheetJson(), scope);
         return ResponseEntity.ok(result);
     }
 
@@ -145,6 +162,9 @@ public class GrammarRuleController {
     // ==================== Request DTOs ====================
 
     public record AnalyzeRequest(String worksheetJson) {
+    }
+
+    public record AnalyzeV3Request(String worksheetJson, LessonScope lessonScope) {
     }
 
     public record CreateRuleRequest(
