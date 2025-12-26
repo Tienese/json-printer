@@ -21,6 +21,13 @@ public class SlotDetectionService {
     private static final Logger log = LoggerFactory.getLogger(SlotDetectionService.class);
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
+    // Hardcoded defaults for ambiguous particles (per spec)
+    // These take priority over database iteration order
+    private static final Map<String, String> AMBIGUOUS_PARTICLE_DEFAULTS = Map.of(
+            "で", "LOCATION",    // で can be LOCATION or INSTRUMENT - default LOCATION
+            "に", "DIRECTION"    // に can be DIRECTION or TIME - default DIRECTION
+    );
+
     private final SlotDefinitionRepository slotRepository;
 
     // Cache of particle -> slot name mappings
@@ -161,8 +168,14 @@ public class SlotDetectionService {
         }
 
         particleToSlotMap = new HashMap<>();
+        
+        // 1. First, set explicit defaults for ambiguous particles (per spec)
+        particleToSlotMap.putAll(AMBIGUOUS_PARTICLE_DEFAULTS);
+        log.info("Pre-loaded {} ambiguous particle defaults: {}", 
+                AMBIGUOUS_PARTICLE_DEFAULTS.size(), AMBIGUOUS_PARTICLE_DEFAULTS);
+        
+        // 2. Then load from DB, but don't override existing mappings
         List<SlotDefinition> slots = slotRepository.findAll();
-
         log.info("Loading particle-to-slot mappings from {} slot definitions", slots.size());
 
         for (SlotDefinition slot : slots) {
@@ -174,8 +187,6 @@ public class SlotDetectionService {
                 log.debug("  Slot '{}': particles = {}", slot.getName(), particles);
 
                 for (String particle : particles) {
-                    // Default mappings for ambiguous particles (per spec)
-                    // で → LOCATION, に → DIRECTION
                     if (!particleToSlotMap.containsKey(particle)) {
                         particleToSlotMap.put(particle, slot.getName());
                         log.debug("    Mapped '{}' → {}", particle, slot.getName());

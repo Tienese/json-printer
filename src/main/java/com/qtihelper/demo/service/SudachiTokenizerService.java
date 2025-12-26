@@ -116,6 +116,54 @@ public class SudachiTokenizerService {
     }
 
     /**
+     * Tokenize text including particles. Used for slot detection.
+     * Only filters out symbols and punctuation, keeps particles (助詞).
+     *
+     * @param text Input Japanese text
+     * @return List of token results including particles
+     */
+    public List<TokenResult> tokenizeWithPosIncludeParticles(String text) {
+        if (text == null || text.isBlank()) {
+            return List.of();
+        }
+
+        List<TokenResult> results = new ArrayList<>();
+
+        try (TokenStream tokenStream = analyzer.tokenStream("content", new StringReader(text))) {
+            CharTermAttribute termAttr = tokenStream.addAttribute(CharTermAttribute.class);
+            BaseFormAttribute baseFormAttr = tokenStream.addAttribute(BaseFormAttribute.class);
+            PartOfSpeechAttribute posAttr = tokenStream.addAttribute(PartOfSpeechAttribute.class);
+
+            tokenStream.reset();
+
+            while (tokenStream.incrementToken()) {
+                String pos = posAttr.getPartOfSpeech();
+
+                // Only skip symbols/punctuation, keep particles for slot detection
+                if (pos != null && (pos.startsWith("記号") || pos.startsWith("補助記号"))) {
+                    continue;
+                }
+
+                String surface = termAttr.toString();
+                String baseForm = baseFormAttr.getBaseForm();
+                if (baseForm == null || baseForm.isBlank()) {
+                    baseForm = surface;
+                }
+
+                if (!baseForm.isBlank()) {
+                    results.add(new TokenResult(surface, baseForm, pos));
+                }
+            }
+
+            tokenStream.end();
+        } catch (IOException e) {
+            log.error("Failed to tokenize text (with particles): {}", e.getMessage());
+        }
+
+        return results;
+    }
+
+    /**
      * Normalize a single word to its dictionary form.
      * Useful for CSV import where each line is a single word.
      *

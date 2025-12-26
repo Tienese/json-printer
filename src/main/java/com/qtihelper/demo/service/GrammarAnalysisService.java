@@ -80,6 +80,7 @@ public class GrammarAnalysisService {
             int itemIndex = 0;
 
             for (String text : textBlocks) {
+                // Use filtered tokens (no particles) for vocab frequency counting
                 List<SudachiTokenizerService.TokenResult> tokens = tokenizerService.tokenizeWithPos(text);
 
                 // Count words in vocab pool
@@ -94,8 +95,10 @@ public class GrammarAnalysisService {
                     }
                 }
 
-                // Detect slots
-                List<SlotAssignment> slots = slotDetectionService.detectSlots(tokens, itemIndex);
+                // Use tokens WITH particles for slot detection
+                List<SudachiTokenizerService.TokenResult> tokensWithParticles = tokenizerService
+                        .tokenizeWithPosIncludeParticles(text);
+                List<SlotAssignment> slots = slotDetectionService.detectSlots(tokensWithParticles, itemIndex);
                 allSlotAssignments.addAll(slots);
 
                 itemIndex++;
