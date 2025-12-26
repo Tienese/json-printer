@@ -19,16 +19,27 @@ import java.util.*;
 public class SlotDetectionService {
 
     private static final Logger log = LoggerFactory.getLogger(SlotDetectionService.class);
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     private final SlotDefinitionRepository slotRepository;
-    private final ObjectMapper objectMapper;
 
     // Cache of particle -> slot name mappings
     private Map<String, String> particleToSlotMap;
 
     public SlotDetectionService(SlotDefinitionRepository slotRepository) {
         this.slotRepository = slotRepository;
-        this.objectMapper = new ObjectMapper();
+    }
+
+    /**
+     * Get the slot name for a given particle.
+     * This is the canonical source of truth for particle-to-slot mappings.
+     *
+     * @param particle The Japanese particle (e.g., "を", "に", "で")
+     * @return The slot name, or null if no mapping exists
+     */
+    public String getSlotForParticle(String particle) {
+        ensureParticleMapLoaded();
+        return particleToSlotMap.get(particle);
     }
 
     /**
@@ -44,13 +55,22 @@ public class SlotDetectionService {
 
         var assignments = new ArrayList<SlotAssignment>();
 
+        // Debug: Log all tokens received
+        log.debug("=== SLOT DETECTION DEBUG (item {}) ===", itemIndex);
+        log.debug("Tokens received: {}", tokens.size());
+        log.debug("Particle map loaded: {} entries", particleToSlotMap.size());
+
         for (int i = 0; i < tokens.size(); i++) {
             var token = tokens.get(i);
+            log.debug("  Token[{}]: surface='{}' baseForm='{}' pos='{}'",
+                    i, token.surface(), token.baseForm(), token.pos());
 
             // Check if this token is a particle
             if (token.pos() != null && token.pos().startsWith("助詞")) {
                 String particle = token.surface();
                 String slotName = particleToSlotMap.get(particle);
+
+                log.debug("    → PARTICLE detected: '{}' → slot '{}'", particle, slotName);
 
                 if (slotName != null && i > 0) {
                     // The word before the particle fills the slot
@@ -63,12 +83,15 @@ public class SlotDetectionService {
                             i - 1,
                             itemIndex));
 
-                    log.debug("Detected slot: {} fills {} (particle: {})",
+                    log.info("Slot assigned: '{}' fills {} (particle: '{}')",
                             markedWord.baseForm(), slotName, particle);
+                } else if (slotName == null) {
+                    log.debug("    → No slot mapping for particle '{}'", particle);
                 }
             }
         }
 
+        log.debug("=== END SLOT DETECTION: {} assignments ===", assignments.size());
         return assignments;
     }
 
@@ -140,25 +163,32 @@ public class SlotDetectionService {
         particleToSlotMap = new HashMap<>();
         List<SlotDefinition> slots = slotRepository.findAll();
 
+        log.info("Loading particle-to-slot mappings from {} slot definitions", slots.size());
+
         for (SlotDefinition slot : slots) {
             try {
                 List<String> particles = objectMapper.readValue(
                         slot.getParticles(),
                         new TypeReference<List<String>>() {
                         });
+                log.debug("  Slot '{}': particles = {}", slot.getName(), particles);
+
                 for (String particle : particles) {
                     // Default mappings for ambiguous particles (per spec)
                     // で → LOCATION, に → DIRECTION
                     if (!particleToSlotMap.containsKey(particle)) {
                         particleToSlotMap.put(particle, slot.getName());
+                        log.debug("    Mapped '{}' → {}", particle, slot.getName());
+                    } else {
+                        log.debug("    Skipped '{}' (already mapped to {})", particle, particleToSlotMap.get(particle));
                     }
                 }
             } catch (Exception e) {
-                log.warn("Failed to parse particles for slot {}: {}", slot.getName(), e.getMessage());
+                log.error("Failed to parse particles for slot {}: {}", slot.getName(), e.getMessage());
             }
         }
 
-        log.info("Loaded {} particle-to-slot mappings", particleToSlotMap.size());
+        log.info("Loaded {} particle-to-slot mappings: {}", particleToSlotMap.size(), particleToSlotMap.keySet());
     }
 
     /**

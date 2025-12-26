@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
 public class WorksheetScannerService {
 
     private static final Logger log = LoggerFactory.getLogger(WorksheetScannerService.class);
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     // Regex to detect Japanese characters (Hiragana, Katakana, Kanji)
     private static final Pattern JAPANESE_PATTERN = Pattern.compile("[\\u3040-\\u309F\\u30A0-\\u30FF\\u4E00-\\u9FAF]");

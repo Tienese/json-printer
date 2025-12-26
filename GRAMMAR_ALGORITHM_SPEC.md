@@ -67,7 +67,7 @@ PHASES 1-5: IMPLEMENTATION
 5. [Quiz-Specific Parsing](#quiz-specific-parsing)
 6. [Algorithm Phases](#algorithm-phases)
 7. [API Response Structure](#api-response-structure)
-8. [UI Design](#ui-design)
+8. [UI Structure](#ui-structure-unified-language-coach)
 9. [Edge Cases](#edge-case-handling)
 10. [Compliance Rules](#compliance-rules)
 11. [Risk Assessment](#risk-assessment)

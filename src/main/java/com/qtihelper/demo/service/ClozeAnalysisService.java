@@ -25,25 +25,16 @@ public class ClozeAnalysisService {
     private static final Pattern BLANK_PATTERN = Pattern.compile(
             "＿{2,}|_{2,}|【\\s*】|（\\s*）|\\(\\s*\\)|\\[\\s*\\]");
 
-    // Common particles and their slot mappings (aligned with slot_definitions.json)
-    private static final Map<String, String> PARTICLE_TO_SLOT = Map.ofEntries(
-            Map.entry("を", "OBJECT"),
-            Map.entry("に", "DIRECTION"), // Default for に (also TIME in some contexts)
-            Map.entry("で", "LOCATION"), // Default for で (also INSTRUMENT in some contexts)
-            Map.entry("へ", "DIRECTION"),
-            Map.entry("と", "COMPANION"),
-            Map.entry("から", "SOURCE"),
-            Map.entry("まで", "GOAL"),
-            Map.entry("は", "SUBJECT"),
-            Map.entry("が", "SUBJECT"));
-
     private final VocabRepository vocabRepository;
     private final SudachiTokenizerService tokenizerService;
+    private final SlotDetectionService slotDetectionService;
 
     public ClozeAnalysisService(VocabRepository vocabRepository,
-            SudachiTokenizerService tokenizerService) {
+            SudachiTokenizerService tokenizerService,
+            SlotDetectionService slotDetectionService) {
         this.vocabRepository = vocabRepository;
         this.tokenizerService = tokenizerService;
+        this.slotDetectionService = slotDetectionService;
     }
 
     /**
@@ -72,7 +63,7 @@ public class ClozeAnalysisService {
 
             // Find particle after blank
             String particleAfter = extractFirstParticle(after);
-            String inferredSlot = particleAfter != null ? PARTICLE_TO_SLOT.get(particleAfter) : null;
+            String inferredSlot = particleAfter != null ? slotDetectionService.getSlotForParticle(particleAfter) : null;
 
             // Find verb in context for more precise suggestions
             String contextVerb = findVerbInContext(after);

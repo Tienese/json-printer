@@ -151,10 +151,14 @@ export function LanguageCoachPanel({ worksheetJson, onNavigateToItem }: Language
                     </div>
 
                     {/* Tab Navigation */}
-                    <div className="flex border-b border-gray-200">
+                    <div className="flex border-b border-gray-200" role="tablist" aria-label="Language coach analysis tabs">
                         {tabs.map(tab => (
                             <button
                                 key={tab.id}
+                                role="tab"
+                                id={`tab-${tab.id}`}
+                                aria-selected={activeTab === tab.id}
+                                aria-controls={`panel-${tab.id}`}
                                 onClick={() => setActiveTab(tab.id)}
                                 className={`flex-1 py-2 text-xs font-medium ${activeTab === tab.id
                                     ? 'text-black border-b-2 border-black'
@@ -172,7 +176,12 @@ export function LanguageCoachPanel({ worksheetJson, onNavigateToItem }: Language
                     </div>
 
                     {/* Tab Content */}
-                    <div className="min-h-[200px]">
+                    <div
+                        role="tabpanel"
+                        id={`panel-${activeTab}`}
+                        aria-labelledby={`tab-${activeTab}`}
+                        className="min-h-[200px]"
+                    >
                         {activeTab === 'distribution' && (
                             <DistributionTab
                                 totalWords={result.distribution.totalWords}

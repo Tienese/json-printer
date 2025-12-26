@@ -55,4 +55,20 @@ public class VocabTagMapping {
     public void setTag(VocabTag tag) {
         this.tag = tag;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (!(o instanceof VocabTagMapping that))
+            return false;
+        return vocab != null && tag != null &&
+                java.util.Objects.equals(vocab.getId(), that.vocab.getId()) &&
+                java.util.Objects.equals(tag.getId(), that.tag.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(VocabTagMapping.class);
+    }
 }

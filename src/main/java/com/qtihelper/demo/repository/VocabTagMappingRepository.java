@@ -2,7 +2,6 @@ package com.qtihelper.demo.repository;
 
 import com.qtihelper.demo.entity.VocabTagMapping;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -22,7 +21,6 @@ public interface VocabTagMappingRepository extends JpaRepository<VocabTagMapping
 
     void deleteByTagId(Long tagId);
 
-    @Query("SELECT m FROM VocabTagMapping m WHERE m.vocab.id = :vocabId AND m.tag.id = :tagId")
     VocabTagMapping findByVocabIdAndTagId(Long vocabId, Long tagId);
 
     boolean existsByVocabIdAndTagId(Long vocabId, Long tagId);
