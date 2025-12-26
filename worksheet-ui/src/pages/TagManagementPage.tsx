@@ -96,7 +96,8 @@ export function TagManagementPage({ onNavigate }: TagManagementPageProps) {
 
     const handleSeedDefaults = async () => {
         try {
-            await fetch('/api/vocab-tags/seed-defaults', { method: 'POST' });
+            const response = await fetch('/api/vocab-tags/seed-defaults', { method: 'POST' });
+            if (!response.ok) throw new Error('Failed to seed defaults');
             await loadTags();
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to seed defaults');

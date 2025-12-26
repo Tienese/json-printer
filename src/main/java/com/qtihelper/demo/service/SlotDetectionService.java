@@ -132,7 +132,7 @@ public class SlotDetectionService {
                 .orElse(slotName);
     }
 
-    private void ensureParticleMapLoaded() {
+    private synchronized void ensureParticleMapLoaded() {
         if (particleToSlotMap != null) {
             return;
         }

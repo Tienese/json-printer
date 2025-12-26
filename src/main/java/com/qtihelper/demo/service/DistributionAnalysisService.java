@@ -85,8 +85,8 @@ public class DistributionAnalysisService {
         // Category breakdown
         Map<String, CategoryStats> categoryBreakdown = calculateCategoryBreakdown(wordCounts, vocabPool);
 
-        log.info("Distribution analysis: {} total, {} unique, mean={:.2f}, stdDev={:.2f}, threshold={}",
-                totalWords, uniqueWords, mean, stdDev, overuseThreshold);
+        log.info("Distribution analysis: {} total, {} unique, mean={}, stdDev={}, threshold={}",
+                totalWords, uniqueWords, String.format("%.2f", mean), String.format("%.2f", stdDev), overuseThreshold);
 
         return new DistributionResult(
                 totalWords,

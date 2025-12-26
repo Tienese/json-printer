@@ -28,9 +28,15 @@ public record LessonScope(
      */
     public java.util.List<Integer> getLessonIds() {
         if ("single".equals(mode)) {
+            if (target == null) {
+                return java.util.List.of();
+            }
             return java.util.List.of(target);
         } else {
-            java.util.List<Integer> ids = new java.util.ArrayList<>();
+            if (rangeStart == null || rangeEnd == null) {
+                return java.util.List.of();
+            }
+            var ids = new java.util.ArrayList<Integer>();
             for (int i = rangeStart; i <= rangeEnd; i++) {
                 ids.add(i);
             }

@@ -143,8 +143,9 @@ public class ValidityCalculationService {
             note += " Statistics are indicative only.";
         }
 
-        log.info("Validity: {} (overall={:.1f}%, minCategory={:.1f}%, touched={:.1f}%)",
-                level, overallCoverage, minCategoryCoverage, categoriesTouchedPercent);
+        log.info("Validity: {} (overall={}%, minCategory={}%, touched={}%)",
+                level, String.format("%.1f", overallCoverage), String.format("%.1f", minCategoryCoverage),
+                String.format("%.1f", categoriesTouchedPercent));
 
         return new ValidityResult(level, overallCoverage, note);
     }

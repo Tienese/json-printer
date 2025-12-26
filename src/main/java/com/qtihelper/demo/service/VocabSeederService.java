@@ -104,12 +104,12 @@ public class VocabSeederService implements CommandLineRunner {
                 }
 
                 // Normalize to base form and extract POS using Kuromoji
-                SudachiTokenizerService.TokenResult result = tokenizerService.normalizeWordWithPos(displayForm);
+                var result = tokenizerService.normalizeWordWithPos(displayForm);
 
-                String baseForm = (result != null) ? result.baseForm() : displayForm;
-                String pos = (result != null) ? result.pos() : null;
+                var baseForm = (result != null) ? result.baseForm() : displayForm;
+                var pos = (result != null) ? result.pos() : null;
 
-                Vocab vocab = new Vocab(lessonId, displayForm, baseForm, pos);
+                var vocab = new Vocab(lessonId, displayForm, baseForm, pos);
                 vocabList.add(vocab);
             }
 

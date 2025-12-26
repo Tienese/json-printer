@@ -21,8 +21,8 @@
 
 ### Backend Files to CREATE
 
-| Goal | File | Status | Key Functions |
-|------|------|--------|---------------|
+| File | Status | Key Functions |
+|------|--------|---------------|
 | `SlotDefinition.java` | ✅ Created | `name`, `particles`, `humanTerm`, `questionWord` |
 | `SlotDefaultTags.java` | ❌ Skipped | Not required for v3.0 core |
 | `AspectDefinition.java` | ❌ Skipped | Seed data in JSON instead |
@@ -45,8 +45,8 @@
 
 ### Frontend Files to CREATE
 
-| Goal | File | Status | Key Features |
-|------|------|--------|--------------|
+| File | Status | Key Features |
+|------|--------|--------------|
 | `LanguageCoachPanel.tsx` | ✅ Created | v3.0 API, 3 internal tabs, score/validity display |
 | `useLanguageCoach.ts` | ❌ Skipped | Logic inline in component |
 | `useNotificationWatcher.ts` | ❌ Deferred | → v4.0 |

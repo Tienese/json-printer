@@ -41,27 +41,30 @@ public class SlotSeederService {
         }
 
         try {
-            ClassPathResource resource = new ClassPathResource(SLOT_DEFINITIONS_PATH);
-            InputStream inputStream = resource.getInputStream();
+            var resource = new ClassPathResource(SLOT_DEFINITIONS_PATH);
+            try (var inputStream = resource.getInputStream()) {
+                List<Map<String, Object>> slots = objectMapper.readValue(
+                        inputStream,
+                        new TypeReference<List<Map<String, Object>>>() {
+                        });
 
-            List<Map<String, Object>> slots = objectMapper.readValue(
-                    inputStream,
-                    new TypeReference<List<Map<String, Object>>>() {
-                    });
+                for (Map<String, Object> slot : slots) {
+                    var entity = new SlotDefinition();
+                    entity.setName((String) slot.get("name"));
+                    entity.setParticles(objectMapper.writeValueAsString(slot.get("particles")));
+                    entity.setDescription((String) slot.get("description"));
+                    entity.setHumanTerm((String) slot.get("humanTerm"));
+                    entity.setQuestionWord((String) slot.get("questionWord"));
+                    Object lessonVal = slot.get("lessonIntroduced");
+                    if (lessonVal instanceof Number num) {
+                        entity.setLessonIntroduced(num.intValue());
+                    }
 
-            for (Map<String, Object> slot : slots) {
-                SlotDefinition entity = new SlotDefinition();
-                entity.setName((String) slot.get("name"));
-                entity.setParticles(objectMapper.writeValueAsString(slot.get("particles")));
-                entity.setDescription((String) slot.get("description"));
-                entity.setHumanTerm((String) slot.get("humanTerm"));
-                entity.setQuestionWord((String) slot.get("questionWord"));
-                entity.setLessonIntroduced((Integer) slot.get("lessonIntroduced"));
+                    slotRepository.save(entity);
+                }
 
-                slotRepository.save(entity);
+                log.info("Seeded {} slot definitions", slots.size());
             }
-
-            log.info("Seeded {} slot definitions", slots.size());
         } catch (Exception e) {
             log.error("Failed to seed slot definitions: {}", e.getMessage());
         }

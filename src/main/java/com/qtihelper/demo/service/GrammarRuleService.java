@@ -52,7 +52,7 @@ public class GrammarRuleService {
     @Transactional
     public GrammarRule createRule(String name, GrammarRule.RuleType ruleType, String suggestionText,
             Long targetTagId, String targetWord, Integer threshold, Integer priority) {
-        GrammarRule rule = new GrammarRule(name, ruleType, suggestionText);
+        var rule = new GrammarRule(name, ruleType, suggestionText);
         rule.setTargetWord(targetWord);
         rule.setThreshold(threshold);
         rule.setPriority(priority != null ? priority : 0);
@@ -67,7 +67,7 @@ public class GrammarRuleService {
     @Transactional
     public GrammarRule updateRule(Long id, String name, GrammarRule.RuleType ruleType, String suggestionText,
             String targetWord, Integer threshold, Integer priority, Boolean enabled) {
-        GrammarRule rule = ruleRepository.findById(id)
+        var rule = ruleRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Rule not found: " + id));
 
         rule.setName(name);
@@ -100,10 +100,10 @@ public class GrammarRuleService {
      */
     @Transactional
     public RuleSuggestion addSuggestion(Long ruleId, String suggestedWord, String context, Integer priority) {
-        GrammarRule rule = ruleRepository.findById(ruleId)
+        var rule = ruleRepository.findById(ruleId)
                 .orElseThrow(() -> new IllegalArgumentException("Rule not found: " + ruleId));
 
-        RuleSuggestion suggestion = new RuleSuggestion(rule, suggestedWord, priority != null ? priority : 0);
+        var suggestion = new RuleSuggestion(rule, suggestedWord, priority != null ? priority : 0);
         suggestion.setContext(context);
         return suggestionRepository.save(suggestion);
     }
@@ -122,14 +122,14 @@ public class GrammarRuleService {
     public void seedDefaultRules() {
         // Rule: Pronoun overuse (わたし)
         if (ruleRepository.findByTargetWord("わたし").isEmpty()) {
-            GrammarRule rule = new GrammarRule(
+            var rule = new GrammarRule(
                     "pronoun_watashi_overuse",
                     GrammarRule.RuleType.OVERUSE,
                     "Consider varying your pronoun usage. Too many 'わたし'.");
             rule.setTargetWord("わたし");
             rule.setThreshold(3);
             rule.setPriority(10);
-            GrammarRule saved = ruleRepository.save(rule);
+            var saved = ruleRepository.save(rule);
 
             // Add suggestions
             suggestionRepository.save(new RuleSuggestion(saved, "私", 3));
@@ -139,7 +139,7 @@ public class GrammarRuleService {
 
         // Rule: Honorific overuse (さん)
         if (ruleRepository.findByTargetWord("さん").isEmpty()) {
-            GrammarRule rule = new GrammarRule(
+            var rule = new GrammarRule(
                     "honorific_san_overuse",
                     GrammarRule.RuleType.OVERUSE,
                     "Consider varying your honorific usage. Too many 'さん'.");
