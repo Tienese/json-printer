@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -68,7 +69,7 @@ public class VocabTagService {
                 .orElseThrow(() -> new IllegalArgumentException("Tag not found: " + id));
 
         // Check if name is being changed and already exists
-        if (!tag.getName().equals(name) && tagRepository.existsByName(name)) {
+        if (!Objects.equals(tag.getName(), name) && tagRepository.existsByName(name)) {
             throw new IllegalArgumentException("Tag with name '" + name + "' already exists");
         }
 

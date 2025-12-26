@@ -44,7 +44,6 @@ interface GrammarCoachResult {
 }
 
 interface LanguageCoachPanelProps {
-    worksheetId: number | null;
     worksheetJson: string;
     onNavigateToItem?: (itemIndex: number) => void;
 }
@@ -158,8 +157,8 @@ export function LanguageCoachPanel({ worksheetJson, onNavigateToItem }: Language
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
                                 className={`flex-1 py-2 text-xs font-medium ${activeTab === tab.id
-                                        ? 'text-black border-b-2 border-black'
-                                        : 'text-gray-500'
+                                    ? 'text-black border-b-2 border-black'
+                                    : 'text-gray-500'
                                     }`}
                             >
                                 {tab.label}

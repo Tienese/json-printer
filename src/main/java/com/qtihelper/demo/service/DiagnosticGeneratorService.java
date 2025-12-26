@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 public class DiagnosticGeneratorService {
 
     private static final Logger log = LoggerFactory.getLogger(DiagnosticGeneratorService.class);
+    private static final int MAX_SUGGESTION_USAGE = 3;
 
     private final VocabRepository vocabRepository;
 
@@ -159,7 +160,7 @@ public class DiagnosticGeneratorService {
             int currentUsage = wordCounts.getOrDefault(vocab.getBaseForm(), 0);
 
             // Skip if already overused
-            if (currentUsage > 3) {
+            if (currentUsage > MAX_SUGGESTION_USAGE) {
                 continue;
             }
 

@@ -49,7 +49,7 @@ public class WorksheetScannerService {
                 }
             }
         } catch (Exception e) {
-            log.error("Failed to parse worksheet JSON for text extraction: {}", e.getMessage());
+            log.error("Failed to parse worksheet JSON for text extraction", e);
         }
 
         log.debug("Extracted {} Japanese text blocks from worksheet", textContent.size());

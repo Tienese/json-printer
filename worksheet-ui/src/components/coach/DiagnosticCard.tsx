@@ -61,8 +61,12 @@ export function DiagnosticCard({
         }
     };
 
-    const copyToClipboard = (text: string) => {
-        navigator.clipboard.writeText(text);
+    const copyToClipboard = async (text: string) => {
+        try {
+            await navigator.clipboard.writeText(text);
+        } catch {
+            // Silent fail for older browsers
+        }
     };
 
     return (

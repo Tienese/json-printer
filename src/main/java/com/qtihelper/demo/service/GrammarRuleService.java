@@ -48,6 +48,9 @@ public class GrammarRuleService {
 
     /**
      * Create a new grammar rule.
+     * 
+     * @param targetTagId Reserved for future tag-based rule targeting (not yet
+     *                    implemented)
      */
     @Transactional
     public GrammarRule createRule(String name, GrammarRule.RuleType ruleType, String suggestionText,
@@ -57,7 +60,7 @@ public class GrammarRuleService {
         rule.setThreshold(threshold);
         rule.setPriority(priority != null ? priority : 0);
         rule.setEnabled(true);
-        // Note: targetTag would need to be fetched and set if targetTagId is provided
+        // TODO: Implement tag lookup when targetTagId is provided
         return ruleRepository.save(rule);
     }
 
@@ -146,7 +149,7 @@ public class GrammarRuleService {
             rule.setTargetWord("さん");
             rule.setThreshold(5);
             rule.setPriority(8);
-            GrammarRule saved = ruleRepository.save(rule);
+            var saved = ruleRepository.save(rule);
 
             suggestionRepository.save(new RuleSuggestion(saved, "くん", 2));
             suggestionRepository.save(new RuleSuggestion(saved, "ちゃん", 1));

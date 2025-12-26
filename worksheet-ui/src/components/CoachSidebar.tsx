@@ -81,7 +81,6 @@ export function CoachSidebar({
                         {activeTab === 'language' && (
                             <div className="animate-in fade-in">
                                 <LanguageCoachPanel
-                                    worksheetId={worksheetId}
                                     worksheetJson={worksheetJson}
                                     onNavigateToItem={onNavigateToItem}
                                 />

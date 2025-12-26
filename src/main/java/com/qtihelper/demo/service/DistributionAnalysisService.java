@@ -38,8 +38,8 @@ public class DistributionAnalysisService {
         }
 
         // Get vocab pool for the lesson scope
-        List<Vocab> vocabPool = getVocabPool(lessonScope);
-        Set<String> poolBaseForms = vocabPool.stream()
+        var vocabPool = getVocabPool(lessonScope);
+        var poolBaseForms = vocabPool.stream()
                 .map(Vocab::getBaseForm)
                 .collect(Collectors.toSet());
 
@@ -53,13 +53,15 @@ public class DistributionAnalysisService {
                 .orElse(0);
         double stdDev = Math.sqrt(variance);
 
-        // Calculate thresholds
-        int overuseThreshold = (int) Math.ceil(mean + 2 * stdDev);
-        int underuseThreshold = Math.max(0, (int) Math.floor(mean - stdDev));
+        // Calculate thresholds based on vocab pool size (per v3.0 spec)
+        int absoluteThreshold = 3;
+        int percentageThreshold = (int) Math.ceil(vocabPool.size() * 0.15);
+        int overuseThreshold = Math.max(absoluteThreshold, percentageThreshold);
+        int underuseThreshold = 1; // Words used 0 times are underused
 
         // Detect overused and underused words
-        List<WordFrequency> overused = new ArrayList<>();
-        List<WordFrequency> underused = new ArrayList<>();
+        var overused = new ArrayList<WordFrequency>();
+        var underused = new ArrayList<WordFrequency>();
 
         for (Map.Entry<String, Integer> entry : wordCounts.entrySet()) {
             String word = entry.getKey();
@@ -111,8 +113,8 @@ public class DistributionAnalysisService {
     private Map<String, CategoryStats> calculateCategoryBreakdown(
             Map<String, Integer> wordCounts, List<Vocab> vocabPool) {
 
-        Map<String, CategoryStats> breakdown = new HashMap<>();
-        Map<String, List<Vocab>> byCategory = vocabPool.stream()
+        var breakdown = new HashMap<String, CategoryStats>();
+        var byCategory = vocabPool.stream()
                 .filter(v -> v.getCategory() != null)
                 .collect(Collectors.groupingBy(Vocab::getCategory));
 

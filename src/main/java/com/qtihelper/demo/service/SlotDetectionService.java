@@ -42,10 +42,10 @@ public class SlotDetectionService {
     public List<SlotAssignment> detectSlots(List<SudachiTokenizerService.TokenResult> tokens, int itemIndex) {
         ensureParticleMapLoaded();
 
-        List<SlotAssignment> assignments = new ArrayList<>();
+        var assignments = new ArrayList<SlotAssignment>();
 
         for (int i = 0; i < tokens.size(); i++) {
-            SudachiTokenizerService.TokenResult token = tokens.get(i);
+            var token = tokens.get(i);
 
             // Check if this token is a particle
             if (token.pos() != null && token.pos().startsWith("助詞")) {
@@ -54,7 +54,7 @@ public class SlotDetectionService {
 
                 if (slotName != null && i > 0) {
                     // The word before the particle fills the slot
-                    SudachiTokenizerService.TokenResult markedWord = tokens.get(i - 1);
+                    var markedWord = tokens.get(i - 1);
 
                     assignments.add(new SlotAssignment(
                             markedWord.baseForm(),

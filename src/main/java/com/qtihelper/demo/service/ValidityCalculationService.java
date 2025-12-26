@@ -48,15 +48,15 @@ public class ValidityCalculationService {
         }
 
         // Get vocab pool
-        List<Vocab> vocabPool = getVocabPool(lessonScope);
+        var vocabPool = getVocabPool(lessonScope);
         if (vocabPool.isEmpty()) {
             return new ValidityResult("INVALID", 0,
                     "No vocabulary found for the specified lesson scope.");
         }
 
         // Calculate overall coverage
-        Set<String> usedWords = wordCounts.keySet();
-        Set<String> poolBaseForms = vocabPool.stream()
+        var usedWords = wordCounts.keySet();
+        var poolBaseForms = vocabPool.stream()
                 .map(Vocab::getBaseForm)
                 .collect(Collectors.toSet());
 
@@ -64,7 +64,7 @@ public class ValidityCalculationService {
         double overallCoverage = (double) wordsInPool / poolBaseForms.size() * 100;
 
         // Calculate category coverage
-        Map<String, List<Vocab>> byCategory = vocabPool.stream()
+        var byCategory = vocabPool.stream()
                 .filter(v -> v.getCategory() != null)
                 .collect(Collectors.groupingBy(Vocab::getCategory));
 
