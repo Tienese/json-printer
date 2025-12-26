@@ -121,11 +121,38 @@ Located in `src/main/resources/data/`:
 
 ---
 
+## Frontend Changes
+
+### New Components Created
+
+| File | Purpose |
+|------|---------|
+| `LanguageCoachPanel.tsx` | Unified v3.0 panel with tabs |
+| `coach/DiagnosticCard.tsx` | Severity-styled diagnostic display |
+| `coach/LocationLink.tsx` | Clickable navigation to items |
+| `coach/DistributionTab.tsx` | Word frequency stats |
+| `coach/SuggestionsTab.tsx` | Diagnostics with suggestions |
+| `coach/PatternsTab.tsx` | Slot analysis display |
+| `coach/index.ts` | Component exports |
+
+### Modified Files
+
+| File | Changes |
+|------|---------|
+| `CoachSidebar.tsx` | Replaced Grammar+Style with unified Language tab (2 tabs: Vocab, Language) |
+
+### Removed
+
+- StyleCoachPanel tab removed from CoachSidebar (component file kept for backward compat)
+
+---
+
 ## Verification
 
 - ✅ `mvn compile` passed
 - ✅ `npm run build` passed
-- ✅ `mvn spring-boot:run` started successfully
+- ✅ Backend commit: `be71f55`
+- ✅ Frontend commit: `54ab02f`
 
 ---
 
