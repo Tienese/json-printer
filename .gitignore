@@ -26,7 +26,7 @@ dist-ssr/
 .gemini/
 
 # Project Specific
-data/
+# data/
 src/main/resources/static/assets/
 src/main/resources/static/index.html
 

@@ -1,7 +1,6 @@
 import { useRef, useCallback, useEffect, type FC } from 'react';
 import type { ClozeItem, ViewMode } from '../../types/worksheet';
 import { QuestionNumber } from '../shared/QuestionNumber';
-import { sanitizeHTML, sanitizePaste } from '../../utils/htmlSanitizer';
 
 interface Props {
   item: ClozeItem;

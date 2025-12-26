@@ -56,11 +56,30 @@ public class SudachiTokenizerService {
      * @return List of base forms (lemmas) for meaningful words
      */
     public List<String> tokenize(String text) {
+        return tokenizeWithPos(text).stream()
+                .map(TokenResult::baseForm)
+                .toList();
+    }
+
+    /**
+     * Result of tokenizing a word, including base form and POS.
+     */
+    public record TokenResult(String surface, String baseForm, String pos) {
+    }
+
+    /**
+     * Tokenize text and return list of TokenResult with base form and POS.
+     * Filters out particles, punctuation, and symbols.
+     *
+     * @param text Input Japanese text
+     * @return List of token results for meaningful words
+     */
+    public List<TokenResult> tokenizeWithPos(String text) {
         if (text == null || text.isBlank()) {
             return List.of();
         }
 
-        List<String> baseForms = new ArrayList<>();
+        List<TokenResult> results = new ArrayList<>();
 
         try (TokenStream tokenStream = analyzer.tokenStream("content", new StringReader(text))) {
             CharTermAttribute termAttr = tokenStream.addAttribute(CharTermAttribute.class);
@@ -77,14 +96,14 @@ public class SudachiTokenizerService {
                     continue;
                 }
 
-                // Get base form if available, otherwise use surface form
+                String surface = termAttr.toString();
                 String baseForm = baseFormAttr.getBaseForm();
                 if (baseForm == null || baseForm.isBlank()) {
-                    baseForm = termAttr.toString();
+                    baseForm = surface;
                 }
 
                 if (!baseForm.isBlank()) {
-                    baseForms.add(baseForm);
+                    results.add(new TokenResult(surface, baseForm, pos));
                 }
             }
 
@@ -93,7 +112,7 @@ public class SudachiTokenizerService {
             log.error("Failed to tokenize text: {}", e.getMessage());
         }
 
-        return baseForms;
+        return results;
     }
 
     /**
@@ -115,6 +134,27 @@ public class SudachiTokenizerService {
         }
 
         // For single-word input, return the first meaningful token's base form
+        return tokens.get(0);
+    }
+
+    /**
+     * Normalize a single word and return both base form and POS.
+     * Used for vocabulary seeding with POS auto-tagging.
+     *
+     * @param word Single Japanese word
+     * @return TokenResult with base form and POS, or null if tokenization fails
+     */
+    public TokenResult normalizeWordWithPos(String word) {
+        if (word == null || word.isBlank()) {
+            return null;
+        }
+
+        List<TokenResult> tokens = tokenizeWithPos(word.trim());
+
+        if (tokens.isEmpty()) {
+            return new TokenResult(word.trim(), word.trim(), null);
+        }
+
         return tokens.get(0);
     }
 

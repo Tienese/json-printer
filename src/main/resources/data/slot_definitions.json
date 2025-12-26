@@ -1,0 +1,94 @@
+[
+    {
+        "name": "SUBJECT",
+        "particles": [
+            "は",
+            "が"
+        ],
+        "description": "Who performs the action",
+        "humanTerm": "WHO",
+        "questionWord": "だれ",
+        "lessonIntroduced": 1
+    },
+    {
+        "name": "OBJECT",
+        "particles": [
+            "を"
+        ],
+        "description": "What receives the action",
+        "humanTerm": "WHAT",
+        "questionWord": "なに",
+        "lessonIntroduced": 1
+    },
+    {
+        "name": "LOCATION",
+        "particles": [
+            "で"
+        ],
+        "description": "Where action happens",
+        "humanTerm": "WHERE (at)",
+        "questionWord": "どこで",
+        "lessonIntroduced": 3
+    },
+    {
+        "name": "DIRECTION",
+        "particles": [
+            "に",
+            "へ"
+        ],
+        "description": "Where going to",
+        "humanTerm": "WHERE (to)",
+        "questionWord": "どこに",
+        "lessonIntroduced": 2
+    },
+    {
+        "name": "TIME",
+        "particles": [
+            "に"
+        ],
+        "description": "When action happens",
+        "humanTerm": "WHEN",
+        "questionWord": "いつ",
+        "lessonIntroduced": 2
+    },
+    {
+        "name": "INSTRUMENT",
+        "particles": [
+            "で"
+        ],
+        "description": "Tool or means used",
+        "humanTerm": "HOW/WITH WHAT",
+        "questionWord": "なにで",
+        "lessonIntroduced": 4
+    },
+    {
+        "name": "COMPANION",
+        "particles": [
+            "と"
+        ],
+        "description": "Who accompanies",
+        "humanTerm": "WITH WHOM",
+        "questionWord": "だれと",
+        "lessonIntroduced": 3
+    },
+    {
+        "name": "SOURCE",
+        "particles": [
+            "から"
+        ],
+        "description": "Origin point",
+        "humanTerm": "FROM WHERE",
+        "questionWord": "どこから",
+        "lessonIntroduced": 4
+    },
+    {
+        "name": "GOAL",
+        "particles": [
+            "まで"
+        ],
+        "description": "End point or limit",
+        "humanTerm": "UNTIL",
+        "questionWord": "どこまで",
+        "lessonIntroduced": 4
+    }
+]

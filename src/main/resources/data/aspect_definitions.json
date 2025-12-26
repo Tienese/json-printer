@@ -1,0 +1,158 @@
+[
+    {
+        "name": "buyable",
+        "description": "Can be purchased",
+        "applicableCategories": [
+            "thing",
+            "place"
+        ]
+    },
+    {
+        "name": "giftable",
+        "description": "Can be given as gift",
+        "applicableCategories": [
+            "thing"
+        ]
+    },
+    {
+        "name": "edible",
+        "description": "Can be eaten",
+        "applicableCategories": [
+            "thing"
+        ]
+    },
+    {
+        "name": "drinkable",
+        "description": "Can be drunk",
+        "applicableCategories": [
+            "thing"
+        ]
+    },
+    {
+        "name": "wearable",
+        "description": "Can be worn",
+        "applicableCategories": [
+            "thing"
+        ]
+    },
+    {
+        "name": "readable",
+        "description": "Can be read",
+        "applicableCategories": [
+            "thing"
+        ]
+    },
+    {
+        "name": "vehicle",
+        "description": "Used for transport",
+        "applicableCategories": [
+            "thing"
+        ]
+    },
+    {
+        "name": "tool",
+        "description": "Used as instrument",
+        "applicableCategories": [
+            "thing"
+        ]
+    },
+    {
+        "name": "furniture",
+        "description": "Home/office furniture",
+        "applicableCategories": [
+            "thing"
+        ]
+    },
+    {
+        "name": "electronics",
+        "description": "Electronic device",
+        "applicableCategories": [
+            "thing"
+        ]
+    },
+    {
+        "name": "food",
+        "description": "Food item",
+        "applicableCategories": [
+            "thing"
+        ]
+    },
+    {
+        "name": "drink",
+        "description": "Beverage",
+        "applicableCategories": [
+            "thing"
+        ]
+    },
+    {
+        "name": "clothing",
+        "description": "Clothing item",
+        "applicableCategories": [
+            "thing"
+        ]
+    },
+    {
+        "name": "school_related",
+        "description": "Related to school/education",
+        "applicableCategories": [
+            "thing",
+            "place",
+            "person"
+        ]
+    },
+    {
+        "name": "work_related",
+        "description": "Related to work/office",
+        "applicableCategories": [
+            "thing",
+            "place",
+            "person"
+        ]
+    },
+    {
+        "name": "home_related",
+        "description": "Related to home",
+        "applicableCategories": [
+            "thing",
+            "place"
+        ]
+    },
+    {
+        "name": "travel_related",
+        "description": "Related to travel",
+        "applicableCategories": [
+            "thing",
+            "place"
+        ]
+    },
+    {
+        "name": "expensive",
+        "description": "High cost",
+        "applicableCategories": [
+            "thing"
+        ]
+    },
+    {
+        "name": "cheap",
+        "description": "Low cost",
+        "applicableCategories": [
+            "thing"
+        ]
+    },
+    {
+        "name": "animate",
+        "description": "Living being",
+        "applicableCategories": [
+            "person",
+            "thing"
+        ]
+    },
+    {
+        "name": "inanimate",
+        "description": "Non-living",
+        "applicableCategories": [
+            "thing",
+            "place"
+        ]
+    }
+]

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { VocabCoachPanel } from './VocabCoachPanel';
-import { StyleCoachPanel } from './StyleCoachPanel';
+import { LanguageCoachPanel } from './LanguageCoachPanel';
 
 interface CoachSidebarProps {
     worksheetId: number | null;
@@ -8,13 +8,14 @@ interface CoachSidebarProps {
     isOpen: boolean;
     onToggle: () => void;
     onInsertVocabWord?: (word: { term: string; meaning: string }) => void;
+    onNavigateToItem?: (itemIndex: number) => void;
 }
 
-type CoachTab = 'vocab' | 'grammar' | 'style';
+type CoachTab = 'vocab' | 'language';
 
 /**
  * Right sidebar for analysis and coaching features.
- * Separate from editing sidebar for better organization.
+ * v3.0: Replaced Grammar + Style tabs with unified Language Coach
  */
 export function CoachSidebar({
     worksheetId,
@@ -22,13 +23,13 @@ export function CoachSidebar({
     isOpen,
     onToggle,
     onInsertVocabWord,
+    onNavigateToItem,
 }: CoachSidebarProps) {
     const [activeTab, setActiveTab] = useState<CoachTab>('vocab');
 
     const tabs = [
         { id: 'vocab' as CoachTab, label: 'Vocab', icon: '📊' },
-        { id: 'grammar' as CoachTab, label: 'Grammar', icon: '📝' },
-        { id: 'style' as CoachTab, label: 'Style', icon: '✨' },
+        { id: 'language' as CoachTab, label: 'Language', icon: '📝' },
     ];
 
     return (
@@ -77,17 +78,12 @@ export function CoachSidebar({
                             </div>
                         )}
 
-                        {activeTab === 'grammar' && (
-                            <div className="p-4 text-center theme-text-muted">
-                                <span className="text-3xl mb-2 block">📝</span>
-                                <p className="text-sm font-medium">Grammar Analyzer</p>
-                                <p className="text-xs mt-1">Coming soon</p>
-                            </div>
-                        )}
-
-                        {activeTab === 'style' && (
+                        {activeTab === 'language' && (
                             <div className="animate-in fade-in">
-                                <StyleCoachPanel worksheetId={worksheetId} />
+                                <LanguageCoachPanel
+                                    worksheetJson={worksheetJson}
+                                    onNavigateToItem={onNavigateToItem}
+                                />
                             </div>
                         )}
                     </div>
