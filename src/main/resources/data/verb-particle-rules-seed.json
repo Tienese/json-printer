@@ -1,0 +1,62 @@
+[
+    {
+        "name": "住む-requires-に",
+        "ruleType": "VERB_PARTICLE",
+        "pattern": "住む",
+        "description": "住む (to live) takes に for location, not で",
+        "conditions": [
+            {
+                "conditionType": "REQUIRES_PARTICLE",
+                "conditionValue": "に",
+                "errorMessage": "住む requires に particle for location (not で)",
+                "isRequired": true,
+                "conditionOrder": 1
+            }
+        ]
+    },
+    {
+        "name": "働く-requires-で",
+        "ruleType": "VERB_PARTICLE",
+        "pattern": "働く",
+        "description": "働く (to work) takes で for location, not に",
+        "conditions": [
+            {
+                "conditionType": "REQUIRES_PARTICLE",
+                "conditionValue": "で",
+                "errorMessage": "働く requires で particle for location (not に)",
+                "isRequired": true,
+                "conditionOrder": 1
+            }
+        ]
+    },
+    {
+        "name": "勤める-requires-に",
+        "ruleType": "VERB_PARTICLE",
+        "pattern": "勤める",
+        "description": "勤める (to be employed) takes に for workplace",
+        "conditions": [
+            {
+                "conditionType": "REQUIRES_PARTICLE",
+                "conditionValue": "に",
+                "errorMessage": "勤める requires に particle for workplace",
+                "isRequired": true,
+                "conditionOrder": 1
+            }
+        ]
+    },
+    {
+        "name": "会う-requires-に",
+        "ruleType": "VERB_PARTICLE",
+        "pattern": "会う",
+        "description": "会う (to meet) takes に for person, not を",
+        "conditions": [
+            {
+                "conditionType": "REQUIRES_PARTICLE",
+                "conditionValue": "に",
+                "errorMessage": "会う requires に particle for the person met (not を)",
+                "isRequired": true,
+                "conditionOrder": 1
+            }
+        ]
+    }
+]

@@ -11,6 +11,7 @@ import com.qtihelper.demo.repository.GrammarRuleV4Repository;
 import com.qtihelper.demo.repository.RuleConditionRepository;
 import com.qtihelper.demo.repository.VocabRepository;
 import com.qtihelper.demo.repository.VocabTagMappingRepository;
+import com.qtihelper.demo.util.ConjugationMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -20,12 +21,12 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Core validation engine for Grammar Coach V4.0.
+ * Core validation engine for Grammar Coach V4.1.
  * Validates sentences against active grammar rules.
  * 
  * Responsibility: Semantic validation of Japanese sentences
  * Dependencies: TokenizerService, GrammarRuleV4Repository,
- * RuleConditionRepository, VocabTagService
+ * RuleConditionRepository, VocabTagService, ConjugationMapper
  */
 @Service
 public class SentenceValidationService {
@@ -147,7 +148,7 @@ public class SentenceValidationService {
 
     /**
      * Evaluate a PATTERN rule.
-     * Checks for pattern matches in token stream.
+     * Checks for pattern matches in token stream and validates verb forms.
      */
     private List<ViolationDTO> evaluatePatternRule(GrammarRuleV4 rule, List<TokenResult> tokens) {
         List<ViolationDTO> violations = new ArrayList<>();
@@ -161,25 +162,50 @@ public class SentenceValidationService {
         List<RuleCondition> conditions = conditionRepository
                 .findByRuleIdOrderByConditionOrder(rule.getId());
 
-        // Check each token against pattern
+        // Find pattern in token stream by concatenating surfaces
         for (int i = 0; i < tokens.size(); i++) {
-            TokenResult token = tokens.get(i);
-            if (token.surface().matches(pattern) || token.baseForm().matches(pattern)) {
+            int patternEndIndex = matchesPatternInStream(tokens, i, pattern);
+            if (patternEndIndex != -1) {
+                // Found pattern starting at index i
+                log.debug("Found pattern '{}' at token index {}", pattern, i);
+
                 for (RuleCondition cond : conditions) {
-                    TokenResult target = getTargetToken(tokens, i, cond.getTargetPosition());
-                    if (target != null && !evaluateCondition(cond, target)) {
-                        String message = cond.getErrorMessage();
-                        if (message != null) {
-                            message = message.replace("{word}", target.surface());
-                        } else {
-                            message = "Pattern validation failed for " + target.surface();
+                    if ("BEFORE".equals(cond.getTargetPosition())) {
+                        // Check verb form BEFORE the pattern
+                        TokenResult beforeToken = i > 0 ? tokens.get(i - 1) : null;
+                        TokenResult currentToken = tokens.get(i);
+
+                        if (beforeToken != null && !evaluateConditionWithNext(cond, beforeToken, currentToken)) {
+                            String message = cond.getErrorMessage();
+                            if (message != null) {
+                                message = message.replace("{word}", beforeToken.surface());
+                            } else {
+                                message = "Pattern validation failed for " + beforeToken.surface();
+                            }
+                            violations.add(new ViolationDTO(
+                                    rule.getId(),
+                                    rule.getName(),
+                                    message,
+                                    beforeToken.startOffset(),
+                                    beforeToken.surface()));
                         }
-                        violations.add(new ViolationDTO(
-                                rule.getId(),
-                                rule.getName(),
-                                message,
-                                target.startOffset(),
-                                target.surface()));
+                    } else {
+                        // Handle other positions normally
+                        TokenResult target = getTargetToken(tokens, i, cond.getTargetPosition());
+                        if (target != null && !evaluateCondition(cond, target)) {
+                            String message = cond.getErrorMessage();
+                            if (message != null) {
+                                message = message.replace("{word}", target.surface());
+                            } else {
+                                message = "Pattern validation failed for " + target.surface();
+                            }
+                            violations.add(new ViolationDTO(
+                                    rule.getId(),
+                                    rule.getName(),
+                                    message,
+                                    target.startOffset(),
+                                    target.surface()));
+                        }
                     }
                 }
             }
@@ -189,12 +215,85 @@ public class SentenceValidationService {
     }
 
     /**
+     * Check if pattern exists in token stream starting at given index.
+     * 
+     * @return End index of pattern match, or -1 if not found
+     */
+    private int matchesPatternInStream(List<TokenResult> tokens, int start, String pattern) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = start; i < Math.min(start + 5, tokens.size()); i++) {
+            sb.append(tokens.get(i).surface());
+            if (sb.toString().contains(pattern)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /**
      * Evaluate a VERB_PARTICLE rule.
-     * V4.1 implementation - stub for now.
+     * Handles edge case verbs that take unexpected particles (e.g., 住む→に, 働く→で).
      */
     private List<ViolationDTO> evaluateVerbParticleRule(GrammarRuleV4 rule, List<TokenResult> tokens) {
-        // V4.1 implementation - stub for now
-        return List.of();
+        List<ViolationDTO> violations = new ArrayList<>();
+        String verbBaseForm = rule.getPattern(); // pattern holds verb baseForm
+
+        if (verbBaseForm == null || verbBaseForm.isBlank()) {
+            return violations;
+        }
+
+        // Find the specific verb
+        for (int i = 0; i < tokens.size(); i++) {
+            TokenResult token = tokens.get(i);
+
+            if ("動詞".equals(token.posLevel1()) && verbBaseForm.equals(token.baseForm())) {
+                log.debug("Found target verb '{}' at index {}", verbBaseForm, i);
+
+                // Get conditions for this rule
+                List<RuleCondition> conditions = conditionRepository
+                        .findByRuleIdOrderByConditionOrder(rule.getId());
+
+                for (RuleCondition cond : conditions) {
+                    if ("REQUIRES_PARTICLE".equals(cond.getConditionType())) {
+                        String requiredParticle = cond.getConditionValue();
+                        String actualParticle = findParticleBefore(tokens, i);
+
+                        if (actualParticle != null && !actualParticle.equals(requiredParticle)) {
+                            String message = cond.getErrorMessage();
+                            if (message == null) {
+                                message = String.format("%s requires particle %s, not %s",
+                                        token.baseForm(), requiredParticle, actualParticle);
+                            }
+                            violations.add(new ViolationDTO(
+                                    rule.getId(),
+                                    rule.getName(),
+                                    message,
+                                    token.startOffset(),
+                                    token.surface()));
+                        }
+                    }
+                }
+            }
+        }
+
+        return violations;
+    }
+
+    /**
+     * Find the particle before a verb by walking backwards.
+     */
+    private String findParticleBefore(List<TokenResult> tokens, int verbIndex) {
+        for (int i = verbIndex - 1; i >= 0; i--) {
+            TokenResult t = tokens.get(i);
+            if ("助詞".equals(t.posLevel1())) {
+                return t.surface();
+            }
+            if ("名詞".equals(t.posLevel1())) {
+                continue; // Skip nouns, keep looking for particle
+            }
+            break; // Stop if we hit something else
+        }
+        return null;
     }
 
     /**
@@ -234,6 +333,14 @@ public class SentenceValidationService {
      * Evaluate a single condition against a token.
      */
     private boolean evaluateCondition(RuleCondition condition, TokenResult token) {
+        return evaluateConditionWithNext(condition, token, null);
+    }
+
+    /**
+     * Evaluate a single condition against a token, with optional next token for
+     * combined form detection.
+     */
+    private boolean evaluateConditionWithNext(RuleCondition condition, TokenResult token, TokenResult nextToken) {
         String condType = condition.getConditionType();
         String condValue = condition.getConditionValue();
 
@@ -241,9 +348,10 @@ public class SentenceValidationService {
             case "HAS_TAG" -> hasTag(token, condValue);
             case "NOT_HAS_TAG" -> !hasTag(token, condValue);
             case "IS_VERB" -> isVerb(token, condValue);
-            case "VERB_FORM" -> hasVerbForm(token, condValue);
+            case "VERB_FORM" -> hasVerbForm(token, condValue, nextToken);
             case "IS_POS" -> condValue.equals(token.posLevel1());
             case "MATCHES" -> token.surface().matches(condValue);
+            case "REQUIRES_PARTICLE" -> true; // Handled separately in VERB_PARTICLE rule
             default -> {
                 log.warn("Unknown condition type: {}", condType);
                 yield true; // Unknown condition, assume pass
@@ -286,9 +394,24 @@ public class SentenceValidationService {
     }
 
     /**
-     * Check if token has a specific verb form.
+     * Check if token has a specific verb form using ConjugationMapper.
+     * Handles both Sudachi conjugation forms and combined forms (te-form,
+     * masu-form, etc.).
      */
-    private boolean hasVerbForm(TokenResult token, String form) {
-        return form.equals(token.conjugationForm());
+    private boolean hasVerbForm(TokenResult token, String requiredForm, TokenResult nextToken) {
+        if (!"動詞".equals(token.posLevel1())) {
+            return false;
+        }
+
+        // Try direct mapping match first
+        String sudachiForm = token.conjugationForm();
+        if (ConjugationMapper.matchesForm(sudachiForm, requiredForm)) {
+            return true;
+        }
+
+        // Try combined form detection (te-form, ta-form, nai-form, masu-form)
+        String nextSurface = nextToken != null ? nextToken.surface() : null;
+        String combinedForm = ConjugationMapper.detectCombinedForm(token.surface(), nextSurface);
+        return requiredForm.equals(combinedForm);
     }
 }

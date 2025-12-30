@@ -3,14 +3,21 @@ package com.qtihelper.demo.entity;
 import jakarta.persistence.*;
 
 /**
- * Database-driven grammar rule for the Language Coach.
- * Rules can detect overuse, missing patterns, and suggest replacements.
+ * @deprecated Use {@link GrammarRuleV4} instead.
+ *             This entity remains for V3.0 compatibility but should not be used
+ *             for new features.
+ *             Will be removed in V5.0.
  * 
- * Rule types:
- * - OVERUSE: Word/tag used more than threshold times
- * - MISSING: Required tag/pattern not found
- * - REQUIRES: When using X, you should also use Y
+ *             Database-driven grammar rule for the Language Coach.
+ *             Rules can detect overuse, missing patterns, and suggest
+ *             replacements.
+ * 
+ *             Rule types:
+ *             - OVERUSE: Word/tag used more than threshold times
+ *             - MISSING: Required tag/pattern not found
+ *             - REQUIRES: When using X, you should also use Y
  */
+@Deprecated(since = "4.1", forRemoval = true)
 @Entity
 @Table(name = "grammar_rule")
 public class GrammarRule {

@@ -1,0 +1,70 @@
+[
+    {
+        "name": "てください-form",
+        "ruleType": "PATTERN",
+        "pattern": "ください",
+        "lessonId": 14,
+        "description": "てください requires て-form before ください",
+        "conditions": [
+            {
+                "targetPosition": "BEFORE",
+                "conditionType": "VERB_FORM",
+                "conditionValue": "te-form",
+                "errorMessage": "Verb before ください must be in て-form",
+                "isRequired": true,
+                "conditionOrder": 1
+            }
+        ]
+    },
+    {
+        "name": "なければなりません-form",
+        "ruleType": "PATTERN",
+        "pattern": "なければなりません",
+        "lessonId": 17,
+        "description": "なければなりません requires ない-stem (verb stem without ない)",
+        "conditions": [
+            {
+                "targetPosition": "BEFORE",
+                "conditionType": "VERB_FORM",
+                "conditionValue": "nai-stem",
+                "errorMessage": "Verb before なければなりません must be in ない-stem form",
+                "isRequired": true,
+                "conditionOrder": 1
+            }
+        ]
+    },
+    {
+        "name": "ないでください-form",
+        "ruleType": "PATTERN",
+        "pattern": "ないでください",
+        "lessonId": 17,
+        "description": "ないでください requires ない-form before で",
+        "conditions": [
+            {
+                "targetPosition": "BEFORE",
+                "conditionType": "VERB_FORM",
+                "conditionValue": "nai-form",
+                "errorMessage": "Verb before ないでください must be in ない-form",
+                "isRequired": true,
+                "conditionOrder": 1
+            }
+        ]
+    },
+    {
+        "name": "たいです-form",
+        "ruleType": "PATTERN",
+        "pattern": "たいです",
+        "lessonId": 13,
+        "description": "たいです requires masu-stem before たい",
+        "conditions": [
+            {
+                "targetPosition": "BEFORE",
+                "conditionType": "VERB_FORM",
+                "conditionValue": "masu-stem",
+                "errorMessage": "Verb before たい must be in masu-stem form",
+                "isRequired": true,
+                "conditionOrder": 1
+            }
+        ]
+    }
+]

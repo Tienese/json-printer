@@ -19,7 +19,7 @@ import java.util.Optional;
 /**
  * Service for Sentence CRUD and validation operations.
  * 
- * Responsibility: Sentence management and validation orchestration
+ * Responsibility: Sentence management, validation orchestration, DIRTY workflow
  * Dependencies: SentenceRepository, SentenceValidationService, VocabRepository
  */
 @Service
@@ -64,9 +64,60 @@ public class SentenceService {
         return sentenceRepository.findByValidationStatus(status);
     }
 
+    /**
+     * Save a sentence with DIRTY status detection.
+     * If the sentence contains unknown vocabulary, it will be marked as DIRTY.
+     */
     @Transactional
     public Sentence save(Sentence sentence) {
+        // Check for unknown vocab and set DIRTY status for new sentences
+        if (sentence.getId() == null && sentence.getValidationStatus() == null) {
+            var tokens = tokenizerService.tokenize(sentence.getText());
+            var unknownWords = findUnknownVocab(tokens);
+
+            if (!unknownWords.isEmpty()) {
+                sentence.setValidationStatus("DIRTY");
+                sentence.setValidationMessage("Unknown vocabulary: " + String.join(", ", unknownWords));
+                log.info("Sentence marked as DIRTY due to unknown vocab: {}", unknownWords);
+            } else {
+                sentence.setValidationStatus("UNCHECKED");
+            }
+        }
+
         return sentenceRepository.save(sentence);
+    }
+
+    /**
+     * Find unknown vocabulary in tokens.
+     */
+    private List<String> findUnknownVocab(List<com.qtihelper.demo.dto.TokenResult> tokens) {
+        List<String> unknown = new ArrayList<>();
+
+        for (var token : tokens) {
+            if (!isContentWord(token)) {
+                continue;
+            }
+
+            var vocabs = vocabRepository.findByDisplayForm(token.surface());
+            if (vocabs.isEmpty()) {
+                vocabs = vocabRepository.findByBaseForm(token.baseForm());
+            }
+
+            if (vocabs.isEmpty()) {
+                unknown.add(token.surface());
+            }
+        }
+
+        return unknown;
+    }
+
+    /**
+     * Check if token is a content word (noun, verb, adjective, adverb).
+     */
+    private boolean isContentWord(com.qtihelper.demo.dto.TokenResult token) {
+        String pos = token.posLevel1();
+        return "名詞".equals(pos) || "動詞".equals(pos) ||
+                "形容詞".equals(pos) || "副詞".equals(pos);
     }
 
     @Transactional

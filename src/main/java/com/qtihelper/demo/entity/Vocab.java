@@ -21,10 +21,10 @@ public class Vocab {
     private String displayForm; // Original form from CSV (e.g., "学生" or "がくせい")
 
     @Column(nullable = false)
-    private String baseForm; // Kuromoji normalized form (dictionary form)
+    private String baseForm; // Sudachi normalized form (dictionary form)
 
     @Column
-    private String partOfSpeech; // Kuromoji POS tag (e.g., "名詞-一般", "動詞-自立")
+    private String partOfSpeech; // Sudachi POS tag (e.g., "名詞-一般", "動詞-自立")
 
     // v3.0: Category for grammar coach (person, thing, place, time, action,
     // descriptor)

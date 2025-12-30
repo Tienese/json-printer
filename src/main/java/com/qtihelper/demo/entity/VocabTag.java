@@ -9,7 +9,7 @@ import jakarta.persistence.*;
  * Categories:
  * - semantic: transport, tool, food, person, animal
  * - grammar_role: subject, object, honorific, suffix, counter
- * - pos: auto-populated from Kuromoji
+ * - pos: auto-populated from Sudachi
  */
 @Entity
 @Table(name = "vocab_tag")
