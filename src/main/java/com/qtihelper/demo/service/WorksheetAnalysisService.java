@@ -64,7 +64,7 @@ public class WorksheetAnalysisService {
         log.debug("Extracted {} characters of text from worksheet", allText.length());
 
         // STEP C: Tokenize and normalize worksheet text
-        List<String> inputBaseForms = tokenizerService.tokenize(allText);
+        List<String> inputBaseForms = tokenizerService.tokenizeToBaseForms(allText);
         Set<String> uniqueInputForms = new HashSet<>(inputBaseForms);
         log.debug("Tokenized worksheet into {} unique base forms", uniqueInputForms.size());
 

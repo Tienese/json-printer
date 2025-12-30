@@ -109,6 +109,13 @@
 			<artifactId>lucene-analysis-kuromoji</artifactId>
 			<version>9.12.1</version>
 		</dependency>
+
+		<!-- Sudachi Japanese Tokenizer for Grammar Coach V4.0 -->
+		<dependency>
+			<groupId>com.worksap.nlp</groupId>
+			<artifactId>sudachi</artifactId>
+			<version>0.7.5</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<plugins>

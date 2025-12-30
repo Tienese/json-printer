@@ -99,8 +99,8 @@ public class ClozeAnalysisService {
         }
 
         // Tokenize and find first particle
-        List<SudachiTokenizerService.TokenResult> tokens = tokenizerService.tokenizeWithPos(text);
-        for (SudachiTokenizerService.TokenResult token : tokens) {
+        List<SudachiTokenizerService.LegacyTokenResult> tokens = tokenizerService.tokenizeWithPos(text);
+        for (SudachiTokenizerService.LegacyTokenResult token : tokens) {
             if (token.pos() != null && token.pos().startsWith("助詞")) {
                 return token.surface();
             }
@@ -120,8 +120,8 @@ public class ClozeAnalysisService {
             return null;
         }
 
-        List<SudachiTokenizerService.TokenResult> tokens = tokenizerService.tokenizeWithPos(text);
-        for (SudachiTokenizerService.TokenResult token : tokens) {
+        List<SudachiTokenizerService.LegacyTokenResult> tokens = tokenizerService.tokenizeWithPos(text);
+        for (SudachiTokenizerService.LegacyTokenResult token : tokens) {
             if (token.pos() != null && token.pos().startsWith("動詞")) {
                 return token.baseForm();
             }

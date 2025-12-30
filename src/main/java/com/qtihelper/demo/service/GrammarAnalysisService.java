@@ -81,10 +81,10 @@ public class GrammarAnalysisService {
 
             for (String text : textBlocks) {
                 // Use filtered tokens (no particles) for vocab frequency counting
-                List<SudachiTokenizerService.TokenResult> tokens = tokenizerService.tokenizeWithPos(text);
+                List<SudachiTokenizerService.LegacyTokenResult> tokens = tokenizerService.tokenizeWithPos(text);
 
                 // Count words in vocab pool
-                for (SudachiTokenizerService.TokenResult token : tokens) {
+                for (SudachiTokenizerService.LegacyTokenResult token : tokens) {
                     if (poolBaseForms.contains(token.baseForm())) {
                         wordCounts.merge(token.baseForm(), 1, Integer::sum);
                         totalVocabWords++;
@@ -96,7 +96,7 @@ public class GrammarAnalysisService {
                 }
 
                 // Use tokens WITH particles for slot detection
-                List<SudachiTokenizerService.TokenResult> tokensWithParticles = tokenizerService
+                List<SudachiTokenizerService.LegacyTokenResult> tokensWithParticles = tokenizerService
                         .tokenizeWithPosIncludeParticles(text);
                 List<SlotAssignment> slots = slotDetectionService.detectSlots(tokensWithParticles, itemIndex);
                 allSlotAssignments.addAll(slots);

@@ -1,0 +1,21 @@
+{
+    "systemDict": "system_full.dic",
+    "inputTextPlugin": [
+        {
+            "class": "com.worksap.nlp.sudachi.DefaultInputTextPlugin"
+        }
+    ],
+    "oovProviderPlugin": [
+        {
+            "class": "com.worksap.nlp.sudachi.MeCabOovProviderPlugin"
+        }
+    ],
+    "pathRewritePlugin": [
+        {
+            "class": "com.worksap.nlp.sudachi.JoinNumericPlugin"
+        },
+        {
+            "class": "com.worksap.nlp.sudachi.JoinKatakanaOovPlugin"
+        }
+    ]
+}

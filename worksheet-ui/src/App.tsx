@@ -14,6 +14,9 @@ import { AnalyticsPage } from './pages/AnalyticsPage';
 import { LandingPage } from './pages/LandingPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { TagManagementPage } from './pages/TagManagementPage';
+// Grammar Coach V4.0
+import { SentenceBankPage } from './pages/SentenceBankPage';
+import { GrammarRulesPage } from './pages/GrammarRulesPage';
 
 import { ErrorBoundary } from './components/ErrorBoundary';
 
@@ -68,6 +71,13 @@ function App() {
       case ROUTES.TAG_MANAGEMENT:
         return <TagManagementPage onNavigate={navigate} />;
 
+      // Grammar Coach V4.0
+      case ROUTES.SENTENCE_BANK:
+        return <SentenceBankPage onNavigate={navigate} />;
+
+      case ROUTES.GRAMMAR_RULES:
+        return <GrammarRulesPage onNavigate={navigate} />;
+
       default:
         return <LandingPage onNavigate={navigate} />;
     }
@@ -81,3 +91,4 @@ function App() {
 }
 
 export default App;
+

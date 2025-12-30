@@ -33,4 +33,14 @@ public interface VocabRepository extends JpaRepository<Vocab, Long> {
      * Count vocabulary for a specific lesson.
      */
     long countByLessonId(Integer lessonId);
+
+    /**
+     * Find vocabulary by base form (for validation).
+     */
+    List<Vocab> findByBaseForm(String baseForm);
+
+    /**
+     * Find vocabulary by display form (for validation).
+     */
+    List<Vocab> findByDisplayForm(String displayForm);
 }

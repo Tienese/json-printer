@@ -2,6 +2,8 @@ package com.qtihelper.demo.repository;
 
 import com.qtihelper.demo.entity.VocabTagMapping;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -24,4 +26,10 @@ public interface VocabTagMappingRepository extends JpaRepository<VocabTagMapping
     VocabTagMapping findByVocabIdAndTagId(Long vocabId, Long tagId);
 
     boolean existsByVocabIdAndTagId(Long vocabId, Long tagId);
+
+    /**
+     * Find tag names for a vocab (for validation).
+     */
+    @Query("SELECT m.tag.name FROM VocabTagMapping m WHERE m.vocab.id = :vocabId")
+    List<String> findTagNamesByVocabId(@Param("vocabId") Long vocabId);
 }

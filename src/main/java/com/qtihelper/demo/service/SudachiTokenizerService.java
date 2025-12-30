@@ -1,29 +1,33 @@
 package com.qtihelper.demo.service;
 
+import com.qtihelper.demo.dto.TokenResult;
+import com.worksap.nlp.sudachi.Dictionary;
+import com.worksap.nlp.sudachi.DictionaryFactory;
+import com.worksap.nlp.sudachi.Morpheme;
+import com.worksap.nlp.sudachi.Tokenizer;
 import jakarta.annotation.PostConstruct;
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.ja.JapaneseAnalyzer;
-import org.apache.lucene.analysis.ja.JapaneseTokenizer;
-import org.apache.lucene.analysis.ja.tokenattributes.BaseFormAttribute;
-import org.apache.lucene.analysis.ja.tokenattributes.PartOfSpeechAttribute;
-import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
+import jakarta.annotation.PreDestroy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.io.StringReader;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 /**
- * Service wrapper around Kuromoji (Lucene Japanese Analyzer).
- * Provides lemmatization (dictionary form extraction) for vocabulary analysis.
+ * Sudachi-based Japanese tokenizer for Grammar Coach V4.0.
+ * Uses Sudachi Mode B for compound noun handling.
+ * 
+ * Responsibility: Japanese text tokenization with morphological analysis
+ * Dependencies: Sudachi dictionary at resources/sudachi/system_full.dic
  */
 @Service
-public class SudachiTokenizerService {
+public class SudachiTokenizerService implements TokenizerService {
 
     private static final Logger log = LoggerFactory.getLogger(SudachiTokenizerService.class);
 
@@ -34,182 +38,179 @@ public class SudachiTokenizerService {
             "補助記号" // Auxiliary symbols
     );
 
-    private Analyzer analyzer;
+    private Dictionary dictionary;
+    private Tokenizer tokenizer;
 
     @PostConstruct
     public void init() {
-        log.info("Initializing Kuromoji Japanese tokenizer...");
+        log.info("Initializing Sudachi Japanese tokenizer...");
         long start = System.currentTimeMillis();
 
-        // Use default JapaneseAnalyzer with IPADIC dictionary
-        analyzer = new JapaneseAnalyzer();
+        try {
+            // Extract dictionary and config to temp directory
+            Path tempDir = Files.createTempDirectory("sudachi");
+            Path configFile = tempDir.resolve("sudachi.json");
+            Path dictFile = tempDir.resolve("system_full.dic");
 
-        long elapsed = System.currentTimeMillis() - start;
-        log.info("Kuromoji tokenizer initialized in {}ms", elapsed);
+            // Copy config
+            try (InputStream configStream = getClass().getResourceAsStream("/sudachi/sudachi.json")) {
+                if (configStream == null)
+                    throw new IOException("sudachi.json not found");
+                Files.copy(configStream, configFile);
+            }
+
+            // Copy dictionary
+            try (InputStream dictStream = getClass().getResourceAsStream("/sudachi/system_full.dic")) {
+                if (dictStream == null)
+                    throw new IOException("system_full.dic not found");
+                Files.copy(dictStream, dictFile);
+            }
+
+            // Read config and update dictionary path to absolute
+            String configJson = Files.readString(configFile);
+            String absoluteDictPath = dictFile.toAbsolutePath().toString().replace("\\", "/");
+            configJson = configJson.replace("system_full.dic", absoluteDictPath);
+
+            // Create dictionary with JSON content
+            dictionary = new DictionaryFactory().create(configJson);
+            tokenizer = dictionary.create();
+
+            long elapsed = System.currentTimeMillis() - start;
+            log.info("Sudachi tokenizer initialized in {}ms", elapsed);
+        } catch (IOException e) {
+            log.error("Failed to initialize Sudachi tokenizer: {}", e.getMessage());
+            throw new RuntimeException("Sudachi initialization failed", e);
+        }
+    }
+
+    @PreDestroy
+    public void cleanup() {
+        if (dictionary != null) {
+            try {
+                dictionary.close();
+                log.info("Sudachi dictionary closed");
+            } catch (IOException e) {
+                log.error("Failed to close Sudachi dictionary: {}", e.getMessage());
+            }
+        }
+    }
+
+    @Override
+    public List<TokenResult> tokenize(String text) {
+        if (text == null || text.isBlank()) {
+            return List.of();
+        }
+
+        List<Morpheme> morphemes = tokenizer.tokenize(Tokenizer.SplitMode.B, text);
+
+        return morphemes.stream()
+                .map(this::toTokenResult)
+                .toList();
     }
 
     /**
-     * Tokenize text and return list of base forms (dictionary forms).
+     * Tokenize text and return only base forms (for backward compatibility).
      * Filters out particles, punctuation, and symbols.
      *
-     * @param text Input Japanese text (can be single word or sentence)
+     * @param text Input Japanese text
      * @return List of base forms (lemmas) for meaningful words
      */
-    public List<String> tokenize(String text) {
-        return tokenizeWithPos(text).stream()
+    public List<String> tokenizeToBaseForms(String text) {
+        return tokenize(text).stream()
+                .filter(t -> !shouldIgnore(t.posLevel1()))
                 .map(TokenResult::baseForm)
                 .toList();
     }
 
     /**
-     * Result of tokenizing a word, including base form and POS.
+     * Legacy TokenResult for backward compatibility with existing code.
      */
-    public record TokenResult(String surface, String baseForm, String pos) {
+    public record LegacyTokenResult(String surface, String baseForm, String pos) {
     }
 
     /**
-     * Tokenize text and return list of TokenResult with base form and POS.
+     * Tokenize with legacy format for backward compatibility.
      * Filters out particles, punctuation, and symbols.
-     *
-     * @param text Input Japanese text
-     * @return List of token results for meaningful words
      */
-    public List<TokenResult> tokenizeWithPos(String text) {
-        if (text == null || text.isBlank()) {
-            return List.of();
-        }
-
-        List<TokenResult> results = new ArrayList<>();
-
-        try (TokenStream tokenStream = analyzer.tokenStream("content", new StringReader(text))) {
-            CharTermAttribute termAttr = tokenStream.addAttribute(CharTermAttribute.class);
-            BaseFormAttribute baseFormAttr = tokenStream.addAttribute(BaseFormAttribute.class);
-            PartOfSpeechAttribute posAttr = tokenStream.addAttribute(PartOfSpeechAttribute.class);
-
-            tokenStream.reset();
-
-            while (tokenStream.incrementToken()) {
-                String pos = posAttr.getPartOfSpeech();
-
-                // Skip particles, symbols, punctuation
-                if (pos != null && shouldIgnore(pos)) {
-                    continue;
-                }
-
-                String surface = termAttr.toString();
-                String baseForm = baseFormAttr.getBaseForm();
-                if (baseForm == null || baseForm.isBlank()) {
-                    baseForm = surface;
-                }
-
-                if (!baseForm.isBlank()) {
-                    results.add(new TokenResult(surface, baseForm, pos));
-                }
-            }
-
-            tokenStream.end();
-        } catch (IOException e) {
-            log.error("Failed to tokenize text: {}", e.getMessage());
-        }
-
-        return results;
+    public List<LegacyTokenResult> tokenizeWithPos(String text) {
+        return tokenize(text).stream()
+                .filter(t -> !shouldIgnore(t.posLevel1()))
+                .map(t -> new LegacyTokenResult(t.surface(), t.baseForm(), t.pos()))
+                .toList();
     }
 
     /**
-     * Tokenize text including particles. Used for slot detection.
+     * Tokenize including particles. Used for slot detection.
      * Only filters out symbols and punctuation, keeps particles (助詞).
-     *
-     * @param text Input Japanese text
-     * @return List of token results including particles
      */
-    public List<TokenResult> tokenizeWithPosIncludeParticles(String text) {
-        if (text == null || text.isBlank()) {
-            return List.of();
-        }
-
-        List<TokenResult> results = new ArrayList<>();
-
-        try (TokenStream tokenStream = analyzer.tokenStream("content", new StringReader(text))) {
-            CharTermAttribute termAttr = tokenStream.addAttribute(CharTermAttribute.class);
-            BaseFormAttribute baseFormAttr = tokenStream.addAttribute(BaseFormAttribute.class);
-            PartOfSpeechAttribute posAttr = tokenStream.addAttribute(PartOfSpeechAttribute.class);
-
-            tokenStream.reset();
-
-            while (tokenStream.incrementToken()) {
-                String pos = posAttr.getPartOfSpeech();
-
-                // Only skip symbols/punctuation, keep particles for slot detection
-                if (pos != null && (pos.startsWith("記号") || pos.startsWith("補助記号"))) {
-                    continue;
-                }
-
-                String surface = termAttr.toString();
-                String baseForm = baseFormAttr.getBaseForm();
-                if (baseForm == null || baseForm.isBlank()) {
-                    baseForm = surface;
-                }
-
-                if (!baseForm.isBlank()) {
-                    results.add(new TokenResult(surface, baseForm, pos));
-                }
-            }
-
-            tokenStream.end();
-        } catch (IOException e) {
-            log.error("Failed to tokenize text (with particles): {}", e.getMessage());
-        }
-
-        return results;
+    public List<LegacyTokenResult> tokenizeWithPosIncludeParticles(String text) {
+        return tokenize(text).stream()
+                .filter(t -> {
+                    String pos = t.posLevel1();
+                    return pos == null || (!pos.startsWith("記号") && !pos.startsWith("補助記号"));
+                })
+                .map(t -> new LegacyTokenResult(t.surface(), t.baseForm(), t.pos()))
+                .toList();
     }
 
     /**
      * Normalize a single word to its dictionary form.
-     * Useful for CSV import where each line is a single word.
-     *
-     * @param word Single Japanese word
-     * @return Dictionary form, or original word if tokenization fails
      */
     public String normalizeWord(String word) {
         if (word == null || word.isBlank()) {
             return word;
         }
 
-        List<String> tokens = tokenize(word.trim());
-
-        if (tokens.isEmpty()) {
-            return word.trim();
-        }
-
-        // For single-word input, return the first meaningful token's base form
-        return tokens.get(0);
+        List<String> tokens = tokenizeToBaseForms(word.trim());
+        return tokens.isEmpty() ? word.trim() : tokens.get(0);
     }
 
     /**
      * Normalize a single word and return both base form and POS.
-     * Used for vocabulary seeding with POS auto-tagging.
-     *
-     * @param word Single Japanese word
-     * @return TokenResult with base form and POS, or null if tokenization fails
      */
-    public TokenResult normalizeWordWithPos(String word) {
+    public LegacyTokenResult normalizeWordWithPos(String word) {
         if (word == null || word.isBlank()) {
             return null;
         }
 
-        List<TokenResult> tokens = tokenizeWithPos(word.trim());
-
+        List<LegacyTokenResult> tokens = tokenizeWithPos(word.trim());
         if (tokens.isEmpty()) {
-            return new TokenResult(word.trim(), word.trim(), null);
+            return new LegacyTokenResult(word.trim(), word.trim(), null);
         }
-
         return tokens.get(0);
+    }
+
+    /**
+     * Convert Sudachi Morpheme to TokenResult.
+     */
+    private TokenResult toTokenResult(Morpheme m) {
+        List<String> posParts = m.partOfSpeech();
+        String fullPos = String.join(",", posParts);
+        String posLevel1 = posParts.isEmpty() ? "" : posParts.get(0);
+
+        // Conjugation info is at positions 4 and 5 in Sudachi POS
+        String conjugationType = posParts.size() > 4 ? posParts.get(4) : null;
+        String conjugationForm = posParts.size() > 5 ? posParts.get(5) : null;
+
+        return new TokenResult(
+                m.surface(),
+                m.dictionaryForm(),
+                fullPos,
+                posLevel1,
+                m.readingForm(),
+                m.begin(),
+                m.end(),
+                conjugationType,
+                conjugationForm,
+                m.normalizedForm());
     }
 
     /**
      * Check if a POS tag should be ignored.
      */
     private boolean shouldIgnore(String pos) {
+        if (pos == null)
+            return false;
         for (String prefix : IGNORED_POS_PREFIXES) {
             if (pos.startsWith(prefix)) {
                 return true;
@@ -222,6 +223,6 @@ public class SudachiTokenizerService {
      * Check if the tokenizer is ready.
      */
     public boolean isReady() {
-        return analyzer != null;
+        return tokenizer != null;
     }
 }

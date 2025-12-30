@@ -33,4 +33,7 @@ src/main/resources/static/index.html
 # Local config
 application-local.properties
 .serena/
-docs/
+docs/v3.0
+
+# Sudachi dictionary (360MB, not tracked)
+src/main/resources/sudachi/system_full.dic

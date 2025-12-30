@@ -24,8 +24,8 @@ public class SlotDetectionService {
     // Hardcoded defaults for ambiguous particles (per spec)
     // These take priority over database iteration order
     private static final Map<String, String> AMBIGUOUS_PARTICLE_DEFAULTS = Map.of(
-            "で", "LOCATION",    // で can be LOCATION or INSTRUMENT - default LOCATION
-            "に", "DIRECTION"    // に can be DIRECTION or TIME - default DIRECTION
+            "で", "LOCATION", // で can be LOCATION or INSTRUMENT - default LOCATION
+            "に", "DIRECTION" // に can be DIRECTION or TIME - default DIRECTION
     );
 
     private final SlotDefinitionRepository slotRepository;
@@ -57,7 +57,7 @@ public class SlotDetectionService {
      * @param itemIndex The worksheet item index for location tracking
      * @return List of slot assignments
      */
-    public List<SlotAssignment> detectSlots(List<SudachiTokenizerService.TokenResult> tokens, int itemIndex) {
+    public List<SlotAssignment> detectSlots(List<SudachiTokenizerService.LegacyTokenResult> tokens, int itemIndex) {
         ensureParticleMapLoaded();
 
         var assignments = new ArrayList<SlotAssignment>();
@@ -168,12 +168,12 @@ public class SlotDetectionService {
         }
 
         particleToSlotMap = new HashMap<>();
-        
+
         // 1. First, set explicit defaults for ambiguous particles (per spec)
         particleToSlotMap.putAll(AMBIGUOUS_PARTICLE_DEFAULTS);
-        log.info("Pre-loaded {} ambiguous particle defaults: {}", 
+        log.info("Pre-loaded {} ambiguous particle defaults: {}",
                 AMBIGUOUS_PARTICLE_DEFAULTS.size(), AMBIGUOUS_PARTICLE_DEFAULTS);
-        
+
         // 2. Then load from DB, but don't override existing mappings
         List<SlotDefinition> slots = slotRepository.findAll();
         log.info("Loading particle-to-slot mappings from {} slot definitions", slots.size());

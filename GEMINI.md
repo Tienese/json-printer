@@ -1,174 +1,190 @@
 # GEMINI CLI AGENT Configuration: `json-printer`
 
-## 1.1.1.1 Rule Priority
-**THIS PROJECT FOLLOWS THE [1.1.1.1 RULES](./1.1.1.1_RULES.md).**
-ALL CODE CHANGES MUST COMPLY WITH:
-1. **1 Component** (Logic in Hooks)
-2. **1 Style** (Tailwind & Print-first)
-3. **1 Design** (Consistent Primitives)
-4. **1 Architecture** (Feature-based & Stable)
-
-
-> **CRITICAL: LOCALHOST PARALLEL EXECUTION**
-> **CONTEXT:** Single-User, Local-First (Java + React + SQLite).
-> **STACK:** Java 21 (Spring Boot 3.5), React (Vite/Tailwind), SQLite, Maven.
+> **Workspace Rules** - Project-specific patterns for json-printer.
+> For generic coding principles (SOLID, CoI, LoD, error prevention), see `~/.gemini/GEMINI.md`.
 
 ---
 
-## Critical: Hybrid Stack Concurrent Operations
+## Core Philosophy
 
-**ABSOLUTE RULE:** ALL operations (Backend + Frontend) MUST be batched in a single message to maintain sync between the Spring Boot backend and React frontend.
+> **One way to do each thing. Reuse existing. Extend, don't reinvent.**
 
-### Mandatory Concurrent Patterns
+| Principle | Rule |
+|-----------|------|
+| **Consistency** | Check existing patterns before creating new |
+| **Simplicity** | Don't abstract early, don't over-engineer |
+| **Print-First** | Black & white, static UI, no flashy effects |
 
-* **Full Stack Updates:** ALWAYS batch Java (Backend) and React (Frontend) changes together if they relate to the same feature.
-* **SQLite Persistence:** Use JPA repositories for worksheet/quiz persistence. No complex migrations.
-* **Build Operations:** ALWAYS use the Maven wrapper, which controls the frontend build.
+---
 
-> **GOLDEN RULE:** "1 MESSAGE = FULL FEATURE IMPLEMENTATION (Backend API + Frontend UI)"
+## Project Context
 
-### Example of CORRECT Execution (json-printer)
+| Aspect | Value |
+|--------|-------|
+| **Stack** | Java 21 (Spring Boot 3.5), React (Vite/Tailwind), SQLite |
+| **Build** | Maven with frontend-maven-plugin |
+| **User** | Single-user, localhost only, no auth |
+
+### Banned Technologies
+- **Cloud Databases**: PostgreSQL, MySQL, MongoDB (use SQLite only)
+- **Complex Security**: Spring Security, JWT, OAuth2
+- **Heavy Frontend**: Next.js, Redux, SSR
+- **Cloud Ops**: Docker, Kubernetes, AWS
+
+---
+
+## Before Adding New Code
+
+> **CRITICAL**: Always check existing patterns first.
+
+### Consistency Checklist
+1. **Search existing**: Does a similar component/service/pattern exist?
+2. **Extend existing**: Can you add to existing code instead of creating new?
+3. **Match patterns**: Does new code follow the same structure as existing?
+
+### Anti-Patterns (DON'T DO)
+```tsx
+// DON'T: Create new button style for same action type
+<button className="new-random-style">Submit</button>  // BAD
+<Button variant="primary">Submit</Button>              // GOOD (use existing)
+
+// DON'T: Create different input mechanism
+<input onKeyDown={customHandler} />   // BAD (custom logic)
+<InputField {...standardProps} />      // GOOD (use existing)
+```
+
+---
+
+## Batch Operations
+
+**ABSOLUTE RULE:** Backend + Frontend changes MUST be batched together.
+
+> **"1 MESSAGE = FULL FEATURE IMPLEMENTATION"**
 
 ```yaml
-[Single Message]:
-  - Task("You are the Architect. Coordinate JSON parsing logic...")
-  - Task("You are the UI Dev. Coordinate React component state...")
-  - Write("src/main/java/com/jsonprinter/service/CanvasService.java", apiLogic)
-  - Write("src/main/java/com/jsonprinter/controller/ReportController.java", restEndpoint)
-  - Write("src/main/resources/application.properties", configUpdate)
-  - Write("src/main/frontend/src/components/QuizList.tsx", reactComponent)
-  - Write("src/main/frontend/src/hooks/useCanvas.ts", reactHook)
-  - Write("src/main/frontend/src/types/quiz.ts", typescriptDefinitions)
-  - Bash("mvn clean install") 
-  # Note: 'mvn install' triggers the frontend-maven-plugin to build React automatically
-
+[Single Message - Write ALL code first]:
+  - Write("src/main/java/.../Service.java", logic)
+  - Write("src/main/java/.../Controller.java", endpoint)
+  - Write("src/main/frontend/src/components/Feature.tsx", component)
+  - Write("src/main/frontend/src/hooks/useFeature.ts", hook)
+  # NO BUILD HERE - Defer to Final Verification
 ```
 
 ---
 
-## Architecture: Stateless Hybrid Web App
+## Backend Patterns (Java 21 + Spring Boot)
 
-**Mental Model:**
-
-* **The Converter:** Input (API/CSV) -> Process (Memory) -> Output (PDF/Print).
-* **The Build:** React is built by Maven and embedded into the JAR.
-* **The User:** YOU (Localhost). No login screens. No security tokens (except `application.properties`).
-
-### BANNED TECHNOLOGIES (Do Not Use)
-
-* **No Cloud Databases:** PostgreSQL, MySQL, MongoDB (use SQLite only).
-* **No Complex Security:** Spring Security, JWT, OAuth2, Keycloak.
-* **No Heavy Frontend:** Next.js, Redux (unless absolutely necessary), SSR.
-* **No Cloud Ops:** Docker, Kubernetes, Jenkins, Terraform, AWS.
-
----
-
-## Backend Coordination (Spring Boot 3.5 + Java 21)
-
-**Role:** Data Orchestrator, Proxy & Persistence.
-**State:** SQLite for worksheets/quizzes, in-memory for transient data.
-
-### API & Integration Pattern
-
-* **Canvas Integration:** Use `RestClient` (Java 21 style) for fetching Canvas data.
-* **CSV Processing:** Use `Apache Commons CSV` for parsing student data.
-* **Thymeleaf:** Use strictly for generating **Printable Reports** (server-side HTML generation for PDF conversion).
-
-**Standard Java Batch:**
-
-```yaml
-[BatchTool]:
-  - Write("src/main/java/com/jsonprinter/model/QuizDTO.java", javaRecord)
-  - Write("src/main/java/com/jsonprinter/service/PrintService.java", logic)
-  - Write("src/main/java/com/jsonprinter/controller/ApiController.java", endpoint)
-  - Bash("mvn compile")
-
+### DTOs: Use Records
+```java
+public record QuizDTO(
+    String id,
+    String title,
+    List<QuestionDTO> questions
+) {}
 ```
 
----
+### External APIs: Use RestClient
+```java
+private final RestClient restClient;
 
-## Frontend Coordination (React + Vite)
-
-**Role:** Interactive Worksheet Builder (WYSIWYG).
-**State:** LocalStorage (Persistence) + React Context (Runtime).
-
-### UI & State Pattern
-
-* **Worksheet Builder:** Heavy use of React State/Context.
-* **Styling:** Tailwind CSS (Utility-first, Print-optimized).
-* **Storage:** `localStorage.setItem('draft_worksheet', ...)` for saving progress.
-* **Fetch:** Standard `fetch` or custom hooks calling the local Spring Boot API (`/api/...`).
-
-**Standard React Batch:**
-
-```yaml
-[BatchTool]:
-  - Write("src/main/frontend/src/components/Builder/GridEditor.tsx", component)
-  - Write("src/main/frontend/src/hooks/useLocalStorage.ts", storageHook)
-  - Write("src/main/frontend/src/App.tsx", routeUpdate)
-  - Bash("cd src/main/frontend && npm run lint") # Quick check
-
+public QuizDTO fetchQuiz(String id) {
+    return restClient.get()
+        .uri("/quizzes/{id}", id)
+        .retrieve()
+        .body(QuizDTO.class);
+}
 ```
 
----
+### JPA Entity Pattern
+Use `@Entity` class (NOT record) with lifecycle callbacks:
+```java
+@Entity
+@Table(name = "worksheets")
+public class Worksheet {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-## Build & Run Coordination
+    @Column(nullable = false)
+    private String name;
 
-**The "One Command" Workflow:**
-Since this project uses `frontend-maven-plugin`, you rarely need to run `npm` commands manually in the root context.
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String jsonContent;
 
-### Standard Development Cycle
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 
-```bash
-# 1. Clean & Build Everything (Java + Node install + Vite Build)
-mvn clean install
+    @Column(nullable = false)
+    private LocalDateTime updatedAt;
 
-# 2. Run the App (Localhost:8080)
-mvn spring-boot:run
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
 
-# 3. (Optional) Quick Frontend Dev (Separate Terminal)
-# Only if you need Hot Module Replacement (HMR) for UI tweaking
-cd src/main/frontend && npm run dev
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 
+    // Getters and Setters (required for JPA)
+}
 ```
 
+### JPA Repository Pattern
+Use Spring Data interface with method naming:
+```java
+@Repository
+public interface WorksheetRepository extends JpaRepository<Worksheet, Long> {
+    List<Worksheet> findAllByOrderByUpdatedAtDesc();
+    List<Worksheet> findByNameContainingIgnoreCase(String name);
+}
+```
+
+**Key Rules**:
+- Entities: **class** with getters/setters (JPA requirement)
+- DTOs: **record** (immutable)
+- Repository: **interface only** - no implementation
+- Queries: **method naming** - avoid `@Query`
+
 ---
 
-## Code Quality & Defaults
+## Frontend Patterns (React + Vite)
 
-* **Java:** Use Java 21 `record` for all DTOs. Use `var` for local variables.
-* **TypeScript:** Strict typing. Interfaces for all API responses.
-* **CSS:** Tailwind classes preferred over custom CSS files.
-* **Simplicity:** If a library isn't needed, don't add it. Keep `pom.xml` and `package.json` lean.
-* **1.1.1.1 Compliance:** Always check [1.1.1.1_RULES.md](./1.1.1.1_RULES.md) before implementing new features.
+### Component Structure
+- **Components render only** - move logic to hooks
+- **Hooks handle logic** - useEffect, useState, data fetching
+- **Shared primitives** - use `src/components/ui/` components
 
+### State Management
+- **React Context** for global-ish state
+- **localStorage** for transient UI drafts
+- **No Redux** unless absolutely necessary
+
+### Styling: Tailwind Only
+- NO CSS modules
+- NO styled-components
+- NO inline `style={{...}}`
 
 ---
 
-## Print Design Rules (CRITICAL)
+## Print Design (CRITICAL)
 
-All printable pages MUST follow these strict guidelines:
-
-### No Colors in Print
-- **Black and white ONLY** — color is useless for printed worksheets
-- **Never render background colors** in `@media print`
-- Use `print:bg-white` on all printable elements
+### Rules
+- **Black & white ONLY** - no colors in print
+- **No background colors** in `@media print`
+- **Minimize gaps** - maximize vertical space
+- **Use `break-inside-avoid`** for clean page breaks
 
 ### Visual Hierarchy Without Color
-Use these techniques instead of colors:
-- **Border styles:** solid, dashed, double, thick/thin
-- **Text indicators:** `[NOTE]`, `[INFO]`, `[!]`, `[Q1]`, `[A]`/`[B]`/`[C]`
-- **ASCII/Unicode:** box-drawing chars, bullets
-- **Font weight:** bold for emphasis, normal for content
-- **Spacing/indentation:** visual grouping
+- Border styles: solid, dashed, double
+- Text indicators: `[NOTE]`, `[INFO]`, `[Q1]`
+- Font weight: bold for emphasis
+- Spacing/indentation for grouping
 
-### Vertical Space Optimization
-- **Minimize gaps:** Use smallest practical margins/padding
-- **Goal:** Maximize usable printing area vertically
-- **Compact layouts:** Avoid excessive whitespace between items
-- **Print-break awareness:** Use `break-inside-avoid` strategically
-
-### Print CSS Pattern
+### Print CSS
 ```css
 @media print {
   .printable-item {
@@ -181,36 +197,117 @@ Use these techniques instead of colors:
 
 ---
 
-## UI Component Standards
+## UI Standards
 
-### Navbar Component
-* **Usage:** Use `<Navbar />` component on ALL pages for consistent navigation
-* **Back Button:** Icon-only chevron (top-left), always navigates to `ROUTES.HOME`
-* **Actions Slot:** Right-side area for page-specific buttons (e.g., Print, Save, etc.)
-* **Example:**
-  ```tsx
-  <Navbar 
-    onBack={() => navigate(ROUTES.HOME)}
-    actions={<button>Print</button>}
-  />
-  ```
+### Static Aesthetics (NO Flashy Effects)
+- **NO** hover transitions (`hover:bg-*`)
+- **NO** scale effects (`active:scale-*`)
+- **NO** animations (`transition-all`)
+- **YES** focus states for accessibility (`focus:ring-*`)
 
-### Styling Rules (CRITICAL)
-* **NO hover transitions:** Avoid `hover:bg-*`, `hover:text-*`, `hover:shadow-*`
-* **NO scale effects:** Avoid `active:scale-*`, `transition-all`
-* **NO flashy animations:** Keep UI static and readable
-* **Focus states allowed:** `focus:ring-*` for accessibility is acceptable
-* **Rationale:** Minimize visual distraction, prioritize readability
-
-### Button Standards
+### Button Example
 ```tsx
-// CORRECT: Static styling
-<button className="px-4 py-2 bg-black text-white border-2 border-black font-bold">
+// CORRECT: Static
+<button className="px-4 py-2 bg-black text-white border-2 font-bold">
   Submit
 </button>
 
 // WRONG: Hover effects
-<button className="px-4 py-2 bg-black text-white hover:bg-gray-800 transition-all">
+<button className="hover:bg-gray-800 transition-all">
   Submit
 </button>
+```
+
+### Navbar Usage
+```tsx
+<Navbar
+  onBack={() => navigate(ROUTES.HOME)}
+  actions={<button>Print</button>}
+/>
+```
+
+---
+
+## Build & Run
+
+```bash
+# Full build
+mvn clean install
+
+# Run app
+mvn spring-boot:run
+
+# Frontend dev (HMR)
+cd src/main/frontend && npm run dev
+```
+
+---
+
+## Final Verification (DEFERRED)
+
+> **Run terminal commands ONLY after ALL code is written.**
+
+### Execution Order
+1. Write ALL backend code (no terminal)
+2. Write ALL frontend code (no terminal)
+3. Self-review code visually
+4. **THEN** run verification commands
+
+### Verification Commands (Run ONCE at End)
+```bash
+mvn clean compile
+cd src/main/frontend && npx tsc --noEmit
+mvn spring-boot:run
+```
+
+### If Verification Fails
+1. Read error message
+2. Fix the specific issue
+3. Re-run ONLY the failed command
+4. Repeat until all pass
+
+### DON'T Do This
+```yaml
+# WRONG: Build after each file
+- Write(file1)
+- Bash("mvn compile")  # NO!
+
+# CORRECT: Build once at end
+- Write(file1)
+- Write(file2)
+- Write(file3)
+- Bash("mvn clean compile")  # Only now
+```
+
+---
+
+## SonarQube (Project-Specific)
+
+### Project Key
+```
+sonar-printer
+```
+
+### Usage
+```bash
+# 1. Push analysis
+mvn clean verify sonar:sonar -Dsonar.projectKey=sonar-printer ...
+
+# 2. Fetch results
+.sonar\fetch.bat
+```
+
+### Token Setup
+```bash
+cp .sonar/.env.template .sonar/.env
+# Edit .sonar/.env with your token
+```
+
+### Output
+```
+.sonar/
+├── quality-gate.json      # Pass/Fail
+├── issues-critical.json   # BLOCKER + CRITICAL
+├── issues-major.json      # MAJOR
+└── metrics.json           # Coverage, bugs, smells
 ```

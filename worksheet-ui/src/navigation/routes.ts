@@ -15,6 +15,9 @@ export const ROUTES = {
   ANALYTICS: 'analytics',
   SETTINGS: 'settings',
   TAG_MANAGEMENT: 'admin/tags',
+  // Grammar Coach V4.0
+  SENTENCE_BANK: 'grammar/sentences',
+  GRAMMAR_RULES: 'grammar/rules',
 } as const;
 
 export type Route = typeof ROUTES[keyof typeof ROUTES];
