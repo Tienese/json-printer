@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useSentences, type CreateSentenceRequest } from '../hooks/useSentences';
 import { useValidation } from '../hooks/useValidation';
 
@@ -19,10 +20,39 @@ export function SentenceBankPage({ onNavigate }: SentenceBankPageProps) {
     const [newText, setNewText] = useState('');
     const [newLesson, setNewLesson] = useState('');
     const [testText, setTestText] = useState('');
+    const [highlightedId, setHighlightedId] = useState<number | null>(null);
+
+    // Read URL query params for sentence highlighting
+    const location = useLocation();
 
     useEffect(() => {
         fetchAll();
     }, [fetchAll]);
+
+    // Handle id query param for scroll-to-sentence
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const idParam = params.get('id');
+        if (idParam) {
+            const id = parseInt(idParam, 10);
+            if (!isNaN(id)) {
+                setHighlightedId(id);
+                // Clear highlight after 3 seconds
+                const timer = setTimeout(() => setHighlightedId(null), 3000);
+                return () => clearTimeout(timer);
+            }
+        }
+    }, [location.search]);
+
+    // Scroll to highlighted sentence when loaded
+    useEffect(() => {
+        if (highlightedId && sentences.length > 0) {
+            const element = document.querySelector(`[data-sentence-id="${highlightedId}"]`);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+    }, [highlightedId, sentences]);
 
     const handleFilter = () => {
         fetchAll(
@@ -227,7 +257,11 @@ export function SentenceBankPage({ onNavigate }: SentenceBankPageProps) {
                         </thead>
                         <tbody className="divide-y">
                             {sentences.map((sentence) => (
-                                <tr key={sentence.id} className="hover:bg-gray-50">
+                                <tr 
+                                    key={sentence.id} 
+                                    data-sentence-id={sentence.id}
+                                    className={`hover:bg-gray-50 transition-colors duration-300 ${highlightedId === sentence.id ? 'bg-yellow-100' : ''}`}
+                                >
                                     <td className={`px-4 py-3 text-xl ${getStatusColor(sentence.validationStatus)}`}>
                                         {getStatusIcon(sentence.validationStatus)}
                                     </td>
