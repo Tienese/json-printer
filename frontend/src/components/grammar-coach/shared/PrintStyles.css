@@ -1,0 +1,88 @@
+/**
+ * Print Styles for Grammar Coach
+ * 
+ * B&W compatible print stylesheet.
+ * Ensures status is readable without color.
+ */
+
+@media print {
+    /* Hide non-essential UI */
+    .no-print,
+    .print\\:hidden,
+    nav,
+    .sidebar,
+    .v5-skeleton,
+    button:not(.print-show) {
+        display: none !important;
+    }
+
+    /* Reset colors for B&W */
+    * {
+        color: black !important;
+        background: white !important;
+        border-color: #333 !important;
+        box-shadow: none !important;
+    }
+
+    /* Ensure status icons are visible */
+    .status-icon {
+        font-weight: bold;
+    }
+
+    .status-label {
+        display: inline !important;
+    }
+
+    /* Status indicators with text markers */
+    .status-valid::before { content: "✓ "; font-weight: bold; }
+    .status-invalid::before { content: "✗ "; font-weight: bold; }
+    .status-unchecked::before { content: "? "; }
+    .status-dirty::before { content: "⚠ "; }
+    .status-mismatch::before { content: "≠ "; font-weight: bold; }
+
+    /* Table borders for clarity */
+    table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+    
+    th, td {
+        border: 1px solid #333;
+        padding: 4px 8px;
+        text-align: left;
+    }
+
+    th {
+        font-weight: bold;
+        background: #f0f0f0 !important;
+    }
+
+    /* Page breaks */
+    .page-break {
+        page-break-before: always;
+    }
+
+    .avoid-break {
+        page-break-inside: avoid;
+    }
+
+    /* Links show indicator */
+    a::after {
+        content: " ↗";
+        font-size: 0.8em;
+    }
+
+    /* Reduce margins for density */
+    body {
+        margin: 0;
+        padding: 0.5cm;
+        font-size: 11pt;
+        line-height: 1.4;
+    }
+
+    /* Cards and panels */
+    .card, .panel, [class*="rounded"] {
+        border: 1px solid #333 !important;
+        border-radius: 0 !important;
+    }
+}

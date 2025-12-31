@@ -16,6 +16,7 @@ export const ROUTES = {
   SETTINGS: 'settings',
   TAG_MANAGEMENT: 'admin/tags',
   // Grammar Coach V4.0
+  VOCAB: 'grammar/vocab',
   SENTENCE_BANK: 'grammar/sentences',
   GRAMMAR_RULES: 'grammar/rules',
 } as const;

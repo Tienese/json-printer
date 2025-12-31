@@ -15,6 +15,7 @@ import { LandingPage } from './pages/LandingPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { TagManagementPage } from './pages/TagManagementPage';
 // Grammar Coach V4.0
+import { VocabManagementPage } from './pages/VocabManagementPage';
 import { SentenceBankPage } from './pages/SentenceBankPage';
 import { GrammarRulesPage } from './pages/GrammarRulesPage';
 
@@ -72,6 +73,9 @@ function App() {
         return <TagManagementPage onNavigate={navigate} />;
 
       // Grammar Coach V4.0
+      case ROUTES.VOCAB:
+        return <VocabManagementPage onNavigate={navigate} />;
+
       case ROUTES.SENTENCE_BANK:
         return <SentenceBankPage onNavigate={navigate} />;
 

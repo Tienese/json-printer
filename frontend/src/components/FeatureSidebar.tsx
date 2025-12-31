@@ -49,6 +49,28 @@ const features: Feature[] = [
         offline: false,
         description: 'Browse Canvas courses',
     },
+    // Grammar Coach V4.0
+    {
+        name: 'Vocabulary',
+        icon: '📖',
+        route: ROUTES.VOCAB,
+        offline: true,
+        description: 'Manage vocabulary & tags',
+    },
+    {
+        name: 'Sentence Bank',
+        icon: '📝',
+        route: ROUTES.SENTENCE_BANK,
+        offline: true,
+        description: 'Sentences with validation',
+    },
+    {
+        name: 'Grammar Rules',
+        icon: '⚙️',
+        route: ROUTES.GRAMMAR_RULES,
+        offline: true,
+        description: 'Rule conditions & tests',
+    },
 ];
 
 export function FeatureSidebar({ currentRoute, onNavigate }: Readonly<FeatureSidebarProps>) {
