@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useNavigation } from '../navigation/useNavigation';
 import { useSentences, type CreateSentenceRequest } from '../hooks/useSentences';
 import { useValidation } from '../hooks/useValidation';
 
@@ -14,6 +14,7 @@ interface SentenceBankPageProps {
 export function SentenceBankPage({ onNavigate }: SentenceBankPageProps) {
     const { sentences, loading, error, fetchAll, create, remove, validate, validateAll } = useSentences();
     const { validate: validateText, result: validationResult, clear: clearValidation } = useValidation();
+    const { params: navParams } = useNavigation();
 
     const [filterLesson, setFilterLesson] = useState<string>('');
     const [filterStatus, setFilterStatus] = useState<string>('');
@@ -22,17 +23,13 @@ export function SentenceBankPage({ onNavigate }: SentenceBankPageProps) {
     const [testText, setTestText] = useState('');
     const [highlightedId, setHighlightedId] = useState<number | null>(null);
 
-    // Read URL query params for sentence highlighting
-    const location = useLocation();
-
     useEffect(() => {
         fetchAll();
     }, [fetchAll]);
 
     // Handle id query param for scroll-to-sentence
     useEffect(() => {
-        const params = new URLSearchParams(location.search);
-        const idParam = params.get('id');
+        const idParam = navParams.id;
         if (idParam) {
             const id = parseInt(idParam, 10);
             if (!isNaN(id)) {
@@ -42,7 +39,7 @@ export function SentenceBankPage({ onNavigate }: SentenceBankPageProps) {
                 return () => clearTimeout(timer);
             }
         }
-    }, [location.search]);
+    }, [navParams.id]);
 
     // Scroll to highlighted sentence when loaded
     useEffect(() => {

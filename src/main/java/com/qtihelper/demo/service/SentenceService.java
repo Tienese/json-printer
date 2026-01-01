@@ -13,8 +13,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Service for Sentence CRUD and validation operations.
@@ -200,6 +203,21 @@ public class SentenceService {
                     .ifPresent(sentences::add);
         }
         return sentences;
+    }
+
+    /**
+     * Batch count sentences linked to vocabulary items.
+     * Returns a map of vocabId -> count.
+     */
+    public Map<Long, Integer> getSentenceCountsByVocabIds(Collection<Long> vocabIds) {
+        if (vocabIds == null || vocabIds.isEmpty()) {
+            return Map.of();
+        }
+        var counts = linkRepository.countByVocabIdIn(vocabIds);
+        return counts.stream()
+                .collect(Collectors.toMap(
+                        row -> (Long) row[0],
+                        row -> ((Long) row[1]).intValue()));
     }
 
     /**

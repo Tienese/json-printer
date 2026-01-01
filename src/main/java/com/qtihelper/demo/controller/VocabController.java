@@ -17,9 +17,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * REST controller for Vocabulary operations.
@@ -60,23 +59,41 @@ public class VocabController {
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String category) {
 
-        List<Vocab> vocabs;
-
         // Priority: search > lesson range > single lesson > category > all
-        if (search != null && !search.isBlank()) {
-            vocabs = vocabRepository.searchByDisplayFormOrBaseForm(search.trim());
-        } else if (lessonStart != null && lessonEnd != null) {
-            vocabs = vocabRepository.findByLessonIdBetween(lessonStart, lessonEnd);
-        } else if (lessonId != null) {
-            vocabs = vocabRepository.findByLessonId(lessonId);
-        } else if (category != null && !category.isBlank()) {
-            vocabs = vocabRepository.findByCategory(category);
-        } else {
-            vocabs = vocabRepository.findAll();
+        var vocabs = (search != null && !search.isBlank())
+                ? vocabRepository.searchByDisplayFormOrBaseForm(search.trim())
+                : (lessonStart != null && lessonEnd != null)
+                        ? vocabRepository.findByLessonIdBetween(lessonStart, lessonEnd)
+                        : (lessonId != null)
+                                ? vocabRepository.findByLessonId(lessonId)
+                                : (category != null && !category.isBlank())
+                                        ? vocabRepository.findByCategory(category)
+                                        : vocabRepository.findAll();
+
+        if (vocabs.isEmpty()) {
+            return Collections.emptyList();
         }
 
+        // Optimize: Batch fetch tags and sentence counts to solve N+1 problem
+        var vocabIds = vocabs.stream().map(Vocab::getId).toList();
+
+        // 1. Batch fetch tags
+        var allMappings = tagMappingRepository.findByVocabIdIn(vocabIds);
+        var tagsByVocabId = allMappings.stream()
+                .collect(Collectors.groupingBy(
+                        m -> m.getVocab().getId(),
+                        Collectors.mapping(m -> new VocabTagDTO(
+                                m.getTag().getId(),
+                                m.getTag().getName(),
+                                m.getTag().getCategory()), Collectors.toList())));
+
+        // 2. Batch fetch sentence counts
+        var sentenceCountsByVocabId = sentenceService.getSentenceCountsByVocabIds(vocabIds);
+
         return vocabs.stream()
-                .map(this::toVocabWithTagsDTO)
+                .map(v -> toVocabWithTagsDTO(v,
+                        tagsByVocabId.getOrDefault(v.getId(), Collections.emptyList()),
+                        sentenceCountsByVocabId.getOrDefault(v.getId(), 0)))
                 .toList();
     }
 
@@ -100,8 +117,8 @@ public class VocabController {
             return ResponseEntity.notFound().build();
         }
 
-        List<VocabTagMapping> mappings = tagMappingRepository.findByVocabId(id);
-        List<VocabTagDTO> tags = mappings.stream()
+        var mappings = tagMappingRepository.findByVocabId(id);
+        var tags = mappings.stream()
                 .map(m -> new VocabTagDTO(
                         m.getTag().getId(),
                         m.getTag().getName(),
@@ -121,7 +138,7 @@ public class VocabController {
             @PathVariable Long id,
             @RequestBody AddTagRequest request) {
 
-        Optional<Vocab> vocabOpt = vocabRepository.findById(id);
+        var vocabOpt = vocabRepository.findById(id);
         if (vocabOpt.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
@@ -130,14 +147,14 @@ public class VocabController {
 
         // Find or create tag
         if (request.tagId() != null) {
-            Optional<VocabTag> tagOpt = vocabTagService.getTagById(request.tagId());
+            var tagOpt = vocabTagService.getTagById(request.tagId());
             if (tagOpt.isEmpty()) {
                 return ResponseEntity.badRequest().build();
             }
             tag = tagOpt.get();
         } else if (request.name() != null && !request.name().isBlank()) {
             // Find existing tag by name or create new one
-            Optional<VocabTag> existingTag = vocabTagService.getTagByName(request.name());
+            var existingTag = vocabTagService.getTagByName(request.name());
             if (existingTag.isPresent()) {
                 tag = existingTag.get();
             } else {
@@ -155,7 +172,7 @@ public class VocabController {
         }
 
         // Create mapping
-        VocabTagMapping mapping = new VocabTagMapping(vocabOpt.get(), tag);
+        var mapping = new VocabTagMapping(vocabOpt.get(), tag);
         tagMappingRepository.save(mapping);
 
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -171,7 +188,7 @@ public class VocabController {
             @PathVariable Long id,
             @PathVariable Long tagId) {
 
-        VocabTagMapping mapping = tagMappingRepository.findByVocabIdAndTagId(id, tagId);
+        var mapping = tagMappingRepository.findByVocabIdAndTagId(id, tagId);
         if (mapping == null) {
             return ResponseEntity.notFound().build();
         }
@@ -189,8 +206,8 @@ public class VocabController {
             return ResponseEntity.notFound().build();
         }
 
-        List<Sentence> sentences = sentenceService.findByVocabId(id);
-        List<SentenceSummaryDTO> dtos = sentences.stream()
+        var sentences = sentenceService.findByVocabId(id);
+        var dtos = sentences.stream()
                 .map(s -> new SentenceSummaryDTO(
                         s.getId(),
                         s.getText(),
@@ -216,17 +233,30 @@ public class VocabController {
      * Convert Vocab entity to VocabWithTagsDTO.
      */
     private VocabWithTagsDTO toVocabWithTagsDTO(Vocab vocab) {
-        // Fetch tags for this vocab
-        List<VocabTagMapping> mappings = tagMappingRepository.findByVocabId(vocab.getId());
-        List<VocabTagDTO> tags = mappings.stream()
-                .map(m -> new VocabTagDTO(
-                        m.getTag().getId(),
-                        m.getTag().getName(),
-                        m.getTag().getCategory()))
-                .toList();
+        // Use optimized call with default empty list/zero
+        return toVocabWithTagsDTO(vocab, null, null);
+    }
 
-        // Count sentences linked to this vocab
-        int sentenceCount = sentenceService.findByVocabId(vocab.getId()).size();
+    /**
+     * Convert Vocab entity to VocabWithTagsDTO with pre-fetched data.
+     */
+    private VocabWithTagsDTO toVocabWithTagsDTO(Vocab vocab, List<VocabTagDTO> preFetchedTags,
+            Integer preFetchedSentenceCount) {
+        var tags = preFetchedTags;
+        if (tags == null) {
+            var mappings = tagMappingRepository.findByVocabId(vocab.getId());
+            tags = mappings.stream()
+                    .map(m -> new VocabTagDTO(
+                            m.getTag().getId(),
+                            m.getTag().getName(),
+                            m.getTag().getCategory()))
+                    .toList();
+        }
+
+        var sentenceCount = preFetchedSentenceCount;
+        if (sentenceCount == null) {
+            sentenceCount = sentenceService.findByVocabId(vocab.getId()).size();
+        }
 
         return new VocabWithTagsDTO(
                 vocab.getId(),

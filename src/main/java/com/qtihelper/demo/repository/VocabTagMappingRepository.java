@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -16,6 +17,8 @@ import java.util.List;
 public interface VocabTagMappingRepository extends JpaRepository<VocabTagMapping, Long> {
 
     List<VocabTagMapping> findByVocabId(Long vocabId);
+
+    List<VocabTagMapping> findByVocabIdIn(Collection<Long> vocabIds);
 
     List<VocabTagMapping> findByTagId(Long tagId);
 
